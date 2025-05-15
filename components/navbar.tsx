@@ -19,63 +19,70 @@ export function Navbar() {
   ];
 
   return (
-    <nav className="bg-white/80 backdrop-blur-md fixed w-full z-50 shadow-sm">
+    <nav className="bg-white/80 backdrop-blur-md fixed w-full z-50 shadow-md font-[Bahnschrift]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between h-20"> {/* Augmentez la hauteur à h-20 */}
-          <div className="flex items-center">
-            <Link href="/" className="flex items-center h-full">
-              {/* Version optimisée avec Next.js Image */}
-              <div className="relative h-50 w-50"> {/* Conteneur avec dimensions fixes */}
-                <Image
-                  src="/ogo.png"
-                  alt="Bain de Lac"
-                  fill
-                  className="object-contain object-left" /* Ajustez le positionnement */
-                  priority
-                />
-              </div>
-            </Link>
-          </div>
+        <div className="flex justify-between items-center h-20">
+          {/* Logo */}
+          <Link href="/" className="flex items-center h-full">
+            <div className="relative h-50 w-50">
+              <Image
+                src="/ogo.png"
+                alt="Bain du Lac"
+                fill
+                className="object-contain object-left"
+                priority
+              />
+            </div>
+          </Link>
 
-          <div className="hidden md:flex items-center space-x-4">
+          {/* Menu desktop */}
+          <div className="hidden md:flex items-center space-x-6">
             {navItems.map((item) => (
               <Link
                 key={item.href}
                 href={item.href}
-                className="text-gray-700 hover:text-sky-600 px-3 py-2 rounded-md text-sm font-medium transition-colors"
+                className="text-[#2a4d4e] hover:text-[#d35400] px-3 py-2 rounded-md text-sm font-semibold transition-colors duration-300"
               >
                 {item.label}
               </Link>
             ))}
-            <Button variant="outline" className="ml-4">
+            <Button
+              variant="outline"
+              className="ml-4 border-[#a97101] text-[#a97101] hover:bg-[#a97101] hover:text-white transition-colors"
+            >
               Se connecter
             </Button>
           </div>
 
-          <div className="md:hidden flex items-center">
+          {/* Hamburger Icon */}
+          <div className="md:hidden">
             <button
               onClick={() => setIsOpen(!isOpen)}
-              className="text-gray-700 hover:text-sky-600"
+              className="text-[#5d3a00] hover:text-[#f39c12] transition-all"
             >
-              {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+              {isOpen ? <X className="h-7 w-7" /> : <Menu className="h-7 w-7" />}
             </button>
           </div>
         </div>
 
+        {/* Mobile menu */}
         {isOpen && (
-          <div className="md:hidden">
-            <div className="px-2 pt-2 pb-3 space-y-1">
+          <div className="md:hidden mt-2 bg-white/95 backdrop-blur-md rounded-lg shadow-lg transition-all duration-300">
+            <div className="px-4 pt-4 pb-6 space-y-2">
               {navItems.map((item) => (
                 <Link
                   key={item.href}
                   href={item.href}
-                  className="text-gray-700 hover:text-sky-600 block px-3 py-2 rounded-md text-base font-medium"
+                  className="block text-[#2a4d4e] hover:text-[#e67e22] px-3 py-2 rounded-md font-medium text-base transition-colors"
                   onClick={() => setIsOpen(false)}
                 >
                   {item.label}
                 </Link>
               ))}
-              <Button variant="outline" className="w-full mt-4">
+              <Button
+                variant="outline"
+                className="w-full mt-4 border-[#a97101] text-[#a97101] hover:bg-[#a97101] hover:text-white transition"
+              >
                 Se connecter
               </Button>
             </div>

@@ -5,6 +5,17 @@ import { Card } from '../../../components/ui/card';
 import { Button } from '../../../components/ui/button';
 import { useState } from 'react';
 
+// Définition des couleurs
+const colors = {
+  teal: '#008080',       // Bleu sarcelle
+  gold: '#D4AF37',       // Or
+  orange: '#FF8C42',     // Orange
+  maroon: '#800020',     // Marron
+  lightTeal: '#E6F2F2',  // Sarcelle clair
+  darkTeal: '#006666',   // Sarcelle foncé
+  cream: '#F5F5DC',      // Crème
+};
+
 // Animation variants
 const container = {
   hidden: { opacity: 0 },
@@ -163,11 +174,35 @@ export default function Restaurant() {
           price: "8 000 FCFA"
         }
       ]
+    },
+    {
+      title: "Menu Dégustation",
+      key: "degustation",
+      items: [
+        {
+          name: "Voyage Culinaire",
+          description: "Sélection des meilleures créations du chef en 7 services",
+          price: "45 000 FCFA"
+        },
+        {
+          name: "Saveurs Locales",
+          description: "Découverte des spécialités béninoises réinventées",
+          price: "38 000 FCFA"
+        },
+        {
+          name: "Menu Enfant",
+          description: "Adapté aux jeunes gourmets avec des portions adaptées",
+          price: "25 000 FCFA"
+        }
+      ]
     }
   ];
 
   return (
-    <div className="min-h-screen pt-16 bg-gradient-to-b from-blue-50 to-white">
+    <div className="min-h-screen pt-16" style={{ 
+      fontFamily: 'Bahnschrift, sans-serif',
+      backgroundColor: colors.lightTeal 
+    }}>
       {/* Hero Section */}
       <section className="relative h-[80vh] overflow-hidden">
         <motion.div 
@@ -181,7 +216,9 @@ export default function Restaurant() {
             alt="Restaurant"
             className="w-full h-full object-cover"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-blue-900/70 to-blue-900/40" />
+          <div className="absolute inset-0" style={{ 
+            background: `linear-gradient(to top, ${colors.maroon}70, ${colors.teal}40)`
+          }} />
         </motion.div>
         
         <div className="relative h-full flex items-center justify-center text-center text-white px-4">
@@ -192,12 +229,13 @@ export default function Restaurant() {
             className="max-w-4xl"
           >
             <motion.h1 
-              className="text-5xl md:text-7xl font-bold mb-6 font-serif"
+              className="text-5xl md:text-7xl font-bold mb-6 tracking-tight"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.5 }}
+              style={{ color: colors.cream }}
             >
-              <span className="block text-yellow-400">La Table Royale</span>
+              <span className="block" style={{ color: colors.gold }}>La Table Royale</span>
               <span className="text-3xl md:text-4xl font-light mt-4 block">Cotonou</span>
             </motion.h1>
             
@@ -206,6 +244,7 @@ export default function Restaurant() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.8 }}
+              style={{ color: colors.cream }}
             >
               Excellence gastronomique à l'heure béninoise
             </motion.p>
@@ -217,7 +256,11 @@ export default function Restaurant() {
             >
               <Button 
                 size="lg" 
-                className="bg-yellow-500 hover:bg-yellow-600 text-blue-900 text-lg px-8 py-6 rounded-full shadow-lg"
+                className="text-lg px-8 py-6 rounded-full shadow-lg transform hover:scale-105 transition-transform"
+                style={{
+                  backgroundColor: colors.orange,
+                  color: 'white'
+                }}
                 onClick={() => setShowReservationForm(true)}
               >
                 Réserver maintenant
@@ -233,22 +276,26 @@ export default function Restaurant() {
           <motion.div 
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="bg-white rounded-xl shadow-2xl max-w-md w-full p-8 relative"
+            className="rounded-xl shadow-2xl max-w-md w-full p-8 relative"
+            style={{ backgroundColor: colors.cream }}
           >
             <button 
               onClick={() => setShowReservationForm(false)}
-              className="absolute top-4 right-4 text-gray-500 hover:text-gray-700"
+              className="absolute top-4 right-4"
+              style={{ color: colors.maroon }}
             >
               <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>
             
-            <h3 className="text-2xl font-bold text-blue-900 mb-6 text-center">Réserver une table</h3>
+            <h3 className="text-2xl font-bold mb-6 text-center tracking-tight" style={{ color: colors.maroon }}>
+              Réserver une table
+            </h3>
             
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label htmlFor="name" className="block text-sm font-medium text-blue-900 mb-1">Nom complet</label>
+                <label htmlFor="name" className="block text-sm font-medium mb-1" style={{ color: colors.teal }}>Nom complet</label>
                 <input
                   type="text"
                   id="name"
@@ -256,13 +303,20 @@ export default function Restaurant() {
                   value={formData.name}
                   onChange={handleChange}
                   required
-                  className="w-full px-4 py-2 border border-blue-200 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500"
+                  className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:border-transparent"
+                  style={{ 
+                    borderColor: colors.teal,
+                    focus: { 
+                      ringColor: colors.gold,
+                      borderColor: 'transparent'
+                    }
+                  }}
                 />
               </div>
               
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label htmlFor="email" className="block text-sm font-medium text-blue-900 mb-1">Email</label>
+                  <label htmlFor="email" className="block text-sm font-medium mb-1" style={{ color: colors.teal }}>Email</label>
                   <input
                     type="email"
                     id="email"
@@ -270,12 +324,13 @@ export default function Restaurant() {
                     value={formData.email}
                     onChange={handleChange}
                     required
-                    className="w-full px-4 py-2 border border-blue-200 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500"
+                    className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:border-transparent"
+                    style={{ borderColor: colors.teal }}
                   />
                 </div>
                 
                 <div>
-                  <label htmlFor="phone" className="block text-sm font-medium text-blue-900 mb-1">Téléphone</label>
+                  <label htmlFor="phone" className="block text-sm font-medium mb-1" style={{ color: colors.teal }}>Téléphone</label>
                   <input
                     type="tel"
                     id="phone"
@@ -283,14 +338,15 @@ export default function Restaurant() {
                     value={formData.phone}
                     onChange={handleChange}
                     required
-                    className="w-full px-4 py-2 border border-blue-200 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500"
+                    className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:border-transparent"
+                    style={{ borderColor: colors.teal }}
                   />
                 </div>
               </div>
               
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label htmlFor="date" className="block text-sm font-medium text-blue-900 mb-1">Date</label>
+                  <label htmlFor="date" className="block text-sm font-medium mb-1" style={{ color: colors.teal }}>Date</label>
                   <input
                     type="date"
                     id="date"
@@ -298,12 +354,13 @@ export default function Restaurant() {
                     value={formData.date}
                     onChange={handleChange}
                     required
-                    className="w-full px-4 py-2 border border-blue-200 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500"
+                    className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:border-transparent"
+                    style={{ borderColor: colors.teal }}
                   />
                 </div>
                 
                 <div>
-                  <label htmlFor="time" className="block text-sm font-medium text-blue-900 mb-1">Heure (GMT+1)</label>
+                  <label htmlFor="time" className="block text-sm font-medium mb-1" style={{ color: colors.teal }}>Heure (GMT+1)</label>
                   <input
                     type="time"
                     id="time"
@@ -311,19 +368,21 @@ export default function Restaurant() {
                     value={formData.time}
                     onChange={handleChange}
                     required
-                    className="w-full px-4 py-2 border border-blue-200 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500"
+                    className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:border-transparent"
+                    style={{ borderColor: colors.teal }}
                   />
                 </div>
               </div>
               
               <div>
-                <label htmlFor="guests" className="block text-sm font-medium text-blue-900 mb-1">Nombre de personnes</label>
+                <label htmlFor="guests" className="block text-sm font-medium mb-1" style={{ color: colors.teal }}>Nombre de personnes</label>
                 <select
                   id="guests"
                   name="guests"
                   value={formData.guests}
                   onChange={handleChange}
-                  className="w-full px-4 py-2 border border-blue-200 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500"
+                  className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:border-transparent"
+                  style={{ borderColor: colors.teal }}
                 >
                   {[1, 2, 3, 4, 5, 6, 7, 8].map(num => (
                     <option key={num} value={num}>{num} {num > 1 ? 'personnes' : 'personne'}</option>
@@ -332,20 +391,25 @@ export default function Restaurant() {
               </div>
               
               <div>
-                <label htmlFor="message" className="block text-sm font-medium text-blue-900 mb-1">Demandes spéciales</label>
+                <label htmlFor="message" className="block text-sm font-medium mb-1" style={{ color: colors.teal }}>Demandes spéciales</label>
                 <textarea
                   id="message"
                   name="message"
                   value={formData.message}
                   onChange={handleChange}
                   rows={3}
-                  className="w-full px-4 py-2 border border-blue-200 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500"
+                  className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:border-transparent"
+                  style={{ borderColor: colors.teal }}
                 />
               </div>
               
               <Button 
                 type="submit"
-                className="w-full bg-yellow-500 hover:bg-yellow-600 text-blue-900 py-3 rounded-lg font-semibold"
+                className="w-full py-3 rounded-lg font-semibold"
+                style={{
+                  backgroundColor: colors.orange,
+                  color: 'white'
+                }}
               >
                 Confirmer la réservation
               </Button>
@@ -355,7 +419,7 @@ export default function Restaurant() {
       )}
 
       {/* About Section */}
-      <section className="py-24">
+      <section className="py-24" style={{ backgroundColor: colors.cream }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-16 items-center">
             <motion.div
@@ -370,7 +434,9 @@ export default function Restaurant() {
                 alt="Chef"
                 className="w-full h-full object-cover"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-blue-900/30 via-transparent to-transparent" />
+              <div className="absolute inset-0" style={{ 
+                background: `linear-gradient(to top, ${colors.maroon}30, transparent)`
+              }} />
             </motion.div>
             
             <motion.div
@@ -379,16 +445,19 @@ export default function Restaurant() {
               whileInView="show"
               viewport={{ once: true }}
             >
-              <h2 className="text-4xl font-bold mb-6 font-serif text-yellow-500">Notre Chef Étoilé</h2>
-              <p className="text-blue-900 mb-6 text-lg leading-relaxed">
+              <h2 className="text-4xl font-bold mb-6 tracking-tight" style={{ color: colors.gold }}>Notre Chef Étoilé</h2>
+              <p className="mb-6 text-lg leading-relaxed" style={{ color: colors.darkTeal }}>
                 Le Chef Éric Dossou, formé aux meilleures écoles culinaires, vous propose une 
                 fusion unique entre cuisine internationale et saveurs béninoises. 
                 Ses créations vous transporteront dans un voyage gastronomique inoubliable.
               </p>
               
-              <div className="mb-8 bg-blue-50 p-6 rounded-xl border border-blue-100">
-                <h3 className="font-semibold text-lg mb-3 text-blue-800">Horaires d'ouverture :</h3>
-                <ul className="space-y-2 text-blue-900">
+              <div className="mb-8 p-6 rounded-xl border" style={{ 
+                backgroundColor: `${colors.gold}15`,
+                borderColor: colors.gold
+              }}>
+                <h3 className="font-semibold text-lg mb-3" style={{ color: colors.maroon }}>Horaires d'ouverture :</h3>
+                <ul className="space-y-2" style={{ color: colors.darkTeal }}>
                   <li className="flex items-center">
                     <span className="w-32 font-medium">Petit-déjeuner :</span>
                     <span>7h00 - 10h30 (GMT+1)</span>
@@ -405,7 +474,11 @@ export default function Restaurant() {
               </div>
               
               <Button 
-                className="bg-yellow-500 hover:bg-yellow-600 text-blue-900 px-8 py-6 text-lg rounded-lg shadow-md transform hover:scale-105 transition-transform"
+                className="px-8 py-6 text-lg rounded-lg shadow-md transform hover:scale-105 transition-transform"
+                style={{
+                  backgroundColor: colors.orange,
+                  color: 'white'
+                }}
                 onClick={() => setShowReservationForm(true)}
               >
                 Réserver une table
@@ -416,7 +489,7 @@ export default function Restaurant() {
       </section>
 
       {/* Menu Section */}
-      <section className="py-24 bg-gradient-to-b from-blue-50 to-white">
+      <section className="py-24" style={{ backgroundColor: colors.lightTeal }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
             initial={{ opacity: 0 }}
@@ -424,10 +497,10 @@ export default function Restaurant() {
             viewport={{ once: true }}
             className="text-center mb-16"
           >
-            <h2 className="text-4xl font-bold font-serif text-blue-900 mb-4">
-              <span className="text-yellow-500">Notre</span> Carte
+            <h2 className="text-4xl font-bold tracking-tight mb-4" style={{ color: colors.maroon }}>
+              <span style={{ color: colors.gold }}>Notre</span> Carte
             </h2>
-            <p className="text-xl text-blue-700 max-w-2xl mx-auto">
+            <p className="text-xl max-w-2xl mx-auto" style={{ color: colors.teal }}>
               Une sélection de plats raffinés préparés avec des ingrédients locaux et d'importation
             </p>
           </motion.div>
@@ -444,9 +517,19 @@ export default function Restaurant() {
                 key={section.key}
                 variants={item}
                 className="relative"
+                whileHover={{ y: -10 }}
               >
-                <Card className="p-8 h-full bg-white border border-blue-100 rounded-xl shadow-sm hover:shadow-md transition-shadow">
-                  <h3 className="text-2xl font-bold mb-8 text-center font-serif text-yellow-500 border-b border-yellow-100 pb-4">
+                <Card className="p-8 h-full rounded-xl shadow-sm hover:shadow-md transition-all"
+                  style={{ 
+                    backgroundColor: 'white',
+                    border: `1px solid ${colors.gold}33`
+                  }}
+                >
+                  <h3 className="text-2xl font-bold mb-8 text-center tracking-tight border-b pb-4"
+                    style={{ 
+                      color: colors.gold,
+                      borderColor: `${colors.gold}33`
+                    }}>
                     {section.title}
                   </h3>
                   <div className="space-y-8">
@@ -457,12 +540,13 @@ export default function Restaurant() {
                         className="group"
                       >
                         <div className="flex justify-between items-start mb-2">
-                          <h4 className="font-semibold text-lg group-hover:text-yellow-500 transition-colors">
+                          <h4 className="font-semibold text-lg group-hover:text-orange-500 transition-colors"
+                            style={{ color: colors.maroon }}>
                             {item.name}
                           </h4>
-                          <span className="text-yellow-600 font-medium">{item.price}</span>
+                          <span className="font-medium" style={{ color: colors.orange }}>{item.price}</span>
                         </div>
-                        <p className="text-sm text-blue-800">{item.description}</p>
+                        <p className="text-sm" style={{ color: colors.darkTeal }}>{item.description}</p>
                         <div className="mt-2 h-px bg-gradient-to-r from-transparent via-blue-100 to-transparent" />
                       </motion.div>
                     ))}
@@ -481,7 +565,11 @@ export default function Restaurant() {
           >
             <Button 
               size="lg" 
-              className="bg-yellow-500 hover:bg-yellow-600 text-blue-900 px-10 py-7 text-lg rounded-full shadow-lg"
+              className="px-10 py-7 text-lg rounded-full shadow-lg transform hover:scale-105 transition-transform"
+              style={{
+                backgroundColor: colors.orange,
+                color: 'white'
+              }}
               onClick={() => setShowReservationForm(true)}
             >
               Réserver maintenant
@@ -491,7 +579,7 @@ export default function Restaurant() {
       </section>
 
       {/* Gallery Section */}
-      <section className="py-24 bg-blue-900/5">
+      <section className="py-24" style={{ backgroundColor: colors.cream }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
             initial={{ opacity: 0 }}
@@ -499,10 +587,10 @@ export default function Restaurant() {
             viewport={{ once: true }}
             className="text-center mb-16"
           >
-            <h2 className="text-4xl font-bold font-serif text-blue-900 mb-4">
-              <span className="text-yellow-500">Notre</span> Galerie
+            <h2 className="text-4xl font-bold tracking-tight mb-4" style={{ color: colors.maroon }}>
+              <span style={{ color: colors.gold }}>Notre</span> Galerie
             </h2>
-            <p className="text-xl text-blue-700 max-w-2xl mx-auto">
+            <p className="text-xl max-w-2xl mx-auto" style={{ color: colors.teal }}>
               Découvrez l'ambiance et les créations de notre restaurant à Cotonou
             </p>
           </motion.div>
@@ -533,7 +621,11 @@ export default function Restaurant() {
                   alt={`Gallery ${index + 1}`}
                   className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-blue-900/50 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                  style={{ 
+                    background: `linear-gradient(to top, ${colors.maroon}50, transparent)`
+                  }} 
+                />
               </motion.div>
             ))}
           </motion.div>
@@ -541,22 +633,28 @@ export default function Restaurant() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-24 bg-gradient-to-r from-blue-900 to-blue-700">
+      <section className="py-24" style={{ 
+        background: `linear-gradient(135deg, ${colors.maroon}, ${colors.teal})`
+      }}>
         <motion.div
           initial={{ opacity: 0, y: 40 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           className="max-w-4xl mx-auto text-center px-4"
         >
-          <h2 className="text-4xl md:text-5xl font-bold text-white font-serif mb-6">
+          <h2 className="text-4xl md:text-5xl font-bold mb-6 tracking-tight" style={{ color: colors.cream }}>
             Prêt pour une expérience culinaire exceptionnelle ?
           </h2>
-          <p className="text-xl text-blue-100 mb-10 max-w-2xl mx-auto">
+          <p className="text-xl mb-10 max-w-2xl mx-auto" style={{ color: colors.gold }}>
             Réservez votre table dès maintenant et laissez-vous emporter par nos créations gastronomiques.
           </p>
           <Button 
             size="lg" 
-            className="bg-yellow-500 hover:bg-yellow-600 text-blue-900 px-12 py-7 text-lg rounded-full shadow-xl font-semibold"
+            className="px-12 py-7 text-lg rounded-full shadow-xl font-semibold transform hover:scale-105 transition-transform"
+            style={{
+              backgroundColor: colors.orange,
+              color: 'white'
+            }}
             onClick={() => setShowReservationForm(true)}
           >
             Réserver une table
