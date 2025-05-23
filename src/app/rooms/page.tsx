@@ -4,15 +4,31 @@ import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Card } from '../../../components/ui/card';
 import { Button } from '../../../components/ui/button';
-import { Star, Heart, ArrowLeft, ArrowRight, Calendar, User, MapPin, ChevronLeft, ChevronRight,Lock, Check, CreditCard, Smartphone,Bed, Wallet ,X,CheckCircle, CalendarDays,IdCard,MessageSquare,Hotel,Banknote,Clock } from 'lucide-react';
+import { fr } from 'date-fns/locale';
+import { format } from "date-fns";
+import { cn } from '../../../lib/utils';
+import { Star, Heart, ArrowLeft, ArrowRight, Calendar, User, MapPin, ChevronLeft,Utensils,Coffee,Wine,ShoppingBag , ChevronRight,Lock,Wifi,Maximize,Users,DollarSign,Settings ,Filter,Zap ,RefreshCw ,Snowflake,Tv,Shield, Check,CalendarIcon , CreditCard,SearchIcon, Smartphone,Bed, Wallet ,X,CheckCircle, CalendarDays,IdCard,MessageSquare,Hotel,Banknote,Clock } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "../../../components/ui/dialog";
 import { Input } from "../../../components/ui/input";
 import { Label } from "../../../components/ui/label";
 import { useToast } from "../../../hooks/use-toast";
 import { RadioGroup, RadioGroupItem } from "../../../components/ui/radio-group";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../../components/ui/select";
+import { Popover, PopoverContent, PopoverTrigger } from '../../../components/ui/popover';
 import { Textarea } from "../../../components/ui/textarea";
 import Image from "next/image";
+
+
+
+const colors = {
+  teal: '#008080',
+  lightTeal: '#E6F2F2',
+  darkTeal: '#006666',
+  gold: '#FFD700',
+  orange: '#FFA500',
+  maroon: '#800000',
+  white: '#FFFFFF'
+};
 
 
 interface Room {
@@ -35,6 +51,7 @@ interface Room {
   view?: string; 
   floor?: string; 
   smoking?: boolean; 
+   discount?: number; 
 }
 
 interface BookingDetails {
@@ -62,14 +79,41 @@ interface BookingDetails {
   accountNumber?: string;
 }
 
+function formatPriceFCFA(price) {
+  return new Intl.NumberFormat('fr-FR', {
+    style: 'currency',
+    currency: 'XOF',
+    maximumFractionDigits: 0
+  }).format(price).replace('CFA', 'FCFA');
+}
+
 export default function Rooms() {
   const [selectedRoom, setSelectedRoom] = useState<Room | null>(null);
   const [isBookingOpen, setIsBookingOpen] = useState(false);
   const [isConfirmationOpen, setIsConfirmationOpen] = useState(false);
   const [isCancellationOpen, setIsCancellationOpen] = useState(false);
   const [currentImageIndices, setCurrentImageIndices] = useState<Record<number, number>>({});
-  const [currentPage, setCurrentPage] = useState(1);
-  const bookingTypes = ['night', 'half-day', 'hourly'] as const;
+ const [currentPage, setCurrentPage] = useState(1);
+const bookingTypes = ['night', 'half-day', 'hourly'] as const;
+const [checkIn, setCheckIn] = useState<Date>();
+const [checkOut, setCheckOut] = useState<Date>();
+const [adults, setAdults] = useState(1);
+const [children, setChildren] = useState(0);
+const [budget, setBudget] = useState('any');
+const [price, setPrice] = useState(0);
+const [favorites, setFavorites] = useState<number[]>(JSON.parse(localStorage.getItem('favorites') || '[]'));
+
+const toggleFavorite = (roomId: number) => {
+  if (favorites.includes(roomId)) {
+    setFavorites(favorites.filter(id => id !== roomId));
+  } else {
+    setFavorites([...favorites, roomId]);
+  }
+};
+
+const handleDateSelect = (date: Date) => {
+  setCheckIn(date);
+};
 
   const [bookingDetails, setBookingDetails] = useState<BookingDetails>({
     checkIn: '',
@@ -522,146 +566,877 @@ export default function Rooms() {
   return (
     <div className="min-h-screen pt-16 bg-gradient-to-b from-blue-50 to-white">
       {/* Hero Section */}
-      <section className="relative h-[50vh] bg-teal-700">
-        <div className="absolute inset-0 bg-black/40" />
-        <div className="relative h-full flex items-center justify-center text-center text-white px-4">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 1 }}
+      <section className="relative h-[60vh] min-h-[500px] md:h-[70vh] overflow-hidden">
+      {/* Image de fond avec animation */}
+      <div className="absolute inset-0">
+        <motion.img
+          initial={{ scale: 1.2 }}
+          animate={{ scale: 1 }}
+          transition={{ 
+            duration: 2,
+            ease: "easeOut"
+          }}
+          src="https://images.unsplash.com/photo-1566073771259-6a8506099945?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80"
+          alt="Chambre d'exception au Bénin"
+          className="w-full h-full object-cover"
+        />
+        
+        {/* Dégradé avec les couleurs thématiques */}
+        <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/30 to-black/10" />
+        
+        {/* Effet de texture subtil */}
+        <div 
+          className="absolute inset-0 opacity-20"
+          style={{
+            background: `linear-gradient(45deg, ${colors.gold}20, ${colors.teal}20, ${colors.orange}20)`,
+            backgroundSize: '300% 300%'
+          }}
+        />
+      </div>
+
+      {/* Contenu */}
+      <div className="relative h-full flex items-center justify-center text-center px-6">
+        <motion.div
+          initial={{ opacity: 0, y: 50 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ 
+            delay: 0.3,
+            duration: 1,
+            ease: [0.25, 0.1, 0.25, 1]
+          }}
+          className="max-w-4xl mx-auto"
+        >
+          {/* Titre avec ombre portée et effet de lumière */}
+          <motion.h1 
+            className="text-4xl md:text-6xl lg:text-7xl font-bold mb-6 leading-tight"
+            style={{
+              fontFamily: 'Bahnschrift, sans-serif',
+              textShadow: `0 2px 10px rgba(0, 0, 0, 0.5)`,
+              color: colors.gold
+            }}
+            whileHover={{
+              textShadow: `0 2px 20px ${colors.gold}80`,
+              transition: { duration: 0.3 }
+            }}
           >
-            <h1 className="text-4xl md:text-5xl font-bold mb-6">Nos Chambres d'Exception</h1>
-            <p className="text-xl max-w-2xl mx-auto">
-              Découvrez nos hébergements haut de gamme au cœur du Bénin
-            </p>
+            Nos Chambres d'Exception
+          </motion.h1>
+          
+        
+          <motion.p 
+            className="text-xl md:text-2xl lg:text-3xl max-w-3xl mx-auto mb-8"
+            style={{
+              fontFamily: 'Bahnschrift, sans-serif',
+              color: 'white',
+              textShadow: '0 1px 3px rgba(0, 0, 0, 0.8)'
+            }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.6, duration: 1 }}
+            whileHover={{
+              scale: 1.02,
+              color: colors.orange
+            }}
+          >
+            Découvrez nos hébergements haut de gamme au cœur du Bénin
+          </motion.p>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.9, duration: 0.8 }}
+          >
+            <motion.button
+              className="px-8 py-3 md:px-10 md:py-4 rounded-full font-medium text-lg shadow-xl"
+              style={{
+                fontFamily: 'Bahnschrift, sans-serif',
+                background: `linear-gradient(45deg, ${colors.orange}, ${colors.maroon})`,
+                color: 'white'
+              }}
+              whileHover={{
+                scale: 1.05,
+                boxShadow: `0 5px 25px ${colors.orange}80`
+              }}
+              whileTap={{
+                scale: 0.98
+              }}
+            >
+              Explorer nos chambres
+            </motion.button>
           </motion.div>
-        </div>
-      </section>
+        </motion.div>
+      </div>
 
-      {/* Rooms Section */}
-      <section className="py-16 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {currentRooms.map((room) => (
-              <motion.div
-                key={room.id}
-                initial={{ opacity: 0, y: 50 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6 }}
-                whileHover={{ y: -10 }}
+    </section>
+
+    <motion.section 
+      initial={{ opacity: 0, y: 40 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: "-100px" }}
+      transition={{ 
+        duration: 0.8,
+        ease: [0.25, 0.1, 0.25, 1]
+      }}
+      className="py-16 relative"
+      style={{ backgroundColor: colors.lightTeal }}
+    >
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <motion.div
+          whileHover={{ 
+            y: -5,
+            transition: { type: "spring", stiffness: 300 }
+          }}
+          whileTap={{ scale: 0.99 }}
+        >
+          <Card className="-mt-32 relative z-10 p-6 md:p-8 border-0 shadow-xl rounded-2xl overflow-hidden"
+            style={{ 
+              backgroundColor: 'rgba(255, 255, 255, 0.95)',
+              backdropFilter: 'blur(10px)',
+              border: `2px solid ${colors.gold}`
+            }}
+          >
+            <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
+              {/* Check-in */}
+              <motion.div 
+                className="space-y-2 md:col-span-1"
+                initial={{ opacity: 0, x: -20 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.4, delay: 0.1 }}
+                viewport={{ once: true }}
               >
-                <Card className="overflow-hidden shadow-lg border border-teal-100">
-                  {/* Carousel */}
-                  <div className="relative h-48 overflow-hidden">
-                    <div className="flex h-full transition-transform duration-300 ease-out"
-                      style={{ transform: `translateX(-${currentImageIndices[room.id] * 100}%)` }}>
-                      {room.images.map((img, idx) => (
-                        <img
-                          key={idx}
-                          src={img}
-                          alt={room.title}
-                          className="w-full h-full object-cover flex-shrink-0"
-                        />
-                      ))}
-                    </div>
-                    <button 
-                      className="absolute left-2 top-1/2 -translate-y-1/2 bg-white/30 p-1 rounded-full"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        prevImage(room.id);
-                      }}
-                    >
-                      <ChevronLeft className="h-5 w-5 text-white" />
-                    </button>
-                    <button 
-                      className="absolute right-2 top-1/2 -translate-y-1/2 bg-white/30 p-1 rounded-full"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        nextImage(room.id);
-                      }}
-                    >
-                      <ChevronRight className="h-5 w-5 text-white" />
-                    </button>
-                    <div className="absolute bottom-2 left-0 right-0 flex justify-center gap-1">
-                      {room.images.map((_, idx) => (
-                        <div
-                          key={idx}
-                          className={`w-2 h-2 rounded-full transition-all ${
-                            currentImageIndices[room.id] === idx ? 'bg-white w-4' : 'bg-white/50'
-                          }`}
-                        />
-                      ))}
-                    </div>
-                  </div>
-
-                  <div className="p-6">
-                    <div className="flex justify-between items-start mb-2">
-                      <h3 className="text-xl font-bold text-teal-800">{room.title}</h3>
-                      <div className="flex items-center">
-                        {[...Array(room.rating)].map((_, i) => (
-                          <Star key={i} className="h-4 w-4 fill-amber-400 text-amber-400" />
-                        ))}
-                      </div>
-                    </div>
-
-                    <div className="flex items-center gap-4 text-sm text-amber-800 mb-3">
-                      <div className="flex items-center">
-                        <User className="h-4 w-4 mr-1" />
-                        <span>{room.adults} adultes</span>
-                      </div>
-                      <div className="flex items-center">
-                        <MapPin className="h-4 w-4 mr-1" />
-                        <span>{room.size}</span>
-                      </div>
-                    </div>
-
-                    <p className="text-gray-600 text-sm mb-4">{room.description}</p>
-
-                    <div className="flex items-center justify-between">
-                      <p className="text-lg font-bold text-amber-600">
-                        {formatPrice(room.price)}
-                        <span className="text-xs text-gray-500 ml-1">/nuit</span>
-                      </p>
-                      <div className="flex gap-2">
-                        <button className="p-2 text-amber-600 hover:text-amber-800">
-                          <Heart className="h-5 w-5" />
-                        </button>
-                        <Button 
-                          className="bg-teal-700 hover:bg-teal-800 text-sm px-4"
-                          onClick={() => {
-                            setSelectedRoom(room);
-                            setIsBookingOpen(true);
-                          }}
-                        >
-                          Réserver
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-                </Card>
+                <Label className="text-sm font-medium flex items-center"
+                  style={{ 
+                    color: colors.darkTeal,
+                    fontFamily: 'Bahnschrift, sans-serif'
+                  }}
+                >
+                  <CalendarIcon className="h-4 w-4 mr-2" style={{ color: colors.orange }} />
+                  Arrivée
+                </Label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <motion.div whileHover={{ scale: 1.02 }}>
+                      <Button
+                        variant="outline"
+                        className={cn(
+                          "w-full justify-start text-left font-normal hover:bg-gray-50",
+                          !checkIn && "text-muted-foreground"
+                        )}
+                        style={{ 
+                          borderColor: colors.teal,
+                          fontFamily: 'Bahnschrift, sans-serif'
+                        }}
+                      >
+                        <CalendarIcon className="mr-2 h-4 w-4" style={{ color: colors.teal }} />
+                        {checkIn ? format(checkIn, "PPP", { locale: fr }) : <span>Sélectionner</span>}
+                      </Button>
+                    </motion.div>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start"
+                    style={{ 
+                      borderColor: colors.teal,
+                      fontFamily: 'Bahnschrift, sans-serif'
+                    }}
+                  >
+                  <Calendar
+  mode="single"
+  selected={checkIn}
+  onSelect={handleDateSelect}
+  initialFocus
+  className="rounded-md border"
+  style={{ borderColor: colors.teal }}
+  locale={fr}
+/>
+                  </PopoverContent>
+                </Popover>
               </motion.div>
-            ))}
-          </div>
 
-          {/* Pagination */}
-          <div className="flex justify-center mt-8 gap-2">
-            {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-              <button
-                key={page}
-                className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                  currentPage === page 
-                    ? 'bg-teal-700 text-white' 
-                    : 'bg-amber-50 text-amber-800 hover:bg-amber-100'
-                }`}
-                onClick={() => setCurrentPage(page)}
+              {/* Check-out */}
+              <motion.div 
+                className="space-y-2 md:col-span-1"
+                initial={{ opacity: 0, x: -20 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.4, delay: 0.2 }}
+                viewport={{ once: true }}
               >
-                {page}
-              </button>
+                <Label className="text-sm font-medium flex items-center"
+                  style={{ 
+                    color: colors.darkTeal,
+                    fontFamily: 'Bahnschrift, sans-serif'
+                  }}
+                >
+                  <CalendarIcon className="h-4 w-4 mr-2" style={{ color: colors.orange }} />
+                  Départ
+                </Label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <motion.div whileHover={{ scale: 1.02 }}>
+                      <Button
+                        variant="outline"
+                        className={cn(
+                          "w-full justify-start text-left font-normal hover:bg-gray-50",
+                          !checkOut && "text-muted-foreground"
+                        )}
+                        style={{ 
+                          borderColor: colors.teal,
+                          fontFamily: 'Bahnschrift, sans-serif'
+                        }}
+                      >
+                        <CalendarIcon className="mr-2 h-4 w-4" style={{ color: colors.teal }} />
+                        {checkOut ? format(checkOut, "PPP", { locale: fr }) : <span>Sélectionner</span>}
+                      </Button>
+                    </motion.div>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start"
+                    style={{ 
+                      borderColor: colors.teal,
+                      fontFamily: 'Bahnschrift, sans-serif'
+                    }}
+                  >
+                 <Calendar
+  mode="single"
+  selected={checkOut}
+  onSelect={handleDateSelect}
+  initialFocus
+  className="rounded-md border"
+  style={{ borderColor: colors.teal }}
+  locale={fr}
+/>
+                  </PopoverContent>
+                </Popover>
+              </motion.div>
+
+              {/* Adultes */}
+              <motion.div 
+                className="space-y-2"
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4, delay: 0.3 }}
+                viewport={{ once: true }}
+              >
+                <Label className="text-sm font-medium"
+                  style={{ 
+                    color: colors.darkTeal,
+                    fontFamily: 'Bahnschrift, sans-serif'
+                  }}
+                >
+                  Adultes
+                </Label>
+                <Select
+                  value={adults.toString()}
+                  onValueChange={(value) => setAdults(parseInt(value))}
+                >
+                  <SelectTrigger className="w-full hover:bg-gray-50"
+                    style={{ 
+                      borderColor: colors.teal,
+                      fontFamily: 'Bahnschrift, sans-serif'
+                    }}
+                  >
+                    <SelectValue placeholder="Adultes" />
+                  </SelectTrigger>
+                  <SelectContent style={{ 
+                    borderColor: colors.teal,
+                    fontFamily: 'Bahnschrift, sans-serif'
+                  }}>
+                    {[1, 2, 3, 4, 5, 6].map((num) => (
+                      <SelectItem 
+                        key={`adult-${num}`} 
+                        value={num.toString()}
+                        style={{ color: colors.darkTeal }}
+                      >
+                        {num} {num === 1 ? "adulte" : "adultes"}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </motion.div>
+
+              {/* Enfants */}
+              <motion.div 
+                className="space-y-2"
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4, delay: 0.4 }}
+                viewport={{ once: true }}
+              >
+                <Label className="text-sm font-medium"
+                  style={{ 
+                    color: colors.darkTeal,
+                    fontFamily: 'Bahnschrift, sans-serif'
+                  }}
+                >
+                  Enfants
+                </Label>
+                <Select
+                  value={children.toString()}
+                  onValueChange={(value) => setChildren(parseInt(value))}
+                >
+                  <SelectTrigger className="w-full hover:bg-gray-50"
+                    style={{ 
+                      borderColor: colors.teal,
+                      fontFamily: 'Bahnschrift, sans-serif'
+                    }}
+                  >
+                    <SelectValue placeholder="Enfants" />
+                  </SelectTrigger>
+                  <SelectContent style={{ 
+                    borderColor: colors.teal,
+                    fontFamily: 'Bahnschrift, sans-serif'
+                  }}>
+                    {[0, 1, 2, 3, 4].map((num) => (
+                      <SelectItem 
+                        key={`child-${num}`} 
+                        value={num.toString()}
+                        style={{ color: colors.darkTeal }}
+                      >
+                        {num} {num === 1 ? "enfant" : "enfants"}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </motion.div>
+
+              {/* Budget */}
+              <motion.div 
+                className="space-y-2"
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4, delay: 0.5 }}
+                viewport={{ once: true }}
+              >
+                <Label className="text-sm font-medium"
+                  style={{ 
+                    color: colors.darkTeal,
+                    fontFamily: 'Bahnschrift, sans-serif'
+                  }}
+                >
+                  Budget
+                </Label>
+                <Select
+                  value={budget}
+                  onValueChange={setBudget}
+                >
+                  <SelectTrigger className="w-full hover:bg-gray-50"
+                    style={{ 
+                      borderColor: colors.teal,
+                      fontFamily: 'Bahnschrift, sans-serif'
+                    }}
+                  >
+                    <SelectValue placeholder="Budget" />
+                  </SelectTrigger>
+                  <SelectContent style={{ 
+                    borderColor: colors.teal,
+                    fontFamily: 'Bahnschrift, sans-serif'
+                  }}>
+                    <SelectItem value="any" style={{ color: colors.darkTeal }}>Tous budgets</SelectItem>
+                    <SelectItem value="economy" style={{ color: colors.darkTeal }}>Économique (-50.000 FCFA)</SelectItem>
+                    <SelectItem value="standard" style={{ color: colors.darkTeal }}>Standard (50-100k FCFA)</SelectItem>
+                    <SelectItem value="premium" style={{ color: colors.darkTeal }}>Premium (100-200k FCFA)</SelectItem>
+                    <SelectItem value="luxury" style={{ color: colors.darkTeal }}>Luxe (200k+ FCFA)</SelectItem>
+                  </SelectContent>
+                </Select>
+              </motion.div>
+
+              {/* Search Button */}
+              <motion.div 
+                className="flex items-end"
+                initial={{ opacity: 0, scale: 0.9 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                transition={{ 
+                  type: "spring",
+                  stiffness: 300,
+                  delay: 0.6
+                }}
+                viewport={{ once: true }}
+              >
+                <motion.div
+                  whileHover={{ 
+                    scale: 1.03,
+                    boxShadow: `0 10px 25px -5px ${colors.orange}4D`
+                  }}
+                  whileTap={{ scale: 0.97 }}
+                  className="w-full"
+                >
+                  <Button 
+                    className="w-full h-12 font-medium shadow-lg hover:shadow-xl transition-all duration-300 group"
+                    style={{
+                      background: `linear-gradient(to right, ${colors.orange}, ${colors.maroon})`,
+                      color: colors.white,
+                      fontFamily: 'Bahnschrift, sans-serif'
+                    }}
+                  >
+                    <motion.span
+                      initial={{ x: 0 }}
+                      whileHover={{ x: 2 }}
+                      className="inline-flex items-center"
+                    >
+                      <SearchIcon className="mr-2 h-4 w-4 transition-transform group-hover:scale-110" />
+                      <span>Rechercher</span>
+                    </motion.span>
+                  </Button>
+                </motion.div>
+              </motion.div>
+            </div>
+          </Card>
+        </motion.div>
+      </div>
+    </motion.section>
+
+
+    {/* Rooms Section  */}
+<section className="py-12 bg-white">
+ <div className="max-w-8xl mx-auto p-4 sm:p-6 lg:p-8 m-4 sm:m-6 lg:m-8">
+  <div className="flex flex-col lg:flex-row gap-8">
+      
+    
+    <div className="w-full lg:w-1/4">
+
+  <button className="lg:hidden w-full flex items-center justify-between py-3 px-4 bg-gradient-to-r from-teal-600 to-teal-500 text-white rounded-lg mb-4 shadow-md hover:from-teal-700 hover:to-teal-600 hover:shadow-lg transition-all">
+    <span className="font-medium">Filtrer les chambres</span>
+    <Filter className="h-5 w-5" />
+  </button>
+  
+
+  <aside className="hidden lg:flex lg:flex-col border-r pr-6 h-[calc(100vh-120px)] overflow-y-auto sticky top-24">
+
+    <div className="bg-white pt-2 pb-4 sticky top-0 z-10">
+      <h2 className="text-2xl font-bold text-teal-800 mb-2 flex items-center gap-2">
+        <Filter className="h-6 w-6" />
+        Filtres
+      </h2>
+      <p className="text-sm text-gray-500">Affinez votre recherche</p>
+    </div>
+
+    {/* Contenu scrollable */}
+    <div className="space-y-6 pb-6">
+      {/* Budget */}
+      <div className="space-y-5 bg-white p-4 rounded-xl border border-gray-100 shadow-sm">
+        <h3 className="font-semibold text-gray-800 flex items-center gap-2">
+          <DollarSign className="h-5 w-5 text-teal-600" />
+          Budget (FCFA)
+        </h3>
+        <div className="px-2">
+          <input 
+            type="range" 
+            min="0" 
+            max="100000" 
+            step="5000"
+            value={price}
+            onChange={(e) => setPrice(+e.target.value)}
+            className="w-full h-2 bg-gray-200 rounded-full appearance-none cursor-pointer accent-teal-600"
+          />
+        </div>
+        <div className="flex justify-between text-sm">
+          <span>0 FCFA</span>
+          <span>100,000 FCFA</span>
+        </div>
+      </div>
+
+      {/* Capacité */}
+      <div className="space-y-5 bg-white p-4 rounded-xl border border-gray-100 shadow-sm">
+        <h3 className="font-semibold text-gray-800 flex items-center gap-2">
+          <Users className="h-5 w-5 text-teal-600" />
+          Capacité
+        </h3>
+        <div className="grid grid-cols-3 gap-2">
+          {[1, 2, 3, 4, 5, "6+"].map((num) => (
+            <label key={num} className="relative">
+              <input 
+                type="checkbox" 
+                className="absolute opacity-0 h-0 w-0 peer"
+              />
+              <div className="p-2 border-2 border-gray-100 rounded-lg flex flex-col items-center justify-center transition-all 
+                            peer-checked:border-teal-400 peer-checked:bg-teal-50 peer-checked:shadow-sm
+                            hover:border-teal-300 hover:shadow cursor-pointer">
+                <div className="relative mb-1">
+                  <User className="h-5 w-5 text-teal-600" />
+                  {typeof num === 'number' && num > 1 && (
+                    <User className="h-5 w-5 text-teal-400 absolute -right-1 -bottom-1" />
+                  )}
+                </div>
+                <span className="text-xs font-medium text-gray-800">
+                  {typeof num === 'number' ? num : "6+"} {typeof num === 'number' && num === 1 ? 'pers.' : 'pers.'}
+                </span>
+              </div>
+            </label>
+          ))}
+        </div>
+      </div>
+
+      {/* Nouvelle section Restaurant */}
+      <div className="space-y-5 bg-white p-4 rounded-xl border border-gray-100 shadow-sm">
+        <h3 className="font-semibold text-gray-800 flex items-center gap-2">
+          <Utensils className="h-5 w-5 text-teal-600" />
+          Options restauration
+        </h3>
+        
+        <div className="space-y-4">
+          {/* Petit-déjeuner */}
+          <div className="space-y-2">
+            <label className="flex items-center justify-between cursor-pointer">
+              <div className="flex items-center">
+                <Coffee className="h-5 w-5 mr-3 text-amber-600" />
+                <span className="text-gray-800">Petit-déjeuner inclus</span>
+              </div>
+              <div className="relative">
+                <input type="checkbox" className="sr-only peer" />
+                <div className="w-11 h-6 bg-gray-200 rounded-full peer peer-checked:bg-teal-600 transition-colors">
+                  <div className="absolute top-0.5 left-0.5 bg-white w-5 h-5 rounded-full transition-transform peer-checked:translate-x-5"></div>
+                </div>
+              </div>
+            </label>
+            <p className="text-xs text-gray-500 pl-8">Buffet petit-déjeuner servi de 6h30 à 10h30</p>
+          </div>
+          
+          {/* Options de repas */}
+          <div className="space-y-3">
+            <h4 className="text-sm font-medium text-gray-700 pl-1">Services proposés :</h4>
+            {[
+              { id: 'room-service', label: 'Room service 24h/24', icon: <Bed className="h-4 w-4" /> },
+              { id: 'restaurant', label: 'Restaurant sur place', icon: <Utensils className="h-4 w-4" /> },
+             { id: 'bar', label: 'Bar lounge', icon: <Wine className="h-4 w-4" /> },
+              { id: 'mini-bar', label: 'Mini-bar en chambre', icon: <ShoppingBag className="h-4 w-4" /> },
+            ].map((item) => (
+              <label key={item.id} className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 cursor-pointer">
+                <div className="flex items-center justify-center w-7 h-7 bg-teal-50 rounded-lg text-teal-600">
+                  {item.icon}
+                </div>
+                <span className="text-sm flex-1">{item.label}</span>
+                <input 
+                  type="checkbox" 
+                  id={item.id}
+                  className="h-4 w-4 text-teal-600 rounded border-gray-300 focus:ring-teal-500"
+                />
+              </label>
             ))}
           </div>
         </div>
-      </section>
+      </div>
 
+      {/* Créneaux horaires */}
+      <div className="space-y-5 bg-white p-4 rounded-xl border border-gray-100 shadow-sm">
+        <h3 className="font-semibold text-gray-800 flex items-center gap-2">
+          <Clock className="h-5 w-5 text-teal-600" />
+          Heure d'arrivée
+        </h3>
+        
+        <div className="space-y-4">
+          <div className="grid grid-cols-2 gap-3">
+            {[
+              { label: "8h-10h", value: "morning_early" },
+              { label: "10h-12h", value: "morning_late" },
+              { label: "12h-14h", value: "noon_early" },
+              { label: "14h-16h", value: "noon_late" },
+              { label: "16h-18h", value: "evening_early" },
+              { label: "18h-20h", value: "evening_late" },
+            ].map((slot) => (
+              <label key={slot.value} className="relative">
+                <input
+                  type="radio"
+                  name="time-slot"
+                  value={slot.value}
+                  className="absolute opacity-0 h-0 w-0 peer"
+                />
+                <div className="p-2 border-2 border-gray-100 rounded-lg text-center text-sm font-medium
+                              peer-checked:border-teal-500 peer-checked:bg-teal-50 peer-checked:text-teal-700
+                              hover:border-teal-300 cursor-pointer transition-all">
+                  {slot.label}
+                </div>
+              </label>
+            ))}
+          </div>
+
+          <div className="pt-2">
+            <label className="flex items-start gap-3 cursor-pointer">
+              <div className="flex items-center justify-center mt-0.5">
+                <input 
+                  type="checkbox" 
+                  className="h-4 w-4 text-teal-600 rounded border-gray-300 focus:ring-teal-500"
+                />
+              </div>
+              <div>
+                <p className="text-sm font-medium text-gray-800">Horaire flexible</p>
+                <p className="text-xs text-gray-500">Nous adapterons selon vos besoins</p>
+              </div>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      {/* Équipements */}
+      <div className="space-y-5 bg-white p-4 rounded-xl border border-gray-100 shadow-sm">
+        <h3 className="font-semibold text-gray-800 flex items-center gap-2">
+          <Settings className="h-5 w-5 text-teal-600" />
+          Équipements
+        </h3>
+        <div className="space-y-3">
+          {[
+            { id: 'wifi', label: 'WiFi haut débit', icon: <Wifi className="h-5 w-5" /> },
+            { id: 'ac', label: 'Climatisation', icon: <Snowflake className="h-5 w-5" /> },
+            { id: 'tv', label: 'TV écran plat', icon: <Tv className="h-5 w-5" /> },
+            { id: 'safe', label: 'Coffre-fort', icon: <Shield className="h-5 w-5" /> },
+          ].map((item) => (
+            <label key={item.id} className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 cursor-pointer">
+              <div className="flex items-center justify-center w-7 h-7 bg-teal-50 rounded-lg text-teal-600">
+                {item.icon}
+              </div>
+              <span className="text-sm flex-1">{item.label}</span>
+              <input 
+                type="checkbox" 
+                id={item.id}
+                className="h-4 w-4 text-teal-600 rounded border-gray-300 focus:ring-teal-500"
+              />
+            </label>
+          ))}
+        </div>
+      </div>
+    </div>
+
+    {/* Boutons fixes en bas */}
+    <div className="sticky bottom-0 bg-white pt-4 pb-2 border-t border-gray-100 mt-auto">
+      <button className="w-full bg-gradient-to-r from-teal-600 to-teal-500 hover:from-teal-700 hover:to-teal-600 text-white py-3 rounded-lg font-medium transition-all duration-200 shadow-md hover:shadow-lg flex items-center justify-center gap-2">
+        <CheckCircle className="h-5 w-5" />
+        Appliquer les filtres
+      </button>
+      <button className="w-full text-teal-600 hover:text-teal-800 py-2 text-sm font-medium transition duration-200 flex items-center justify-center gap-2 mt-2">
+        <RefreshCw className="h-4 w-4" />
+        Réinitialiser
+      </button>
+    </div>
+  </aside>
+</div>
+      {/* Main Content - Room Cards */}
+      <div className="lg:w-3/4">
+        {/* Results Header - Version améliorée */}
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
+          <div>
+            <h2 className="text-2xl md:text-3xl font-bold text-gray-800">
+              {currentRooms.length} {currentRooms.length > 1 ? 'chambres disponibles' : 'chambre disponible'}
+            </h2>
+            <p className="text-teal-700 text-sm mt-1">
+              <span className="font-medium">Dernière chambre disponible !</span> - Réservez vite avant qu'elle ne soit prise
+            </p>
+          </div>
+          <div className="flex items-center bg-white border border-gray-200 rounded-lg px-3 py-2">
+            <label htmlFor="sort" className="text-sm text-gray-600 mr-2 whitespace-nowrap">Trier par :</label>
+ <select 
+          id="sort"
+          className="appearance-none bg-transparent pr-8 text-gray-700 focus:outline-none focus:ring-0 cursor-pointer"
+        >
+          <option value="popularity">Plus populaires</option>
+          <option value="price-asc">Prix croissant</option>
+          <option value="price-desc">Prix décroissant</option>
+          <option value="rating">Meilleures notes</option>
+        </select>
+          </div>
+        </div>
+
+        {/* Room Cards Grid - Version améliorée */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {currentRooms.map((room) => (
+            <motion.div
+              key={room.id}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4 }}
+              whileHover={{ y: -5 }}
+              className="relative"
+            >
+              {/* Badge Promo */}
+              {room.discount && (
+                <div className="absolute top-4 left-4 bg-amber-500 text-white text-xs font-bold px-3 py-1 rounded-full z-10 shadow-md">
+                  -{Math.round((room.discount / (room.price + room.discount)) * 100)}% OFF
+                </div>
+              )}
+              
+              <Card className="overflow-hidden shadow-md border border-gray-100 hover:shadow-lg transition-all duration-300 h-full flex flex-col">
+                {/* Carousel amélioré */}
+                <div className="relative h-56 overflow-hidden group">
+                  <div className="flex h-full transition-transform duration-300 ease-out"
+                    style={{ transform: `translateX(-${currentImageIndices[room.id] * 100}%)` }}>
+                    {room.images.map((img, idx) => (
+                      <img
+                        key={idx}
+                        src={img}
+                        alt={room.title}
+                        className="w-full h-full object-cover flex-shrink-0"
+                        loading="lazy"
+                      />
+                    ))}
+                  </div>
+                  <button 
+                    className="absolute left-2 top-1/2 -translate-y-1/2 bg-white/90 p-2 rounded-full shadow hover:bg-white transition-opacity opacity-0 group-hover:opacity-100"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      prevImage(room.id);
+                    }}
+                  >
+                    <ChevronLeft className="h-5 w-5 text-teal-700" />
+                  </button>
+                  <button 
+                    className="absolute right-2 top-1/2 -translate-y-1/2 bg-white/90 p-2 rounded-full shadow hover:bg-white transition-opacity opacity-0 group-hover:opacity-100"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      nextImage(room.id);
+                    }}
+                  >
+                    <ChevronRight className="h-5 w-5 text-teal-700" />
+                  </button>
+                  <div className="absolute bottom-3 left-0 right-0 flex justify-center gap-1.5">
+                    {room.images.map((_, idx) => (
+                      <button
+                        key={idx}
+                        className={`w-2 h-2 rounded-full transition-all ${
+                          currentImageIndices[room.id] === idx ? 'bg-teal-700 w-3' : 'bg-white/80'
+                        }`}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setCurrentImageIndex(room.id, idx);
+                        }}
+                      />
+                    ))}
+                  </div>
+                </div>
+
+                <div className="p-5 flex-grow flex flex-col">
+                  <div className="flex justify-between items-start mb-3">
+                    <h3 className="text-xl font-bold text-gray-800">{room.title}</h3>
+                    <div className="flex items-center bg-teal-100 text-teal-800 px-2 py-1 rounded text-xs font-semibold">
+                      <Star className="h-3 w-3 fill-current mr-1" />
+                      {room.rating.toFixed(1)}
+                    </div>
+                  </div>
+
+                  <div className="flex flex-wrap gap-2 text-xs text-gray-600 mb-4">
+                    <div className="flex items-center bg-gray-50 px-2 py-1 rounded">
+                      <User className="h-3.5 w-3.5 mr-1 text-teal-600" />
+                      <span>{room.adults} {room.adults > 1 ? 'adultes' : 'adulte'}</span>
+                    </div>
+                    <div className="flex items-center bg-gray-50 px-2 py-1 rounded">
+                      <Maximize className="h-3.5 w-3.5 mr-1 text-teal-600" />
+                      <span>{room.size} m²</span>
+                    </div>
+                    <div className="flex items-center bg-gray-50 px-2 py-1 rounded">
+                      <Bed className="h-3.5 w-3.5 mr-1 text-teal-600" />
+                      <span>{room.bedType}</span>
+                    </div>
+                  </div>
+
+                  <p className="text-gray-600 text-sm mb-5 line-clamp-2 flex-grow">{room.description}</p>
+
+                  <div className="mt-auto">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-lg font-bold text-amber-600">
+                          {formatPriceFCFA(room.price)}
+                          <span className="text-xs text-gray-500 ml-1">/nuit</span>
+                        </p>
+                        {room.discount && (
+                          <p className="text-xs text-gray-400 line-through">
+                            {formatPriceFCFA(room.price + room.discount)}
+                          </p>
+                        )}
+                      </div>
+                      <div className="flex gap-2">
+                        <button 
+                          className="p-2 text-gray-400 hover:text-amber-600 transition-colors relative"
+                          onClick={() => toggleFavorite(room.id)}
+                        >
+                          <Heart 
+                            className="h-5 w-5" 
+                            fill={favorites.includes(room.id) ? "#d97706" : "none"} 
+                          />
+                          {favorites.includes(room.id) && (
+                            <span className="absolute -top-1 -right-1 bg-amber-600 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">
+                              ✓
+                            </span>
+                          )}
+                        </button>
+                       <Button 
+  className="bg-gradient-to-r from-teal-600 to-teal-500 hover:from-teal-700 hover:to-teal-600 text-sm sm:text-base px-4 sm:px-6 py-2 sm:py-3 shadow-md"
+  onClick={() => {
+    setSelectedRoom(room);
+    setIsBookingOpen(true);
+  }}
+>
+  Réserver
+</Button>
+                      </div>
+                    </div>
+                    <div className="mt-3 text-xs text-gray-500 flex items-center">
+                      <Zap className="h-3 w-3 mr-1 text-amber-500" />
+                      <span>Seulement {room.remaining} {room.remaining > 1 ? 'chambres' : 'chambre'} disponible</span>
+                    </div>
+                  </div>
+                </div>
+              </Card>
+            </motion.div>
+          ))}
+        </div>
+
+        {/* Pagination  */}
+        <div className="flex justify-center mt-12">
+          <nav className="flex items-center gap-1">
+            <button 
+              className="w-10 h-10 rounded-full flex items-center justify-center border border-gray-200 text-gray-600 hover:bg-teal-50 hover:text-teal-700 disabled:opacity-30"
+              disabled={currentPage === 1}
+              onClick={() => setCurrentPage(currentPage - 1)}
+            >
+              <ChevronLeft className="h-5 w-5" />
+            </button>
+            
+            {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+              let page;
+              if (totalPages <= 5) {
+                page = i + 1;
+              } else if (currentPage <= 3) {
+                page = i + 1;
+              } else if (currentPage >= totalPages - 2) {
+                page = totalPages - 4 + i;
+              } else {
+                page = currentPage - 2 + i;
+              }
+              
+              return (
+                <button
+                  key={page}
+                  className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                    currentPage === page 
+                      ? 'bg-teal-700 text-white shadow-md' 
+                      : 'border border-gray-200 text-gray-600 hover:bg-teal-50 hover:text-teal-700'
+                  }`}
+                  onClick={() => setCurrentPage(page)}
+                >
+                  {page}
+                </button>
+              );
+            })}
+            
+            {totalPages > 5 && currentPage < totalPages - 2 && (
+              <span className="px-2 text-gray-400">...</span>
+            )}
+            
+            {totalPages > 5 && currentPage < totalPages - 2 && (
+              <button
+                className="w-10 h-10 rounded-full flex items-center justify-center border border-gray-200 text-gray-600 hover:bg-teal-50 hover:text-teal-700"
+                onClick={() => setCurrentPage(totalPages)}
+              >
+                {totalPages}
+              </button>
+            )}
+            
+            <button 
+              className="w-10 h-10 rounded-full flex items-center justify-center border border-gray-200 text-gray-600 hover:bg-teal-50 hover:text-teal-700 disabled:opacity-30"
+              disabled={currentPage === totalPages}
+              onClick={() => setCurrentPage(currentPage + 1)}
+            >
+              <ChevronRight className="h-5 w-5" />
+            </button>
+          </nav>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
      {/* Booking Dialog */}
 <Dialog open={isBookingOpen} onOpenChange={setIsBookingOpen}>
   <DialogContent 

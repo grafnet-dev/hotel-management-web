@@ -13,16 +13,12 @@ import { Space as Spa, Utensils, Dumbbell, Hotel, Star, ArrowRight, CalendarDays
   Gamepad2,
   Plane,
   Wifi,
-  Lock } from 'lucide-react';
-  import Image from 'next/image';
-
+  Lock,ChevronLeft,ChevronRight,MapPin ,User,Heart } from 'lucide-react';
 import { Calendar as CalendarIcon, Search as SearchIcon } from "lucide-react";
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Autoplay } from 'swiper/modules';
 import 'swiper/css';
 import 'swiper/css/pagination';
-
-import { Check } from "lucide-react";
 import { format } from "date-fns";
 import { Popover, PopoverContent, PopoverTrigger } from "../../components/ui/popover";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../components/ui/select";
@@ -38,15 +34,57 @@ const colors = {
   cream: '#F5F5DC',      // Crème
 };
 
+interface Room {
+  id: number;
+  title: string;
+  description: string;
+  adults: number;
+  children?: number; 
+  size: string;
+  price: number;
+  hourlyPrice?: number;
+  halfDayPrice?: number;
+  minStay?: number; 
+  images: string[];
+  amenities: string[];
+  services?: string[]; 
+  rating: number;
+  beds?: number;
+  bedType?: string; 
+  view?: string; 
+  floor?: string; 
+  smoking?: boolean; 
+}
+
+
 export default function Home() {
   const [checkIn, setCheckIn] = useState<Date>();
   const [checkOut, setCheckOut] = useState<Date>();
   const [adults, setAdults] = useState(2);
   const [children, setChildren] = useState(0);
   const [budget, setBudget] = useState("any");
+    const [selectedRoom, setSelectedRoom] = useState<Room | null>(null);
+    const [isBookingOpen, setIsBookingOpen] = useState(false);
   const swiperRef = useRef<SwiperCore>(null);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  // Remove this line
+const [currentImageIndices, setCurrentImageIndices] = useState<Record<number, number>>({});
 
+
+
+  const formatPrice = (price: number) => {
+    return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'XOF' }).format(price);
+  };
+  if (isBookingOpen) {
+    console.log('Booking is open');
+  }
+
+  if (selectedRoom) {
+    console.log(selectedRoom.title);
+  }
+
+
+  
   useEffect(() => {
     const interval = setInterval(() => {
       if (swiperRef.current) {
@@ -56,6 +94,125 @@ export default function Home() {
 
     return () => clearInterval(interval);
   }, []);
+
+  const rooms: Room[] = [
+    {
+      id: 1,
+      title: "Suite Royale",
+      description: "Suite spacieuse avec vue imprenable sur l'océan, décoration raffinée et service haut de gamme. Parfait pour des séjours romantiques ou des occasions spéciales.",
+      adults: 2,
+      children: 1, 
+      size: "45m²",
+      beds: 1, 
+      bedType: "King Size", 
+      price: 180000,
+      hourlyPrice: 30000,
+      halfDayPrice: 90000,
+      minStay: 1,
+      images: [
+        "https://images.pexels.com/photos/271624/pexels-photo-271624.jpeg",
+        "https://images.pexels.com/photos/164595/pexels-photo-164595.jpeg",
+        "https://images.pexels.com/photos/1457842/pexels-photo-1457842.jpeg",
+        "https://images.pexels.com/photos/1571460/pexels-photo-1571460.jpeg" 
+      ],
+      amenities: [
+        "Wi-Fi haut débit", 
+        "Petit-déjeuner buffet inclus",
+        "TV écran plat 55\"",
+        "Minibar bien fourni",
+        "Coffre-fort électronique",
+        "Service en chambre 24h/24",
+        "Peignoir et pantoufles",
+        "Produits de bain haut de gamme"
+      ],
+      services: [ 
+        "Service de conciergerie",
+        "Massage en chambre",
+        "Service de blanchisserie"
+      ],
+      rating: 5,
+      view: "Vue mer", 
+      floor: "Dernier étage", 
+      smoking: false 
+    },
+    {
+      id: 2,
+      title: "Chambre Deluxe",
+      description: "Confort exceptionnel avec balcon privé offrant une vue sur les jardins de l'hôtel. Décoration contemporaine et équipements haut de gamme.",
+      adults: 2,
+      children: 2, 
+      size: "35m²",
+      beds: 2, 
+      bedType: "Queen Size", 
+      price: 120000,
+      hourlyPrice: 20000,
+      halfDayPrice: 60000,
+      minStay: 1, 
+      images: [
+        "https://images.pexels.com/photos/262048/pexels-photo-262048.jpeg",
+        "https://images.pexels.com/photos/271619/pexels-photo-271619.jpeg",
+        "https://images.pexels.com/photos/258154/pexels-photo-258154.jpeg",
+        "https://images.pexels.com/photos/1571463/pexels-photo-1571463.jpeg" 
+      ],
+      amenities: [
+        "Wi-Fi haut débit",
+        "Minibar personnalisable",
+        "Climatisation individuelle",
+        "TV écran plat 42\"",
+        "Machine à café Nespresso",
+        "Sèche-cheveux professionnel",
+        "Service de réveil"
+      ],
+      services: [ // Ajouté
+        "Service de nettoyage quotidien",
+        "Service de pressing express"
+      ],
+      rating: 4,
+      view: "Vue jardin", // Ajouté
+      floor: "Étages 3-5", // Ajouté
+      smoking: true // Ajouté
+    },
+    {
+      id: 3,
+      title: "Suite Présidentielle",
+      description: "Le summum du luxe avec espace salon séparé, salle à manger privée et salle de bain en marbre. Service personnalisé et accès au lounge VIP.",
+      adults: 4,
+      children: 2, // Ajouté
+      size: "80m²",
+      beds: 2, // Ajouté
+      bedType: "King Size x2", // Ajouté
+      price: 350000,
+      hourlyPrice: 50000,
+      halfDayPrice: 175000,
+      minStay: 2, // Ajouté
+      images: [
+        "https://images.pexels.com/photos/189296/pexels-photo-189296.jpeg",
+        "https://images.pexels.com/photos/164558/pexels-photo-164558.jpeg",
+        "https://images.pexels.com/photos/1571460/pexels-photo-1571460.jpeg",
+        "https://images.pexels.com/photos/271635/pexels-photo-271635.jpeg" // Ajouté
+      ],
+      amenities: [
+        "Service VIP dédié",
+        "Jacuzzi privatif",
+        "Vue panoramique à 360°",
+        "Bar personnel",
+        "Système audio haut de gamme",
+        "Bureau en acajou",
+        "Salle de bain avec télévision",
+        "Service de majordome 24/7"
+      ],
+      services: [ // Ajouté
+        "Transfert aéroport en limousine",
+        "Check-in/out privé",
+        "Service gastronomique en chambre"
+      ],
+      rating: 5,
+      view: "Vue panoramique", // Ajouté
+      floor: "Penthouse", // Ajouté
+      smoking: false // Ajouté
+    },
+
+  ];
 
   const services = [
     {
@@ -476,9 +633,10 @@ export default function Home() {
       </motion.section>
 
 
-      {/* Rooms Section - Luxury Design */}
+{/* Rooms Section - Luxury Design */}
 <section className="py-24 bg-gradient-to-b from-white to-gray-50 font-sans">
   <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    {/* Section Heading */}
     <div className="text-center mb-20">
       <span className="inline-block px-5 py-2 text-sm font-semibold tracking-wider text-teal-700 bg-teal-100 rounded-full mb-6 uppercase">
         Hébergement exclusif
@@ -491,230 +649,85 @@ export default function Home() {
       </p>
     </div>
 
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
-      {/* Chambre Vue Lac */}
-      <motion.div
-        initial={{ opacity: 0, y: 50 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true }}
-        transition={{ duration: 0.6 }}
-        whileHover={{ y: -10 }}
-        className="group relative"
-      >
-        <div className="h-full bg-white rounded-2xl shadow-xl overflow-hidden transition-all duration-300 group-hover:shadow-2xl border border-gray-100">
-          <div className="relative overflow-hidden h-72">
-            <img
-              src="https://images.pexels.com/photos/271624/pexels-photo-271624.jpeg"
-              alt="Chambre Vue Lac"
-              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-8">
-              <button className="translate-y-4 group-hover:translate-y-0 transition-transform duration-300 px-8 py-3 bg-amber-500 text-white font-medium rounded-full hover:bg-amber-600 shadow-lg">
-                Voir les détails
-              </button>
-            </div>
-          </div>
-
-          <div className="p-8">
-            <div className="flex justify-between items-start mb-3">
-              <h3 className="text-2xl font-bold text-gray-900 tracking-tight">Chambre Vue Lac</h3>
-              <div className="flex items-center space-x-2">
-                <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-teal-100 text-teal-800">
-                  35m²
-                </span>
-                <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-amber-100 text-amber-800">
-                  2 personnes
-                </span>
-              </div>
-            </div>
-
-            <div className="flex items-center mb-5">
-              <div className="flex mr-2">
-                {[...Array(5)].map((_, i) => (
-                  <Star
-                    key={i}
-                    className={`h-5 w-5 ${i < 4 ? 'text-amber-400 fill-amber-400' : 'text-gray-300 fill-gray-300'}`}
+    {/* Room Cards */}
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+    {rooms.map((room) => (
+        <motion.div
+          key={room.id}
+          initial={{ opacity: 0, y: 50 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          whileHover={{ y: -10 }}
+        >
+          <Card className="overflow-hidden shadow-lg border border-teal-100">
+            <div className="relative h-48 overflow-hidden">
+              <div
+                className="flex h-full transition-transform duration-300 ease-out"
+                style={{ transform: `translateX(-${currentImageIndices[room.id] * 100}%)` }}
+              >
+                {room.images.map((img, idx) => (
+                  <img
+                    key={idx}
+                    src={img}
+                    alt={room.title}
+                    className="w-full h-full object-cover flex-shrink-0"
                   />
                 ))}
               </div>
-              <span className="text-sm text-gray-500">(42 avis)</span>
+
             </div>
 
-            <div className="flex flex-wrap gap-3 mb-8">
-              {['Vue panoramique', 'WiFi premium', 'Climatisation', 'Petit-déjeuner'].map((feature, i) => (
-                <span key={i} className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-700">
-                  <Check className="h-3 w-3 mr-1.5 text-teal-600" />
-                  {feature}
-                </span>
-              ))}
-            </div>
+            {/* Card Content */}
+            <div className="p-6">
+              <div className="flex justify-between items-start mb-2">
+                <h3 className="text-xl font-bold text-teal-800">{room.title}</h3>
+                <div className="flex items-center">
+                  {[...Array(room.rating)].map((_, i) => (
+                    <Star key={i} className="h-4 w-4 fill-amber-400 text-amber-400" />
+                  ))}
+                </div>
+              </div>
 
-            <div className="flex items-center justify-between border-t border-gray-200 pt-6">
-              <div>
-                <p className="text-3xl font-bold text-teal-700">
-                  250€
-                  <span className="text-base font-normal text-gray-500"> /nuit</span>
+              <div className="flex items-center gap-4 text-sm text-amber-800 mb-3">
+                <div className="flex items-center">
+                  <User className="h-4 w-4 mr-1" />
+                  <span>{room.adults} adultes</span>
+                </div>
+                <div className="flex items-center">
+                  <MapPin className="h-4 w-4 mr-1" />
+                  <span>{room.size}</span>
+                </div>
+              </div>
+
+              <p className="text-gray-600 text-sm mb-4">{room.description}</p>
+
+              <div className="flex items-center justify-between">
+                <p className="text-lg font-bold text-amber-600">
+                  {formatPrice(room.price)}
+                  <span className="text-xs text-gray-500 ml-1">/nuit</span>
                 </p>
-                <p className="text-sm text-gray-500 mt-1">Taxes incluses</p>
-              </div>
-              <button className="px-6 py-3 bg-teal-600 hover:bg-teal-700 text-white font-medium rounded-lg transition-all shadow-md hover:shadow-lg">
-                Réserver
-              </button>
-            </div>
-          </div>
-        </div>
-      </motion.div>
-
-      {/* Suite Deluxe */}
-      <motion.div
-        initial={{ opacity: 0, y: 50 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true }}
-        transition={{ duration: 0.6, delay: 0.2 }}
-        whileHover={{ y: -10 }}
-        className="group relative"
-      >
-        <div className="h-full bg-white rounded-2xl shadow-xl overflow-hidden transition-all duration-300 group-hover:shadow-2xl border border-gray-100">
-          <div className="absolute top-6 right-6 bg-amber-600 text-white text-sm font-bold px-4 py-1.5 rounded-full shadow-lg z-10">
-            Plus demandée
-          </div>
-          <div className="relative overflow-hidden h-72">
-            <img
-              src="https://images.pexels.com/photos/164595/pexels-photo-164595.jpeg"
-              alt="Suite Deluxe"
-              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-8">
-              <button className="translate-y-4 group-hover:translate-y-0 transition-transform duration-300 px-8 py-3 bg-amber-500 text-white font-medium rounded-full hover:bg-amber-600 shadow-lg">
-                Voir les détails
-              </button>
-            </div>
-          </div>
-
-          <div className="p-8">
-            <div className="flex justify-between items-start mb-3">
-              <h3 className="text-2xl font-bold text-gray-900 tracking-tight">Suite Deluxe</h3>
-              <div className="flex items-center space-x-2">
-                <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-teal-100 text-teal-800">
-                  50m²
-                </span>
-                <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-amber-100 text-amber-800">
-                  4 personnes
-                </span>
+                <div className="flex gap-2">
+                  <button className="p-2 text-amber-600 hover:text-amber-800">
+                    <Heart className="h-5 w-5" />
+                  </button>
+                  <Button
+                    className="bg-teal-700 hover:bg-teal-800 text-sm px-4"
+                    onClick={() => {
+                      setSelectedRoom(room);
+                      setIsBookingOpen(true);
+                    }}
+                  >
+                    Réserver
+                  </Button>
+                </div>
               </div>
             </div>
-
-            <div className="flex items-center mb-5">
-              <div className="flex mr-2">
-                {[...Array(5)].map((_, i) => (
-                  <Star
-                    key={i}
-                    className={`h-5 w-5 ${i < 5 ? 'text-amber-400 fill-amber-400' : 'text-gray-300 fill-gray-300'}`}
-                  />
-                ))}
-              </div>
-              <span className="text-sm text-gray-500">(68 avis)</span>
-            </div>
-
-            <div className="flex flex-wrap gap-3 mb-8">
-              {['Espace lounge', 'Service VIP', 'Salle de bain marbre', 'Mini-bar'].map((feature, i) => (
-                <span key={i} className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-700">
-                  <Check className="h-3 w-3 mr-1.5 text-teal-600" />
-                  {feature}
-                </span>
-              ))}
-            </div>
-
-            <div className="flex items-center justify-between border-t border-gray-200 pt-6">
-              <div>
-                <p className="text-3xl font-bold text-teal-700">
-                  400€
-                  <span className="text-base font-normal text-gray-500"> /nuit</span>
-                </p>
-                <p className="text-sm text-gray-500 mt-1">Taxes incluses</p>
-              </div>
-              <button className="px-6 py-3 bg-teal-600 hover:bg-teal-700 text-white font-medium rounded-lg transition-all shadow-md hover:shadow-lg">
-                Réserver
-              </button>
-            </div>
-          </div>
-        </div>
-      </motion.div>
-
-      {/* Suite Présidentielle */}
-      <motion.div
-        initial={{ opacity: 0, y: 50 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true }}
-        transition={{ duration: 0.6, delay: 0.4 }}
-        whileHover={{ y: -10 }}
-        className="group relative"
-      >
-        <div className="h-full bg-white rounded-2xl shadow-xl overflow-hidden transition-all duration-300 group-hover:shadow-2xl border border-gray-100">
-          <div className="relative overflow-hidden h-72">
-            <img
-              src="https://images.pexels.com/photos/1457842/pexels-photo-1457842.jpeg"
-              alt="Suite Présidentielle"
-              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-8">
-              <button className="translate-y-4 group-hover:translate-y-0 transition-transform duration-300 px-8 py-3 bg-amber-500 text-white font-medium rounded-full hover:bg-amber-600 shadow-lg">
-                Voir les détails
-              </button>
-            </div>
-          </div>
-
-          <div className="p-8">
-            <div className="flex justify-between items-start mb-3">
-              <h3 className="text-2xl font-bold text-gray-900 tracking-tight">Suite Présidentielle</h3>
-              <div className="flex items-center space-x-2">
-                <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-teal-100 text-teal-800">
-                  80m²
-                </span>
-                <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-amber-100 text-amber-800">
-                  6 personnes
-                </span>
-              </div>
-            </div>
-
-            <div className="flex items-center mb-5">
-              <div className="flex mr-2">
-                {[...Array(5)].map((_, i) => (
-                  <Star
-                    key={i}
-                    className={`h-5 w-5 ${i < 5 ? 'text-amber-400 fill-amber-400' : 'text-gray-300 fill-gray-300'}`}
-                  />
-                ))}
-              </div>
-              <span className="text-sm text-gray-500">(24 avis)</span>
-            </div>
-
-            <div className="flex flex-wrap gap-3 mb-8">
-              {['Terrasse privée', 'Service majordome', 'Spa intégré', 'Vue à 360°'].map((feature, i) => (
-                <span key={i} className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-700">
-                  <Check className="h-3 w-3 mr-1.5 text-teal-600" />
-                  {feature}
-                </span>
-              ))}
-            </div>
-
-            <div className="flex items-center justify-between border-t border-gray-200 pt-6">
-              <div>
-                <p className="text-3xl font-bold text-teal-700">
-                  600€
-                  <span className="text-base font-normal text-gray-500"> /nuit</span>
-                </p>
-                <p className="text-sm text-gray-500 mt-1">Taxes incluses</p>
-              </div>
-              <button className="px-6 py-3 bg-teal-600 hover:bg-teal-700 text-white font-medium rounded-lg transition-all shadow-md hover:shadow-lg">
-                Réserver
-              </button>
-            </div>
-          </div>
-        </div>
-      </motion.div>
+          </Card>
+        </motion.div>
+      ))}
     </div>
 
+    {/* Discover More Button */}
     <div className="mt-20 text-center">
       <button className="px-10 py-4 border-2 border-teal-600 text-teal-600 hover:bg-teal-50 text-lg font-medium rounded-lg transition-all duration-300 hover:shadow-md">
         Découvrir toutes nos chambres

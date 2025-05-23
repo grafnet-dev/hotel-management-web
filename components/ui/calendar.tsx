@@ -3,11 +3,65 @@
 import * as React from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { DayPicker } from 'react-day-picker';
-
 import { cn } from '../../lib/utils';
 import { buttonVariants } from '../../components/ui/button';
 
 export type CalendarProps = React.ComponentProps<typeof DayPicker>;
+
+const handleNextMonthClick = () => {
+  console.log('Next month clicked');
+};
+
+const handlePreviousMonthClick = () => {
+  console.log('Previous month clicked');
+};
+
+const today = new Date();
+const nextMonth = new Date(today.getFullYear(), today.getMonth() + 1, 1);
+const previousMonth = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+<CustomNavigation
+  nextMonth={nextMonth}
+  previousMonth={previousMonth}
+  onNextClick={handleNextMonthClick}
+  onPreviousClick={handlePreviousMonthClick}
+/>
+
+function CustomNavigation({ 
+  nextMonth,
+  previousMonth,
+  onNextClick,
+  onPreviousClick,
+}: {
+  nextMonth?: Date;
+  previousMonth?: Date;
+  onNextClick?: () => void;
+  onPreviousClick?: () => void;
+}) {
+  return (
+    <div className="absolute inset-y-0 flex items-center justify-between px-1">
+      <button
+        disabled={!previousMonth}
+        onClick={onPreviousClick}
+        className={cn(
+          buttonVariants({ variant: 'outline' }),
+          'h-7 w-7 bg-transparent p-0 opacity-50 hover:opacity-100'
+        )}
+      >
+        <ChevronLeft className="h-4 w-4" />
+      </button>
+      <button
+        disabled={!nextMonth}
+        onClick={onNextClick}
+        className={cn(
+          buttonVariants({ variant: 'outline' }),
+          'h-7 w-7 bg-transparent p-0 opacity-50 hover:opacity-100'
+        )}
+      >
+        <ChevronRight className="h-4 w-4" />
+      </button>
+    </div>
+  );
+}
 
 function Calendar({
   className,
@@ -23,14 +77,8 @@ function Calendar({
         months: 'flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0',
         month: 'space-y-4',
         caption: 'flex justify-center pt-1 relative items-center',
-        caption_label: 'text-sm font-medium',
-        nav: 'space-x-1 flex items-center',
-        nav_button: cn(
-          buttonVariants({ variant: 'outline' }),
-          'h-7 w-7 bg-transparent p-0 opacity-50 hover:opacity-100'
-        ),
-        nav_button_previous: 'absolute left-1',
-        nav_button_next: 'absolute right-1',
+        caption_label: 'text-sm font-medium text-white',
+        nav: 'hidden',
         table: 'w-full border-collapse space-y-1',
         head_row: 'flex',
         head_cell:
@@ -54,32 +102,14 @@ function Calendar({
         ...classNames,
       }}
       components={{
-        Nav: ({ children, ...rest }) => (
-          <nav {...rest} className="flex space-x-1">
-            {children}
-          </nav>
-        ),
-        NavButtonPrev: ({ ...props }) => (
-          <button {...props} className={cn(
-            buttonVariants({ variant: 'outline' }),
-            'h-7 w-7 bg-transparent p-0 opacity-50 hover:opacity-100 absolute left-1'
-          )}>
-            <ChevronLeft className="h-4 w-4" />
-          </button>
-        ),
-        NavButtonNext: ({ ...props }) => (
-          <button {...props} className={cn(
-            buttonVariants({ variant: 'outline' }),
-            'h-7 w-7 bg-transparent p-0 opacity-50 hover:opacity-100 absolute right-1'
-          )}>
-            <ChevronRight className="h-4 w-4" />
-          </button>
-        ),
+        IconLeft: () => <ChevronLeft className="h-4 w-4" />,
+        IconRight: () => <ChevronRight className="h-4 w-4" />,
       }}
       {...props}
     />
   );
 }
+
 Calendar.displayName = 'Calendar';
 
 export { Calendar };
