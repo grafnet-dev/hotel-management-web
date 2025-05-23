@@ -665,7 +665,7 @@ export default function Rooms() {
      {/* Booking Dialog */}
 <Dialog open={isBookingOpen} onOpenChange={setIsBookingOpen}>
   <DialogContent 
-    className="max-w-6xl p-0 border-4 border-amber-500 max-h-[90vh] flex flex-col font-sans rounded-xl overflow-hidden shadow-2xl"
+    className="max-w-7xl p-0 border-4 border-amber-500 max-h-[90vh] flex flex-col font-sans rounded-xl overflow-hidden shadow-2xl"
     style={{ fontFamily: "'Bahnschrift', sans-serif" }}
   >
     {selectedRoom && (
