@@ -1,5 +1,4 @@
 "use client";
-
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Card } from '../../../components/ui/card';
@@ -7,7 +6,7 @@ import { Button } from '../../../components/ui/button';
 import { fr } from 'date-fns/locale';
 import { format } from "date-fns";
 import { cn } from '../../../lib/utils';
-import { Star, Heart, ArrowLeft, ArrowRight, Calendar, User, MapPin, ChevronLeft,Utensils,Coffee,Wine,ShoppingBag , ChevronRight,Lock,Wifi,Maximize,Users,DollarSign,Settings ,Filter,Zap ,RefreshCw ,Snowflake,Tv,Shield, Check,CalendarIcon , CreditCard,SearchIcon, Smartphone,Bed, Wallet ,X,CheckCircle, CalendarDays,IdCard,MessageSquare,Hotel,Banknote,Clock } from 'lucide-react';
+import { Star, ArrowLeft, ArrowRight, Calendar, User, MapPin, ChevronLeft,Utensils,Coffee,Wine,ShoppingBag , ChevronRight,Lock,Wifi,Users,DollarSign,Settings ,Filter ,RefreshCw ,Snowflake,Tv,Shield, Check,CalendarIcon , CreditCard,SearchIcon, Smartphone,Bed, Wallet ,X,CheckCircle, CalendarDays,IdCard,MessageSquare,Hotel,Banknote,Clock } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "../../../components/ui/dialog";
 import { Input } from "../../../components/ui/input";
 import { Label } from "../../../components/ui/label";
@@ -17,6 +16,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from ".
 import { Popover, PopoverContent, PopoverTrigger } from '../../../components/ui/popover';
 import { Textarea } from "../../../components/ui/textarea";
 import Image from "next/image";
+import "react-day-picker/style.css";
+import type { DateRange } from "react-day-picker";
+import { DayPicker } from 'react-day-picker';
+import { useMemo } from 'react';
+import { differenceInCalendarDays } from "date-fns";
+import RoomList from '../../../components/roomlist';
+
 
 
 
@@ -31,12 +37,33 @@ const colors = {
 };
 
 
+interface SearchPayload {
+  stayType: string;
+  rooms: number;
+  guests: {
+    adults: number;
+    children: number;
+    total: number;
+  };
+}
+
+interface Room {
+  children: number;
+  adults: number;
+}
+interface Room {
+  id: number;
+  adults: number;
+ 
+  images: string[]; 
+}
+
 interface Room {
   id: number;
   title: string;
   description: string;
   adults: number;
-  children?: number; 
+ 
   size: string;
   price: number;
   hourlyPrice?: number;
@@ -79,13 +106,7 @@ interface BookingDetails {
   accountNumber?: string;
 }
 
-function formatPriceFCFA(price) {
-  return new Intl.NumberFormat('fr-FR', {
-    style: 'currency',
-    currency: 'XOF',
-    maximumFractionDigits: 0
-  }).format(price).replace('CFA', 'FCFA');
-}
+
 
 export default function Rooms() {
   const [selectedRoom, setSelectedRoom] = useState<Room | null>(null);
@@ -95,14 +116,48 @@ export default function Rooms() {
   const [currentImageIndices, setCurrentImageIndices] = useState<Record<number, number>>({});
  const [currentPage, setCurrentPage] = useState(1);
 const bookingTypes = ['night', 'half-day', 'hourly'] as const;
-const [checkIn, setCheckIn] = useState<Date>();
-const [checkOut, setCheckOut] = useState<Date>();
-const [adults, setAdults] = useState(1);
-const [children, setChildren] = useState(0);
-const [budget, setBudget] = useState('any');
+  const [date, setDate] = useState<DateRange | Date | undefined>();
+  const [isDayUse, setIsDayUse] = useState(false);
 const [price, setPrice] = useState(0);
+const [rooms, setRooms] = useState<{ id: number; adults: number; children: number; }[]>([]);
+const [searchRooms, setSearchRooms] = useState([{ id: 1, adults: 2, children: 0 }]);
+
+
+
+
 const [favorites, setFavorites] = useState<number[]>(JSON.parse(localStorage.getItem('favorites') || '[]'));
 
+
+function formatPriceFCFA(price: number) {
+  return new Intl.NumberFormat('fr-FR', {
+    style: 'currency',
+    currency: 'XOF',
+    maximumFractionDigits: 0
+  }).format(price).replace('CFA', 'FCFA');
+}
+
+const useWindowSize = () => {
+  const [size, setSize] = useState({ width: 0, height: 0 });
+
+  useEffect(() => {
+    const handleResize = () => setSize({ width: window.innerWidth, height: window.innerHeight });
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  return size;
+};
+const useIsMobileDevice = () => {
+  const { width } = useWindowSize();
+  return width < 640 ? true : false;
+};
+
+const isMobileDevice = useIsMobileDevice();
+if (isMobileDevice) {
+  // render a mobile-specific component or apply a mobile-specific style
+}
+  
 const toggleFavorite = (roomId: number) => {
   if (favorites.includes(roomId)) {
     setFavorites(favorites.filter(id => id !== roomId));
@@ -111,9 +166,7 @@ const toggleFavorite = (roomId: number) => {
   }
 };
 
-const handleDateSelect = (date: Date) => {
-  setCheckIn(date);
-};
+
 
   const [bookingDetails, setBookingDetails] = useState<BookingDetails>({
     checkIn: '',
@@ -139,7 +192,7 @@ const handleDateSelect = (date: Date) => {
   const { toast } = useToast();
   
   
-  const rooms: Room[] = [
+  const room = useMemo(() => [
     {
       id: 1,
       title: "Suite Royale",
@@ -369,18 +422,23 @@ const handleDateSelect = (date: Date) => {
       floor: "Étage business", // Ajouté
       smoking: false // Ajouté
     }
-  ];
-  // Initialiser les indices d'image pour chaque chambre
+ ], []);
+  
   useEffect(() => {
-    const initialIndices = rooms.reduce((acc, room) => {
-      acc[room.id] = 0;
-      return acc;
-    }, {} as Record<number, number>);
-    setCurrentImageIndices(initialIndices);
-  }, []);
+  const initialIndices = rooms.reduce((acc, room) => {
+  acc[(room as Room).id] = 0;
+  return acc;
+}, {} as Record<number, number>);
+  setCurrentImageIndices(initialIndices);
+}, [rooms]);
 
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'XOF' }).format(price);
+  };
+
+   const addRoom = () => {
+    setSearchRooms([...searchRooms, { id: Date.now(), adults: 2, children: 0 }]);
+    addRoom();
   };
 
   const handleBookNow = () => {
@@ -409,6 +467,8 @@ const handleDateSelect = (date: Date) => {
     });
   };
 
+  
+
   const handleCancelBooking = () => {
     toast({
       title: "Réservation annulée",
@@ -435,20 +495,6 @@ const handleDateSelect = (date: Date) => {
     });
   };
 
-  const nextImage = (roomId: number) => {
-    setCurrentImageIndices(prev => ({
-      ...prev,
-      [roomId]: (prev[roomId] + 1) % rooms.find(r => r.id === roomId)!.images.length
-    }));
-  };
-
-  const prevImage = (roomId: number) => {
-    setCurrentImageIndices(prev => ({
-      ...prev,
-      [roomId]: (prev[roomId] - 1 + rooms.find(r => r.id === roomId)!.images.length) % 
-                rooms.find(r => r.id === roomId)!.images.length
-    }));
-  };
 
   const calculateTotal = (
     checkIn: string, 
@@ -512,6 +558,134 @@ const handleDateSelect = (date: Date) => {
     });
   };
 
+  const useIsMobile = () => {
+    const [isMobile, setIsMobile] = useState(false);
+  
+    useEffect(() => {
+      const handleResize = () => {
+        setIsMobile(window.innerWidth < 640);
+      };
+      handleResize();
+      window.addEventListener("resize", handleResize);
+      return () => window.removeEventListener("resize", handleResize);
+    }, []);
+  
+    return isMobile;
+  };
+  
+  const isMobile = useIsMobile();
+    const getLabel = () => {
+      if (!date) {
+        return isDayUse ? "Sélectionner un jour" : "Sélectionner une période";
+      }
+  
+      if (isDayUse && date instanceof Date) {
+        return format(date, "PPP", { locale: fr });
+      }
+  
+      const range = date as DateRange;
+  
+      if (!isDayUse && range?.from && !range?.to) {
+        return format(range.from, "PPP", { locale: fr });
+      }
+  
+      if (!isDayUse && range?.from && range?.to) {
+        return `${format(range.from, "PPP", { locale: fr })} → ${format(range.to, "PPP", { locale: fr })}`;
+      }
+  
+      return isDayUse ? "Sélectionner un jour" : "Sélectionner une période";
+    };
+  
+ 
+  
+    const getFeedback = () => {
+        if (!date) return "";
+    
+        if (isDayUse && date instanceof Date) {
+          return `Vous avez sélectionné le ${format(date, "PPP", { locale: fr })}`;
+        }
+    
+        const range = date as DateRange;
+        if (range?.from && range?.to) {
+          const nights = differenceInCalendarDays(range.to, range.from);
+          return `${nights} nuitée${nights > 1 ? "s" : ""} (du ${format(range.from, "PPP", { locale: fr })} au ${format(range.to, "PPP", { locale: fr })})`;
+        }
+    
+        return "";
+      };
+  
+    
+const updateRoom = (index: number, field: 'adults' | 'children', value: number) => {
+  const updated = [...rooms];
+  (updated[index] as Room)[field] = value;
+  setRooms(updated);
+};
+  
+   const totalAdults = rooms.reduce((acc, r) => acc + r.adults, 0);
+  const totalChildren = rooms.reduce((acc, r) => acc + r.children, 0);
+
+  const validateGuests = () => {
+    console.log("Chambres validées:", rooms);
+  };
+
+const handleSearch = () => {
+  const totalGuests = rooms.reduce(
+    (acc, room) => {
+      const roomAsRoom = room as Room;
+      acc.adults += roomAsRoom.adults;
+      acc.children += roomAsRoom.children;
+      return acc;
+    },
+    { adults: 0, children: 0 }
+  );
+
+  const totalRooms = rooms.length;
+
+  const searchPayload = {
+    stayType: isDayUse ? "dayuse" : "overnight",
+    rooms: totalRooms,
+    guests: {
+      adults: totalGuests.adults,
+      children: totalGuests.children,
+      total: totalGuests.adults + totalGuests.children,
+    },
+  };
+
+type UpdatedSearchPayload = SearchPayload & {
+  date: string;
+  from?: string;
+  to?: string;
+  nights?: number;
+};
+
+let updatedSearchPayload: UpdatedSearchPayload = { ...searchPayload } as UpdatedSearchPayload;
+
+if (isDayUse && date instanceof Date) {
+  updatedSearchPayload = {
+    ...updatedSearchPayload,
+    date: date.toISOString().split("T")[0],
+  };
+} else if (
+  !isDayUse &&
+  typeof date === "object" &&
+  date !== null &&
+  "from" in date &&
+  "to" in date
+) {
+  updatedSearchPayload = {
+    ...updatedSearchPayload,
+   from: date.from ? date.from.toISOString().split("T")[0] : undefined,
+   to: date.to ? date.to.toISOString().split("T")[0] : undefined,
+nights: date.from?.getTime() && date.to?.getTime()
+  ? Math.ceil((date.to.getTime() - date.from.getTime()) / (1000 * 60 * 60 * 24))
+  : undefined,
+  };
+}
+
+console.log("📦 Payload de recherche à envoyer :", updatedSearchPayload);
+};
+  
+
   const handleBookingTypeChange = (type: 'night' | 'half-day' | 'hourly') => {
     setBookingDetails(prev => {
       const updated = {
@@ -549,6 +723,8 @@ const handleDateSelect = (date: Date) => {
       };
     });
   };
+
+  
 
   const handleBookingSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -619,7 +795,7 @@ const handleDateSelect = (date: Date) => {
               transition: { duration: 0.3 }
             }}
           >
-            Nos Chambres d'Exception
+            Chambres de Prestige
           </motion.h1>
           
         
@@ -668,318 +844,257 @@ const handleDateSelect = (date: Date) => {
 
     </section>
 
-    <motion.section 
-      initial={{ opacity: 0, y: 40 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: "-100px" }}
-      transition={{ 
-        duration: 0.8,
-        ease: [0.25, 0.1, 0.25, 1]
-      }}
-      className="py-16 relative"
-      style={{ backgroundColor: colors.lightTeal }}
-    >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <motion.div
-          whileHover={{ 
-            y: -5,
-            transition: { type: "spring", stiffness: 300 }
-          }}
-          whileTap={{ scale: 0.99 }}
+  {/* Search Section */}
+        <motion.section
+          initial={{ opacity: 0, y: 40 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-100px" }}
+          transition={{ duration: 0.8, ease: [0.25, 0.1, 0.25, 1] }}
+          className="py-16 relative"
         >
-          <Card className="-mt-32 relative z-10 p-6 md:p-8 border-0 shadow-xl rounded-2xl overflow-hidden"
-            style={{ 
-              backgroundColor: 'rgba(255, 255, 255, 0.95)',
-              backdropFilter: 'blur(10px)',
-              border: `2px solid ${colors.gold}`
-            }}
-          >
-            <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
-              {/* Check-in */}
-              <motion.div 
-                className="space-y-2 md:col-span-1"
-                initial={{ opacity: 0, x: -20 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.4, delay: 0.1 }}
-                viewport={{ once: true }}
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <motion.div
+              whileHover={{ y: -5, transition: { type: "spring", stiffness: 300 } }}
+              whileTap={{ scale: 0.99 }}
+            >
+              <Card
+                className="-mt-32 relative z-10 p-6 md:p-8 border-0 shadow-xl rounded-2xl overflow-hidden bg-white"
+                style={{ border: `2px solid ${colors.gold}` }}
               >
-                <Label className="text-sm font-medium flex items-center"
-                  style={{ 
-                    color: colors.darkTeal,
-                    fontFamily: 'Bahnschrift, sans-serif'
-                  }}
-                >
-                  <CalendarIcon className="h-4 w-4 mr-2" style={{ color: colors.orange }} />
-                  Arrivée
-                </Label>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <motion.div whileHover={{ scale: 1.02 }}>
-                      <Button
-                        variant="outline"
-                        className={cn(
-                          "w-full justify-start text-left font-normal hover:bg-gray-50",
-                          !checkIn && "text-muted-foreground"
+                <div className="flex flex-wrap gap-x-8 gap-y-6">
+                  {/* Date & Day Use */}
+                  <motion.div
+                    className="flex-1 min-w-[240px] space-y-2"
+                    initial={{ opacity: 0, x: -20 }}
+                    whileInView={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.4, delay: 0.1 }}
+                    viewport={{ once: true }}
+                  >
+                    <Label className="text-sm font-medium flex items-center" style={{ color: colors.darkTeal }}>
+                      <CalendarDays className="h-4 w-4 mr-2" style={{ color: colors.orange }} />
+                      {isDayUse ? "Quel jour ?" : "Quand ?"}
+  
+                    </Label>
+  
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <motion.div whileHover={{ scale: 1.02 }}>
+                          <Button
+                            id="date"
+                            variant="outline"
+                            className={cn(
+                              "w-full justify-start text-left font-normal hover:bg-gray-50",
+                              !date && "text-muted-foreground"
+                            )}
+                            style={{ borderColor: colors.teal }}
+  
+                          >
+                            <CalendarIcon className="mr-2 h-4 w-4" />
+                            {getLabel()}
+                          </Button>
+                        </motion.div>
+                      </PopoverTrigger>
+                      <PopoverContent
+                        className="w-auto p-0 bg-white"
+                        align="start"
+                        style={{ borderColor: colors.teal }}
+                      >
+                        {isDayUse ? (
+                          <DayPicker
+                            mode="single"
+                            selected={date instanceof Date ? date : undefined}
+                            onSelect={setDate}
+                            numberOfMonths={isMobile ? 1 : 2}
+                            showOutsideDays
+                            required={false}
+                            disabled={{ before: new Date() }}
+                            modifiersClassNames={{
+                              selected: "bg-orange-500 text-white",
+                            }}
+                            className="p-3"
+                          />
+                        ) : (
+                          <DayPicker
+                            mode="range"
+                            selected={typeof date === 'object' && date && 'from' in date ? date as DateRange : undefined}
+                            onSelect={setDate}
+                            numberOfMonths={isMobile ? 1 : 2}
+                            showOutsideDays
+                            required={false}
+                            disabled={{ before: new Date() }}
+                            modifiersClassNames={{
+                              selected: "bg-orange-500 text-white",
+                              range_start: "rounded-l-md",
+                              range_end: "rounded-r-md"
+                            }}
+                            className="p-3"
+                          />
                         )}
-                        style={{ 
-                          borderColor: colors.teal,
-                          fontFamily: 'Bahnschrift, sans-serif'
+                        <motion.div
+                          initial={{ opacity: 0, y: -5 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          className="text-sm text-muted-foreground"
+                        >
+                          {getFeedback() && (
+                            <div className="text-sm text-muted-foreground">
+                              {getFeedback()}
+                            </div>
+                          )}
+                        </motion.div>
+                      </PopoverContent>
+                    </Popover>
+  
+                    {/* Toggle Day Use */}
+                    <div className="flex items-center gap-2 pt-2">
+                      <input
+                        type="checkbox"
+                        id="dayuse"
+                        checked={isDayUse}
+                        onChange={(e) => {
+                          setIsDayUse(e.target.checked);
+                          setDate(undefined);
                         }}
-                      >
-                        <CalendarIcon className="mr-2 h-4 w-4" style={{ color: colors.teal }} />
-                        {checkIn ? format(checkIn, "PPP", { locale: fr }) : <span>Sélectionner</span>}
-                      </Button>
-                    </motion.div>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start"
-                    style={{ 
-                      borderColor: colors.teal,
-                      fontFamily: 'Bahnschrift, sans-serif'
-                    }}
+                        className="accent-orange-500 h-4 w-4"
+                      />
+                      <label htmlFor="dayuse" className="text-sm text-gray-600">Réservation de jour (Day use)</label>
+                    </div>
+                  </motion.div>
+  
+                  {/* Invités et chambres */}
+                  <motion.div
+                    className="flex-1 min-w-[280px] space-y-2"
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.4, delay: 0.2 }}
+                    viewport={{ once: true }}
                   >
-                  <Calendar
-  mode="single"
-  selected={checkIn}
-  onSelect={handleDateSelect}
-  initialFocus
-  className="rounded-md border"
-  style={{ borderColor: colors.teal }}
-  locale={fr}
-/>
-                  </PopoverContent>
-                </Popover>
-              </motion.div>
-
-              {/* Check-out */}
-              <motion.div 
-                className="space-y-2 md:col-span-1"
-                initial={{ opacity: 0, x: -20 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.4, delay: 0.2 }}
-                viewport={{ once: true }}
-              >
-                <Label className="text-sm font-medium flex items-center"
-                  style={{ 
-                    color: colors.darkTeal,
-                    fontFamily: 'Bahnschrift, sans-serif'
-                  }}
-                >
-                  <CalendarIcon className="h-4 w-4 mr-2" style={{ color: colors.orange }} />
-                  Départ
-                </Label>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <motion.div whileHover={{ scale: 1.02 }}>
-                      <Button
-                        variant="outline"
-                        className={cn(
-                          "w-full justify-start text-left font-normal hover:bg-gray-50",
-                          !checkOut && "text-muted-foreground"
-                        )}
-                        style={{ 
-                          borderColor: colors.teal,
-                          fontFamily: 'Bahnschrift, sans-serif'
-                        }}
-                      >
-                        <CalendarIcon className="mr-2 h-4 w-4" style={{ color: colors.teal }} />
-                        {checkOut ? format(checkOut, "PPP", { locale: fr }) : <span>Sélectionner</span>}
-                      </Button>
-                    </motion.div>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start"
-                    style={{ 
-                      borderColor: colors.teal,
-                      fontFamily: 'Bahnschrift, sans-serif'
-                    }}
+                    <Label className="text-sm font-medium" style={{ color: colors.darkTeal }}>
+                      Invités & chambres
+                    </Label>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <motion.div whileHover={{ scale: 1.02 }}>
+                          <Button
+                            variant="outline"
+                            className="w-full justify-start text-left font-normal hover:bg-gray-50"
+                            style={{ borderColor: colors.teal }}
+                          >
+                            🛏️ {rooms.length} chambre{rooms.length > 1 ? 's' : ''}, {totalAdults} adulte{totalAdults > 1 ? 's' : ''}, {totalChildren} enfant{totalChildren > 1 ? 's' : ''}
+                          </Button>
+                        </motion.div>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-[320px] p-4 bg-white rounded-xl shadow-xl space-y-4" align="start">
+                        {rooms.map((room, index) => (
+                          <div key={index} className="space-y-2">
+                            <div className="font-medium text-sm text-gray-700">Chambre {index + 1}</div>
+                            <div className="flex space-x-4">
+                              {/* Adultes */}
+                              <div className="flex flex-col items-center space-y-1">
+                                <span className="text-xs text-gray-500">Adultes</span>
+                                <div className="flex items-center space-x-2">
+                                  <Button
+                                    variant="outline"
+                                    size="icon"
+                                    onClick={() => updateRoom(index, 'adults', Math.max(1, room.adults - 1))}
+                                    style={{ borderColor: colors.teal }}
+                                  >
+                                    –
+                                  </Button>
+                                  <span className="w-6 text-center">{room.adults}</span>
+                                  <Button
+                                    variant="outline"
+                                    size="icon"
+                                    onClick={() => updateRoom(index, 'adults', Math.min(4, room.adults + 1))}
+                                    style={{ borderColor: colors.teal }}
+                                  >
+                                    +
+                                  </Button>
+                                </div>
+                              </div>
+  
+                              {/* Enfants */}
+                              <div className="flex flex-col items-center space-y-1">
+                                <span className="text-xs text-gray-500">Enfants</span>
+                                <div className="flex items-center space-x-2">
+                                  <Button
+                                    variant="outline"
+                                    size="icon"
+                                    onClick={() => updateRoom(index, 'children', Math.max(0, room.children - 1))}
+                                    style={{ borderColor: colors.teal }}
+                                  >
+                                    –
+                                  </Button>
+                                  <span className="w-6 text-center">{room.children}</span>
+                                  <Button
+                                    variant="outline"
+                                    size="icon"
+                                    onClick={() => updateRoom(index, 'children', Math.min(3, room.children + 1))}
+                                    style={{ borderColor: colors.teal }}
+                                  >
+                                    +
+                                  </Button>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                        <Button
+                          variant="outline"
+                          onClick={addRoom}
+                          className="w-full text-sm"
+                          style={{ borderColor: colors.teal }}
+                        >
+                          ➕ Ajouter une chambre
+                        </Button>
+                        <Button
+                          onClick={validateGuests}
+                          className="w-full bg-orange-500 text-white hover:bg-orange-600"
+  
+                        >
+                          ✅ Valider
+                        </Button>
+                      </PopoverContent>
+                    </Popover>
+                  </motion.div>
+  
+                  {/* Search Button */}
+                  <motion.div
+                    className="flex items-end flex-1 min-w-[240px]"
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    whileInView={{ opacity: 1, scale: 1 }}
+                    transition={{ type: "spring", stiffness: 300, delay: 0.6 }}
+                    viewport={{ once: true }}
                   >
-                 <Calendar
-  mode="single"
-  selected={checkOut}
-  onSelect={handleDateSelect}
-  initialFocus
-  className="rounded-md border"
-  style={{ borderColor: colors.teal }}
-  locale={fr}
-/>
-                  </PopoverContent>
-                </Popover>
-              </motion.div>
-
-              {/* Adultes */}
-              <motion.div 
-                className="space-y-2"
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.4, delay: 0.3 }}
-                viewport={{ once: true }}
-              >
-                <Label className="text-sm font-medium"
-                  style={{ 
-                    color: colors.darkTeal,
-                    fontFamily: 'Bahnschrift, sans-serif'
-                  }}
-                >
-                  Adultes
-                </Label>
-                <Select
-                  value={adults.toString()}
-                  onValueChange={(value) => setAdults(parseInt(value))}
-                >
-                  <SelectTrigger className="w-full hover:bg-gray-50"
-                    style={{ 
-                      borderColor: colors.teal,
-                      fontFamily: 'Bahnschrift, sans-serif'
-                    }}
-                  >
-                    <SelectValue placeholder="Adultes" />
-                  </SelectTrigger>
-                  <SelectContent style={{ 
-                    borderColor: colors.teal,
-                    fontFamily: 'Bahnschrift, sans-serif'
-                  }}>
-                    {[1, 2, 3, 4, 5, 6].map((num) => (
-                      <SelectItem 
-                        key={`adult-${num}`} 
-                        value={num.toString()}
-                        style={{ color: colors.darkTeal }}
-                      >
-                        {num} {num === 1 ? "adulte" : "adultes"}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </motion.div>
-
-              {/* Enfants */}
-              <motion.div 
-                className="space-y-2"
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.4, delay: 0.4 }}
-                viewport={{ once: true }}
-              >
-                <Label className="text-sm font-medium"
-                  style={{ 
-                    color: colors.darkTeal,
-                    fontFamily: 'Bahnschrift, sans-serif'
-                  }}
-                >
-                  Enfants
-                </Label>
-                <Select
-                  value={children.toString()}
-                  onValueChange={(value) => setChildren(parseInt(value))}
-                >
-                  <SelectTrigger className="w-full hover:bg-gray-50"
-                    style={{ 
-                      borderColor: colors.teal,
-                      fontFamily: 'Bahnschrift, sans-serif'
-                    }}
-                  >
-                    <SelectValue placeholder="Enfants" />
-                  </SelectTrigger>
-                  <SelectContent style={{ 
-                    borderColor: colors.teal,
-                    fontFamily: 'Bahnschrift, sans-serif'
-                  }}>
-                    {[0, 1, 2, 3, 4].map((num) => (
-                      <SelectItem 
-                        key={`child-${num}`} 
-                        value={num.toString()}
-                        style={{ color: colors.darkTeal }}
-                      >
-                        {num} {num === 1 ? "enfant" : "enfants"}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </motion.div>
-
-              {/* Budget */}
-              <motion.div 
-                className="space-y-2"
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.4, delay: 0.5 }}
-                viewport={{ once: true }}
-              >
-                <Label className="text-sm font-medium"
-                  style={{ 
-                    color: colors.darkTeal,
-                    fontFamily: 'Bahnschrift, sans-serif'
-                  }}
-                >
-                  Budget
-                </Label>
-                <Select
-                  value={budget}
-                  onValueChange={setBudget}
-                >
-                  <SelectTrigger className="w-full hover:bg-gray-50"
-                    style={{ 
-                      borderColor: colors.teal,
-                      fontFamily: 'Bahnschrift, sans-serif'
-                    }}
-                  >
-                    <SelectValue placeholder="Budget" />
-                  </SelectTrigger>
-                  <SelectContent style={{ 
-                    borderColor: colors.teal,
-                    fontFamily: 'Bahnschrift, sans-serif'
-                  }}>
-                    <SelectItem value="any" style={{ color: colors.darkTeal }}>Tous budgets</SelectItem>
-                    <SelectItem value="economy" style={{ color: colors.darkTeal }}>Économique (-50.000 FCFA)</SelectItem>
-                    <SelectItem value="standard" style={{ color: colors.darkTeal }}>Standard (50-100k FCFA)</SelectItem>
-                    <SelectItem value="premium" style={{ color: colors.darkTeal }}>Premium (100-200k FCFA)</SelectItem>
-                    <SelectItem value="luxury" style={{ color: colors.darkTeal }}>Luxe (200k+ FCFA)</SelectItem>
-                  </SelectContent>
-                </Select>
-              </motion.div>
-
-              {/* Search Button */}
-              <motion.div 
-                className="flex items-end"
-                initial={{ opacity: 0, scale: 0.9 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                transition={{ 
-                  type: "spring",
-                  stiffness: 300,
-                  delay: 0.6
-                }}
-                viewport={{ once: true }}
-              >
-                <motion.div
-                  whileHover={{ 
-                    scale: 1.03,
-                    boxShadow: `0 10px 25px -5px ${colors.orange}4D`
-                  }}
-                  whileTap={{ scale: 0.97 }}
-                  className="w-full"
-                >
-                  <Button 
-                    className="w-full h-12 font-medium shadow-lg hover:shadow-xl transition-all duration-300 group"
-                    style={{
-                      background: `linear-gradient(to right, ${colors.orange}, ${colors.maroon})`,
-                      color: colors.white,
-                      fontFamily: 'Bahnschrift, sans-serif'
-                    }}
-                  >
-                    <motion.span
-                      initial={{ x: 0 }}
-                      whileHover={{ x: 2 }}
-                      className="inline-flex items-center"
+                    <motion.div
+                      whileHover={{ scale: 1.03, boxShadow: `0 10px 25px -5px ${colors.orange}4D` }}
+                      whileTap={{ scale: 0.97 }}
+                      className="w-full"
                     >
-                      <SearchIcon className="mr-2 h-4 w-4 transition-transform group-hover:scale-110" />
-                      <span>Rechercher</span>
-                    </motion.span>
-                  </Button>
-                </motion.div>
-              </motion.div>
-            </div>
-          </Card>
-        </motion.div>
-      </div>
-    </motion.section>
+                      <Button
+                        className="w-full h-12 font-medium shadow-lg hover:shadow-xl transition-all duration-300 group"
+                        style={{
+                          background: `linear-gradient(to right, ${colors.orange}, ${colors.maroon})`,
+                          color: 'white'
+                        }}
+                        onClick={handleSearch}
+                      >
+                        <motion.span
+                          initial={{ x: 0 }}
+                          whileHover={{ x: 2 }}
+                          className="inline-flex items-center"
+                        >
+                          <SearchIcon className="mr-2 h-4 w-4 transition-transform group-hover:scale-110" />
+                          <span className="hidden sm:inline">Rechercher</span>
+                          <span className="sm:hidden">🔍</span>
+                        </motion.span>
+                      </Button>
+                    </motion.div>
+                  </motion.div>
+                </div>
+              </Card>
+            </motion.div>
+          </div>
+        </motion.section>
 
 
     {/* Rooms Section  */}
@@ -1116,7 +1231,7 @@ const handleDateSelect = (date: Date) => {
       <div className="space-y-5 bg-white p-4 rounded-xl border border-gray-100 shadow-sm">
         <h3 className="font-semibold text-gray-800 flex items-center gap-2">
           <Clock className="h-5 w-5 text-teal-600" />
-          Heure d'arrivée
+          Heure d_arrivee
         </h3>
         
         <div className="space-y-4">
@@ -1213,7 +1328,8 @@ const handleDateSelect = (date: Date) => {
               {currentRooms.length} {currentRooms.length > 1 ? 'chambres disponibles' : 'chambre disponible'}
             </h2>
             <p className="text-teal-700 text-sm mt-1">
-              <span className="font-medium">Dernière chambre disponible !</span> - Réservez vite avant qu'elle ne soit prise
+             <span className="font-medium">Derniere chambre disponible !</span> - Ne tardez pas à réserver
+
             </p>
           </div>
           <div className="flex items-center bg-white border border-gray-200 rounded-lg px-3 py-2">
@@ -1230,148 +1346,8 @@ const handleDateSelect = (date: Date) => {
           </div>
         </div>
 
-        {/* Room Cards Grid - Version améliorée */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {currentRooms.map((room) => (
-            <motion.div
-              key={room.id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.4 }}
-              whileHover={{ y: -5 }}
-              className="relative"
-            >
-              {/* Badge Promo */}
-              {room.discount && (
-                <div className="absolute top-4 left-4 bg-amber-500 text-white text-xs font-bold px-3 py-1 rounded-full z-10 shadow-md">
-                  -{Math.round((room.discount / (room.price + room.discount)) * 100)}% OFF
-                </div>
-              )}
-              
-              <Card className="overflow-hidden shadow-md border border-gray-100 hover:shadow-lg transition-all duration-300 h-full flex flex-col">
-                {/* Carousel amélioré */}
-                <div className="relative h-56 overflow-hidden group">
-                  <div className="flex h-full transition-transform duration-300 ease-out"
-                    style={{ transform: `translateX(-${currentImageIndices[room.id] * 100}%)` }}>
-                    {room.images.map((img, idx) => (
-                      <img
-                        key={idx}
-                        src={img}
-                        alt={room.title}
-                        className="w-full h-full object-cover flex-shrink-0"
-                        loading="lazy"
-                      />
-                    ))}
-                  </div>
-                  <button 
-                    className="absolute left-2 top-1/2 -translate-y-1/2 bg-white/90 p-2 rounded-full shadow hover:bg-white transition-opacity opacity-0 group-hover:opacity-100"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      prevImage(room.id);
-                    }}
-                  >
-                    <ChevronLeft className="h-5 w-5 text-teal-700" />
-                  </button>
-                  <button 
-                    className="absolute right-2 top-1/2 -translate-y-1/2 bg-white/90 p-2 rounded-full shadow hover:bg-white transition-opacity opacity-0 group-hover:opacity-100"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      nextImage(room.id);
-                    }}
-                  >
-                    <ChevronRight className="h-5 w-5 text-teal-700" />
-                  </button>
-                  <div className="absolute bottom-3 left-0 right-0 flex justify-center gap-1.5">
-                    {room.images.map((_, idx) => (
-                      <button
-                        key={idx}
-                        className={`w-2 h-2 rounded-full transition-all ${
-                          currentImageIndices[room.id] === idx ? 'bg-teal-700 w-3' : 'bg-white/80'
-                        }`}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setCurrentImageIndex(room.id, idx);
-                        }}
-                      />
-                    ))}
-                  </div>
-                </div>
-
-                <div className="p-5 flex-grow flex flex-col">
-                  <div className="flex justify-between items-start mb-3">
-                    <h3 className="text-xl font-bold text-gray-800">{room.title}</h3>
-                    <div className="flex items-center bg-teal-100 text-teal-800 px-2 py-1 rounded text-xs font-semibold">
-                      <Star className="h-3 w-3 fill-current mr-1" />
-                      {room.rating.toFixed(1)}
-                    </div>
-                  </div>
-
-                  <div className="flex flex-wrap gap-2 text-xs text-gray-600 mb-4">
-                    <div className="flex items-center bg-gray-50 px-2 py-1 rounded">
-                      <User className="h-3.5 w-3.5 mr-1 text-teal-600" />
-                      <span>{room.adults} {room.adults > 1 ? 'adultes' : 'adulte'}</span>
-                    </div>
-                    <div className="flex items-center bg-gray-50 px-2 py-1 rounded">
-                      <Maximize className="h-3.5 w-3.5 mr-1 text-teal-600" />
-                      <span>{room.size} m²</span>
-                    </div>
-                    <div className="flex items-center bg-gray-50 px-2 py-1 rounded">
-                      <Bed className="h-3.5 w-3.5 mr-1 text-teal-600" />
-                      <span>{room.bedType}</span>
-                    </div>
-                  </div>
-
-                  <p className="text-gray-600 text-sm mb-5 line-clamp-2 flex-grow">{room.description}</p>
-
-                  <div className="mt-auto">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-lg font-bold text-amber-600">
-                          {formatPriceFCFA(room.price)}
-                          <span className="text-xs text-gray-500 ml-1">/nuit</span>
-                        </p>
-                        {room.discount && (
-                          <p className="text-xs text-gray-400 line-through">
-                            {formatPriceFCFA(room.price + room.discount)}
-                          </p>
-                        )}
-                      </div>
-                      <div className="flex gap-2">
-                        <button 
-                          className="p-2 text-gray-400 hover:text-amber-600 transition-colors relative"
-                          onClick={() => toggleFavorite(room.id)}
-                        >
-                          <Heart 
-                            className="h-5 w-5" 
-                            fill={favorites.includes(room.id) ? "#d97706" : "none"} 
-                          />
-                          {favorites.includes(room.id) && (
-                            <span className="absolute -top-1 -right-1 bg-amber-600 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">
-                              ✓
-                            </span>
-                          )}
-                        </button>
-                       <Button 
-  className="bg-gradient-to-r from-teal-600 to-teal-500 hover:from-teal-700 hover:to-teal-600 text-sm sm:text-base px-4 sm:px-6 py-2 sm:py-3 shadow-md"
-  onClick={() => {
-    setSelectedRoom(room);
-    setIsBookingOpen(true);
-  }}
->
-  Réserver
-</Button>
-                      </div>
-                    </div>
-                    <div className="mt-3 text-xs text-gray-500 flex items-center">
-                      <Zap className="h-3 w-3 mr-1 text-amber-500" />
-                      <span>Seulement {room.remaining} {room.remaining > 1 ? 'chambres' : 'chambre'} disponible</span>
-                    </div>
-                  </div>
-                </div>
-              </Card>
-            </motion.div>
-          ))}
-        </div>
+        {/* Room Cards */}
+      <RoomList />
 
         {/* Pagination  */}
         <div className="flex justify-center mt-12">

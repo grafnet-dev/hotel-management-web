@@ -1,58 +1,32 @@
 "use client";
-
+import Link from 'next/link';
+import Image from 'next/image';
 import React, { useState, useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Button } from '../../components/ui/button';
 import { Card } from '../../components/ui/card';
-import { Calendar } from '../../components/ui/calendar';
 import { cn } from '../../lib/utils';
 import { Label } from '../../components/ui/label';
-import Link from 'next/link';
+import RoomList from '../../components/roomlist';
 import {
-  Space as Spa, Utensils, Dumbbell, Hotel, Star, ArrowRight, CalendarDays, CalendarCheck, ChevronDown,
-  Wine,
-  Gamepad2,
-  Plane,
-  Wifi,
-  Lock
+  Space as  Utensils, Dumbbell, Hotel, ArrowRight, CalendarDays, ChevronDown, Wifi,ParkingCircle,Tv2,Baby, Briefcase, Umbrella,
+  PhoneCall,Bell,Bath,Waves,Bus,Glasses 
 } from 'lucide-react';
-import Image from 'next/image';
-
 import { Calendar as CalendarIcon, Search as SearchIcon } from "lucide-react";
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Autoplay } from 'swiper/modules';
 import 'swiper/css';
 import 'swiper/css/pagination';
-
-import { Check } from "lucide-react";
-
+import 'swiper/css/navigation';
 import { Popover, PopoverContent, PopoverTrigger } from "../../components/ui/popover";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../components/ui/select";
 import { DayPicker } from "react-day-picker";
 import "react-day-picker/style.css";
 import type { DateRange } from "react-day-picker";
 import { differenceInCalendarDays, format } from "date-fns";
-
 import { fr } from "date-fns/locale";
-type Room = {
-  adults: number;
-  children: number;
-};
-type Mode = "single" | "range";
 
 
 
-/*// Définition des couleurs personnalisées
-const colors = {
-  teal: '#008080',       // Bleu sarcelle
-  gold: '#D4AF37',       // Or
-  orange: '#FF8C42',     // Orange
-  maroon: '#800020',     // Marron
-  lightTeal: '#E6F2F2',  // Sarcelle clair
-  darkTeal: '#006666',   // Sarcelle foncé
-  cream: '#F5F5DC',      // Crème
-};*/
-// Palette de couleurs pour un look cohérent
 const colors = {
   darkTeal: "#1e4e5f",
   teal: "#2a9d8f",
@@ -65,235 +39,103 @@ const colors = {
   gray: "#f8f9fa"
 };
 
-export default function Home() {
-  const [checkIn, setCheckIn] = useState<Date>();
-  const [checkOut, setCheckOut] = useState<Date>();
-  const [adults, setAdults] = useState(2);
-  const [children, setChildren] = useState(0);
-  const [budget, setBudget] = useState("any");
-    const [selectedRoom, setSelectedRoom] = useState<Room | null>(null);
-    const [isBookingOpen, setIsBookingOpen] = useState(false);
-  const swiperRef = useRef<SwiperCore>(null);
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  // Remove this line
-const [currentImageIndices, setCurrentImageIndices] = useState<Record<number, number>>({});
-
-
-
-  const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'XOF' }).format(price);
+interface SearchPayload {
+  stayType: string;
+  rooms: number;
+  guests: {
+    adults: number;
+    children: number;
+    total: number;
   };
-  if (isBookingOpen) {
-    console.log('Booking is open');
-  }
-
-  if (selectedRoom) {
-    console.log(selectedRoom.title);
-  }
+}
 
 
-  
-  useEffect(() => {
-    const interval = setInterval(() => {
-      if (swiperRef.current) {
-        swiperRef.current.slideNext();
-      }
-    }, 4000);
 
-    return () => clearInterval(interval);
-  }, []);
-
-  const rooms: Room[] = [
-    {
-      id: 1,
-      title: "Suite Royale",
-      description: "Suite spacieuse avec vue imprenable sur l'océan, décoration raffinée et service haut de gamme. Parfait pour des séjours romantiques ou des occasions spéciales.",
-      adults: 2,
-      children: 1, 
-      size: "45m²",
-      beds: 1, 
-      bedType: "King Size", 
-      price: 180000,
-      hourlyPrice: 30000,
-      halfDayPrice: 90000,
-      minStay: 1,
-      images: [
-        "https://images.pexels.com/photos/271624/pexels-photo-271624.jpeg",
-        "https://images.pexels.com/photos/164595/pexels-photo-164595.jpeg",
-        "https://images.pexels.com/photos/1457842/pexels-photo-1457842.jpeg",
-        "https://images.pexels.com/photos/1571460/pexels-photo-1571460.jpeg" 
-      ],
-      amenities: [
-        "Wi-Fi haut débit", 
-        "Petit-déjeuner buffet inclus",
-        "TV écran plat 55\"",
-        "Minibar bien fourni",
-        "Coffre-fort électronique",
-        "Service en chambre 24h/24",
-        "Peignoir et pantoufles",
-        "Produits de bain haut de gamme"
-      ],
-      services: [ 
-        "Service de conciergerie",
-        "Massage en chambre",
-        "Service de blanchisserie"
-      ],
-      rating: 5,
-      view: "Vue mer", 
-      floor: "Dernier étage", 
-      smoking: false 
-    },
-    {
-      id: 2,
-      title: "Chambre Deluxe",
-      description: "Confort exceptionnel avec balcon privé offrant une vue sur les jardins de l'hôtel. Décoration contemporaine et équipements haut de gamme.",
-      adults: 2,
-      children: 2, 
-      size: "35m²",
-      beds: 2, 
-      bedType: "Queen Size", 
-      price: 120000,
-      hourlyPrice: 20000,
-      halfDayPrice: 60000,
-      minStay: 1, 
-      images: [
-        "https://images.pexels.com/photos/262048/pexels-photo-262048.jpeg",
-        "https://images.pexels.com/photos/271619/pexels-photo-271619.jpeg",
-        "https://images.pexels.com/photos/258154/pexels-photo-258154.jpeg",
-        "https://images.pexels.com/photos/1571463/pexels-photo-1571463.jpeg" 
-      ],
-      amenities: [
-        "Wi-Fi haut débit",
-        "Minibar personnalisable",
-        "Climatisation individuelle",
-        "TV écran plat 42\"",
-        "Machine à café Nespresso",
-        "Sèche-cheveux professionnel",
-        "Service de réveil"
-      ],
-      services: [ // Ajouté
-        "Service de nettoyage quotidien",
-        "Service de pressing express"
-      ],
-      rating: 4,
-      view: "Vue jardin", // Ajouté
-      floor: "Étages 3-5", // Ajouté
-      smoking: true // Ajouté
-    },
-    {
-      id: 3,
-      title: "Suite Présidentielle",
-      description: "Le summum du luxe avec espace salon séparé, salle à manger privée et salle de bain en marbre. Service personnalisé et accès au lounge VIP.",
-      adults: 4,
-      children: 2, // Ajouté
-      size: "80m²",
-      beds: 2, // Ajouté
-      bedType: "King Size x2", // Ajouté
-      price: 350000,
-      hourlyPrice: 50000,
-      halfDayPrice: 175000,
-      minStay: 2, // Ajouté
-      images: [
-        "https://images.pexels.com/photos/189296/pexels-photo-189296.jpeg",
-        "https://images.pexels.com/photos/164558/pexels-photo-164558.jpeg",
-        "https://images.pexels.com/photos/1571460/pexels-photo-1571460.jpeg",
-        "https://images.pexels.com/photos/271635/pexels-photo-271635.jpeg" // Ajouté
-      ],
-      amenities: [
-        "Service VIP dédié",
-        "Jacuzzi privatif",
-        "Vue panoramique à 360°",
-        "Bar personnel",
-        "Système audio haut de gamme",
-        "Bureau en acajou",
-        "Salle de bain avec télévision",
-        "Service de majordome 24/7"
-      ],
-      services: [ // Ajouté
-        "Transfert aéroport en limousine",
-        "Check-in/out privé",
-        "Service gastronomique en chambre"
-      ],
-      rating: 5,
-      view: "Vue panoramique", // Ajouté
-      floor: "Penthouse", // Ajouté
-      smoking: false // Ajouté
-    },
-
-  ];
-
-  const services = [
-    {
-      icon: <Hotel className="h-8 w-8" />,
-      title: "Hébergement",
-      description: "Chambres luxueuses avec vue sur le lac",
-    },
-    {
-      icon: <Utensils className="h-8 w-8" />,
-      title: "Restaurant",
-      description: "Cuisine gastronomique locale",
-    },
-    {
-      icon: <Spa className="h-8 w-8" />,
-      title: "Spa",
-      description: "Espace bien-être et relaxation",
-    },
-    {
-      icon: <Dumbbell className="h-8 w-8" />,
-      title: "Fitness",
-      description: "Salle de sport équipée",
-    },
-    {
-      icon: <Star className="h-8 w-8" />,
-      title: "Piscine",
-      description: "Piscine extérieure avec vue panoramique",
-    },
-    {
-      icon: <Wine className="h-8 w-8" />,
-      title: "Bar & Lounge",
-      description: "Cocktails exotiques et ambiance détendue",
-    },
-    {
-      icon: <Gamepad2 className="h-8 w-8" />,
-      title: "Espace jeux",
-      description: "Divertissements pour petits et grands",
-    },
-    {
-      icon: <Plane className="h-8 w-8" />,
-      title: "Navette aéroport",
-      description: "Service de transfert depuis/vers l'aéroport",
-    },
-    {
-      icon: <Wifi className="h-8 w-8" />,
-      title: "Wi-Fi haut débit",
-      description: "Connexion gratuite dans tout l'établissement",
-    },
-    {
-      icon: <Lock className="h-8 w-8" />,
-      title: "Sécurité 24h/24",
-      description: "Surveillance et assistance permanente",
-    },
-  ];
-
-  //Gestion des dates
-  const [date, setDate] = useState<DateRange | Date | undefined>()
+export default function Home() {
+  const [date, setDate] = useState<DateRange | Date | undefined>();
   const [isDayUse, setIsDayUse] = useState(false);
-  const [rooms, setRooms] = useState<Room[]>([{ adults: 2, children: 0 }]);
+  const [rooms, setRooms] = useState<{ id: number; adults: number; children: number; }[]>([]);
+  
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const swiperRef = useRef(null);
 
-  useEffect(() => {
-    if (isDayUse && date instanceof Date) {
-      console.log("Date sélectionnée (Day Use) :", format(date, "yyyy-MM-dd"));
-    }
-
-    if (!isDayUse && (date as DateRange)?.from && (date as DateRange)?.to) {
-      console.log("Date sélectionnée :", {
-        checkIn: format((date as DateRange).from!, "yyyy-MM-dd"),
-        checkOut: format((date as DateRange).to!, "yyyy-MM-dd")
-      });
-    }
-  }, [date, isDayUse]);
-
-//hook perso 
+const services = [
+  {
+    title: 'Hébergement de luxe',
+    description: 'Chambres spacieuses, climatisées, avec Wi-Fi, TV et service en chambre.',
+    icon: <Hotel size={32} />,
+  },
+  {
+    title: 'Restauration',
+    description: 'Restaurant gastronomique, buffet et service en chambre 24/7.',
+    icon: <Utensils size={32} />,
+  },
+  {
+    title: 'Spa & Bien-être',
+    description: 'Massages, soins corporels, hammam et sauna pour votre détente.',
+    icon: <Bath  size={32} />,
+  },
+  {
+    title: 'Salle de sport',
+    description: 'Espace fitness bien équipé pour garder la forme pendant votre séjour.',
+    icon: <Dumbbell size={32} />,
+  },
+  {
+    title: 'Piscine extérieure',
+    description: 'Grande piscine avec espace détente et service bar.',
+    icon: <Waves size={32} />,
+  },
+  {
+    title: 'Bar & Lounge',
+    description: 'Bar élégant avec cocktails, musique et ambiance cosy.',
+    icon: <Glasses size={32} />,
+  },
+  {
+    title: 'Navette aéroport',
+    description: 'Transferts aller-retour confortables vers l’aéroport.',
+    icon: <Bus size={32} />,
+  },
+  {
+    title: 'Réception 24h/24',
+    description: 'Accueil chaleureux, check-in rapide et assistance à toute heure.',
+    icon: <Bell size={32} />,
+  },
+  {
+    title: 'Wi-Fi haut débit',
+    description: 'Connexion rapide et gratuite dans tout l’établissement.',
+    icon: <Wifi size={32} />,
+  },
+  {
+    title: 'Parking sécurisé',
+    description: 'Parking privé avec vidéosurveillance et gardiennage.',
+    icon: <ParkingCircle size={32} />,
+  },
+  {
+    title: 'Télévision par satellite',
+    description: 'Accès à des chaînes internationales en HD.',
+    icon: <Tv2 size={32} />,
+  },
+  {
+    title: 'Garde d’enfants',
+    description: 'Service baby-sitting pour un séjour en toute sérénité.',
+    icon: <Baby size={32} />,
+  },
+  {
+    title: 'Conciergerie',
+    description: 'Réservations d’activités, taxis, excursions, pressing, etc.',
+    icon: < Briefcase size={32} />,
+  },
+  {
+    title: 'Plage privée',
+    description: 'Accès direct à la plage avec transats et parasols.',
+    icon: <Umbrella size={32} />,
+  },
+  {
+    title: 'Service client',
+    description: 'Un personnel dévoué à rendre votre expérience inoubliable.',
+    icon: <PhoneCall size={32} />,
+  },
+];
 const useIsMobile = () => {
   const [isMobile, setIsMobile] = useState(false);
 
@@ -301,120 +143,126 @@ const useIsMobile = () => {
     const handleResize = () => {
       setIsMobile(window.innerWidth < 640);
     };
-    handleResize(); // Set initial state
+    handleResize();
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
   return isMobile;
 };
+
+const isMobile = useIsMobile();
   const getLabel = () => {
     if (!date) {
       return isDayUse ? "Sélectionner un jour" : "Sélectionner une période";
     }
 
     if (isDayUse && date instanceof Date) {
-      return format(date, "PPP");
+      return format(date, "PPP", { locale: fr });
     }
 
     const range = date as DateRange;
 
     if (!isDayUse && range?.from && !range?.to) {
-      return format(range.from, "PPP");
+      return format(range.from, "PPP", { locale: fr });
     }
 
     if (!isDayUse && range?.from && range?.to) {
-      return `${format(range.from, "PPP")} → ${format(range.to, "PPP")}`;
+      return `${format(range.from, "PPP", { locale: fr })} → ${format(range.to, "PPP", { locale: fr })}`;
     }
 
     return isDayUse ? "Sélectionner un jour" : "Sélectionner une période";
   };
 
-  const getFeedback = () => {
-  if (!date) return "";
-
-  if (isDayUse && date instanceof Date) {
-    return `Vous avez sélectionné le ${format(date, "PPP")}`;
-  }
-
-  const range = date as DateRange;
-  if (range?.from && range?.to) {
-    const nights = differenceInCalendarDays(range.to, range.from);
-    return `Vous avez sélectionné ${nights} nuitée${nights > 1 ? "s" : ""} (du ${format(range.from, "PPP")} au ${format(range.to, "PPP")})`;
-  }
-
-  return "";
+ const addRoom = () => {
+  setRooms([...rooms, { id: Date.now(), adults: 1, children: 0 }]);
 };
 
+  const getFeedback = () => {
+    if (!date) return "";
 
-const isMobile = useIsMobile();
+    if (isDayUse && date instanceof Date) {
+      return `Vous avez sélectionné le ${format(date, "PPP", { locale: fr })}`;
+    }
 
+    const range = date as DateRange;
+    if (range?.from && range?.to) {
+      const nights = differenceInCalendarDays(range.to, range.from);
+      return `${nights} nuitée${nights > 1 ? "s" : ""} (du ${format(range.from, "PPP", { locale: fr })} au ${format(range.to, "PPP", { locale: fr })})`;
+    }
 
+    return "";
+  };
 
-  const updateRoom = (index: number, field: keyof Room, value: number) => {
+  const updateRoom = (index: number, field: 'adults' | 'children', value: number) => {
     const updated = [...rooms];
     updated[index][field] = value;
     setRooms(updated);
   };
 
-  const addRoom = () => {
-    setRooms([...rooms, { adults: 2, children: 0 }]);
-  };
+
 
   const totalAdults = rooms.reduce((acc, r) => acc + r.adults, 0);
   const totalChildren = rooms.reduce((acc, r) => acc + r.children, 0);
 
   const validateGuests = () => {
-    console.log("Chambres validées :", rooms);
+    console.log("Chambres validées:", rooms);
   };
 
+  const handleSearch = () => {
+    const totalGuests = rooms.reduce(
+      (acc, room) => {
+        acc.adults += room.adults;
+        acc.children += room.children;
+        return acc;
+      },
+      { adults: 0, children: 0 }
+    );
 
- const handleSearch = () => {
-  // Calcule le total des invités
-  const totalGuests = rooms.reduce(
-    (acc, room) => {
-      acc.adults += room.adults;
-      acc.children += room.children;
-      return acc;
-    },
-    { adults: 0, children: 0 }
-  );
+    const totalRooms = rooms.length;
+    
+const searchPayload = {
+  stayType: isDayUse ? "dayuse" : "overnight",
+  rooms: totalRooms,
+  guests: {
+    adults: totalGuests.adults,
+    children: totalGuests.children,
+    total: totalGuests.adults + totalGuests.children,
+  },
+} 
 
-  const totalRooms = rooms.length;
+type UpdatedSearchPayload = SearchPayload & {
+  date: string;
+  from?: string;
+  to?: string;
+  nights?: number;
+};
 
-  let searchPayload: Record<string, any> = {
-    stayType: isDayUse ? "dayuse" : "overnight",
-    rooms: totalRooms,
-    guests: {
-      adults: totalGuests.adults,
-      children: totalGuests.children,
-      total: totalGuests.adults + totalGuests.children,
-    },
+let updatedSearchPayload: UpdatedSearchPayload = { ...searchPayload } as UpdatedSearchPayload;
+
+if (isDayUse && date instanceof Date) {
+  updatedSearchPayload = {
+    ...updatedSearchPayload,
+    date: date.toISOString().split("T")[0],
   };
+} else if (
+  !isDayUse &&
+  typeof date === "object" &&
+  date !== null &&
+  "from" in date &&
+  "to" in date
+) {
+  updatedSearchPayload = {
+    ...updatedSearchPayload,
+   from: date.from ? date.from.toISOString().split("T")[0] : undefined,
+   to: date.to ? date.to.toISOString().split("T")[0] : undefined,
+nights: date.from?.getTime() && date.to?.getTime()
+  ? Math.ceil((date.to.getTime() - date.from.getTime()) / (1000 * 60 * 60 * 24))
+  : undefined,
+  };
+}
 
-  if (isDayUse && date instanceof Date) {
-    searchPayload = {
-      ...searchPayload,
-      date: date.toISOString().split("T")[0],
-    };
-  } else if (
-    !isDayUse &&
-    typeof date === "object" &&
-    date !== null &&
-    "from" in date &&
-    "to" in date
-  ) {
-    searchPayload = {
-      ...searchPayload,
-      from: date.from ? date.from.toISOString().split("T")[0] : null,
-      to: date.to ? date.to.toISOString().split("T")[0] : null,
-      nights: date.from && date.to
-        ? Math.ceil((+date.to - +date.from) / (1000 * 60 * 60 * 24))
-        : null,
-    };
-  }
-
-  console.log("📦 Payload de recherche à envoyer :", searchPayload);
+console.log("📦 Payload de recherche à envoyer :", updatedSearchPayload);
 };
 
 
@@ -429,17 +277,18 @@ const isMobile = useIsMobile();
         className="relative h-screen overflow-hidden"
       >
         {/* Background Image with Overlay */}
-        <motion.div
-          className="absolute inset-0"
-          initial={{ scale: 1.1 }}
-          animate={{ scale: 1 }}
-          transition={{ duration: 1.2, ease: [0.25, 0.1, 0.25, 1] }}
-        >
-          <img
-            src="https://images.pexels.com/photos/261102/pexels-photo-261102.jpeg"
-            alt="Bain de Lac Hotel"
-            className="w-full h-full object-cover"
-          />
+     <motion.div
+  className="absolute inset-0"
+  initial={{ scale: 1.1 }}
+  animate={{ scale: 1 }}
+  transition={{ duration: 1.2, ease: [0.25, 0.1, 0.25, 1] }}
+>
+  <Image
+    src="https://images.pexels.com/photos/261102/pexels-photo-261102.jpeg"
+    alt="Bain de Lac Hotel"
+    layout="fill"
+    objectFit="cover"
+  />
           <motion.div
             className="absolute inset-0"
             style={{ background: `linear-gradient(to right, ${colors.maroon}33, ${colors.teal}33)` }}
@@ -475,7 +324,7 @@ const isMobile = useIsMobile();
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 0.6, delay: 0.7 }}
-              style={{ color: colors.cream }}
+              style={{ color: colors.white }}
             >
               Une expérience unique au bord du lac
             </motion.p>
@@ -581,14 +430,11 @@ const isMobile = useIsMobile();
                         <DayPicker
                           mode="single"
                           selected={date instanceof Date ? date : undefined}
-                          onSelect={(selected: Date | undefined) => {
-                            setDate(selected);
-                          }}
-                           numberOfMonths={isMobile ? 1 : 2}
-                         
+                          onSelect={setDate}
+                          numberOfMonths={isMobile ? 1 : 2}
                           showOutsideDays
                           required={false}
-                           disabled={{ before: new Date() }}
+                          disabled={{ before: new Date() }}
                           modifiersClassNames={{
                             selected: "bg-orange-500 text-white",
                           }}
@@ -598,10 +444,8 @@ const isMobile = useIsMobile();
                         <DayPicker
                           mode="range"
                           selected={typeof date === 'object' && date && 'from' in date ? date as DateRange : undefined}
-                          onSelect={(selected: DateRange | undefined) => {
-                            setDate(selected);
-                          }}
-                         numberOfMonths={isMobile ? 1 : 2}
+                          onSelect={setDate}
+                          numberOfMonths={isMobile ? 1 : 2}
                           showOutsideDays
                           required={false}
                           disabled={{ before: new Date() }}
@@ -614,15 +458,15 @@ const isMobile = useIsMobile();
                         />
                       )}
                       <motion.div
-                      initial={{ opacity: 0, y: -5 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      className="text-sm text-muted-foreground"
+                        initial={{ opacity: 0, y: -5 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="text-sm text-muted-foreground"
                       >
-                      {getFeedback() && (
-                        <div className="text-sm text-muted-foreground">
-                        {getFeedback()}
-                        </div>
-                      )}
+                        {getFeedback() && (
+                          <div className="text-sm text-muted-foreground">
+                            {getFeedback()}
+                          </div>
+                        )}
                       </motion.div>
                     </PopoverContent>
                   </Popover>
@@ -635,7 +479,7 @@ const isMobile = useIsMobile();
                       checked={isDayUse}
                       onChange={(e) => {
                         setIsDayUse(e.target.checked);
-                        setDate(undefined); // reset date
+                        setDate(undefined);
                       }}
                       className="accent-orange-500 h-4 w-4"
                     />
@@ -759,7 +603,7 @@ const isMobile = useIsMobile();
                         background: `linear-gradient(to right, ${colors.orange}, ${colors.maroon})`,
                         color: 'white'
                       }}
-                        onClick={handleSearch}
+                      onClick={handleSearch}
                     >
                       <motion.span
                         initial={{ x: 0 }}
@@ -780,438 +624,209 @@ const isMobile = useIsMobile();
       </motion.section>
 
 
+{/* Rooms Section - Luxury Design */}
+<section className="py-24 bg-gradient-to-b from-white to-gray-50 font-sans">
+  <div className="mx-auto px-4 sm:px-6 lg:px-8">
+    <div className="text-center mb-20">
+      <span className="inline-block px-5 py-2 text-sm font-semibold tracking-wider text-teal-700 bg-teal-100 rounded-full mb-6 uppercase">
+        Hébergement exclusif
+      </span>
+      <h2 className="text-5xl font-bold text-gray-900 mb-6 tracking-tight">
+        Nos Chambres & Suites
+      </h2>
+      <p className="text-xl text-gray-600 max-w-2xl mx-auto leading-relaxed">
+       Des espaces raffinés où élégance et confort se marient parfaitement
+      </p>
+    </div>
 
-      {/* Rooms Section - Luxury Design */}
-      <section className="py-24 bg-gradient-to-b from-white to-gray-50 font-sans">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-20">
-            <span className="inline-block px-5 py-2 text-sm font-semibold tracking-wider text-teal-700 bg-teal-100 rounded-full mb-6 uppercase">
-              Hébergement exclusif
-            </span>
-            <h2 className="text-5xl font-bold text-gray-900 mb-6 tracking-tight">
-              Nos Chambres & Suites
-            </h2>
-            <p className="text-xl text-gray-600 max-w-2xl mx-auto leading-relaxed">
-              Des espaces raffinés où élégance et confort s'accordent parfaitement
-            </p>
-          </div>
+    
+    <RoomList onBookNow={() => console.log('Book now clicked!')} />
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
-            {/* Chambre Vue Lac */}
-            <motion.div
-              initial={{ opacity: 0, y: 50 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6 }}
-              whileHover={{ y: -10 }}
-              className="group relative"
-            >
-              <div className="h-full bg-white rounded-2xl shadow-xl overflow-hidden transition-all duration-300 group-hover:shadow-2xl border border-gray-100">
-                <div className="relative overflow-hidden h-72">
-                  <img
-                    src="https://images.pexels.com/photos/271624/pexels-photo-271624.jpeg"
-                    alt="Chambre Vue Lac"
-                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-8">
-                    <button className="translate-y-4 group-hover:translate-y-0 transition-transform duration-300 px-8 py-3 bg-amber-500 text-white font-medium rounded-full hover:bg-amber-600 shadow-lg">
-                      Voir les détails
-                    </button>
-                  </div>
-                </div>
-
-                <div className="p-8">
-                  <div className="flex justify-between items-start mb-3">
-                    <h3 className="text-2xl font-bold text-gray-900 tracking-tight">Chambre Vue Lac</h3>
-                    <div className="flex items-center space-x-2">
-                      <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-teal-100 text-teal-800">
-                        35m²
-                      </span>
-                      <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-amber-100 text-amber-800">
-                        2 personnes
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center mb-5">
-                    <div className="flex mr-2">
-                      {[...Array(5)].map((_, i) => (
-                        <Star
-                          key={i}
-                          className={`h-5 w-5 ${i < 4 ? 'text-amber-400 fill-amber-400' : 'text-gray-300 fill-gray-300'}`}
-                        />
-                      ))}
-                    </div>
-                    <span className="text-sm text-gray-500">(42 avis)</span>
-                  </div>
-
-                  <div className="flex flex-wrap gap-3 mb-8">
-                    {['Vue panoramique', 'WiFi premium', 'Climatisation', 'Petit-déjeuner'].map((feature, i) => (
-                      <span key={i} className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-700">
-                        <Check className="h-3 w-3 mr-1.5 text-teal-600" />
-                        {feature}
-                      </span>
-                    ))}
-                  </div>
-
-                  <div className="flex items-center justify-between border-t border-gray-200 pt-6">
-                    <div>
-                      <p className="text-3xl font-bold text-teal-700">
-                        250€
-                        <span className="text-base font-normal text-gray-500"> /nuit</span>
-                      </p>
-                      <p className="text-sm text-gray-500 mt-1">Taxes incluses</p>
-                    </div>
-                    <button className="px-6 py-3 bg-teal-600 hover:bg-teal-700 text-white font-medium rounded-lg transition-all shadow-md hover:shadow-lg">
-                      Réserver
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </motion.div>
-
-            {/* Suite Deluxe */}
-            <motion.div
-              initial={{ opacity: 0, y: 50 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6, delay: 0.2 }}
-              whileHover={{ y: -10 }}
-              className="group relative"
-            >
-              <div className="h-full bg-white rounded-2xl shadow-xl overflow-hidden transition-all duration-300 group-hover:shadow-2xl border border-gray-100">
-                <div className="absolute top-6 right-6 bg-amber-600 text-white text-sm font-bold px-4 py-1.5 rounded-full shadow-lg z-10">
-                  Plus demandée
-                </div>
-                <div className="relative overflow-hidden h-72">
-                  <img
-                    src="https://images.pexels.com/photos/164595/pexels-photo-164595.jpeg"
-                    alt="Suite Deluxe"
-                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-8">
-                    <button className="translate-y-4 group-hover:translate-y-0 transition-transform duration-300 px-8 py-3 bg-amber-500 text-white font-medium rounded-full hover:bg-amber-600 shadow-lg">
-                      Voir les détails
-                    </button>
-                  </div>
-                </div>
-
-                <div className="p-8">
-                  <div className="flex justify-between items-start mb-3">
-                    <h3 className="text-2xl font-bold text-gray-900 tracking-tight">Suite Deluxe</h3>
-                    <div className="flex items-center space-x-2">
-                      <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-teal-100 text-teal-800">
-                        50m²
-                      </span>
-                      <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-amber-100 text-amber-800">
-                        4 personnes
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center mb-5">
-                    <div className="flex mr-2">
-                      {[...Array(5)].map((_, i) => (
-                        <Star
-                          key={i}
-                          className={`h-5 w-5 ${i < 5 ? 'text-amber-400 fill-amber-400' : 'text-gray-300 fill-gray-300'}`}
-                        />
-                      ))}
-                    </div>
-                    <span className="text-sm text-gray-500">(68 avis)</span>
-                  </div>
-
-                  <div className="flex flex-wrap gap-3 mb-8">
-                    {['Espace lounge', 'Service VIP', 'Salle de bain marbre', 'Mini-bar'].map((feature, i) => (
-                      <span key={i} className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-700">
-                        <Check className="h-3 w-3 mr-1.5 text-teal-600" />
-                        {feature}
-                      </span>
-                    ))}
-                  </div>
-
-                  <div className="flex items-center justify-between border-t border-gray-200 pt-6">
-                    <div>
-                      <p className="text-3xl font-bold text-teal-700">
-                        400€
-                        <span className="text-base font-normal text-gray-500"> /nuit</span>
-                      </p>
-                      <p className="text-sm text-gray-500 mt-1">Taxes incluses</p>
-                    </div>
-                    <button className="px-6 py-3 bg-teal-600 hover:bg-teal-700 text-white font-medium rounded-lg transition-all shadow-md hover:shadow-lg">
-                      Réserver
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </motion.div>
-
-            {/* Suite Présidentielle */}
-            <motion.div
-              initial={{ opacity: 0, y: 50 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6, delay: 0.4 }}
-              whileHover={{ y: -10 }}
-              className="group relative"
-            >
-              <div className="h-full bg-white rounded-2xl shadow-xl overflow-hidden transition-all duration-300 group-hover:shadow-2xl border border-gray-100">
-                <div className="relative overflow-hidden h-72">
-                  <img
-                    src="https://images.pexels.com/photos/1457842/pexels-photo-1457842.jpeg"
-                    alt="Suite Présidentielle"
-                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-8">
-                    <button className="translate-y-4 group-hover:translate-y-0 transition-transform duration-300 px-8 py-3 bg-amber-500 text-white font-medium rounded-full hover:bg-amber-600 shadow-lg">
-                      Voir les détails
-                    </button>
-                  </div>
-                </div>
-
-                <div className="p-8">
-                  <div className="flex justify-between items-start mb-3">
-                    <h3 className="text-2xl font-bold text-gray-900 tracking-tight">Suite Présidentielle</h3>
-                    <div className="flex items-center space-x-2">
-                      <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-teal-100 text-teal-800">
-                        80m²
-                      </span>
-                      <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-amber-100 text-amber-800">
-                        6 personnes
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center mb-5">
-                    <div className="flex mr-2">
-                      {[...Array(5)].map((_, i) => (
-                        <Star
-                          key={i}
-                          className={`h-5 w-5 ${i < 5 ? 'text-amber-400 fill-amber-400' : 'text-gray-300 fill-gray-300'}`}
-                        />
-                      ))}
-                    </div>
-                    <span className="text-sm text-gray-500">(24 avis)</span>
-                  </div>
-
-                  <div className="flex flex-wrap gap-3 mb-8">
-                    {['Terrasse privée', 'Service majordome', 'Spa intégré', 'Vue à 360°'].map((feature, i) => (
-                      <span key={i} className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-700">
-                        <Check className="h-3 w-3 mr-1.5 text-teal-600" />
-                        {feature}
-                      </span>
-                    ))}
-                  </div>
-
-                  <div className="flex items-center justify-between border-t border-gray-200 pt-6">
-                    <div>
-                      <p className="text-3xl font-bold text-teal-700">
-                        600€
-                        <span className="text-base font-normal text-gray-500"> /nuit</span>
-                      </p>
-                      <p className="text-sm text-gray-500 mt-1">Taxes incluses</p>
-                    </div>
-                    <button className="px-6 py-3 bg-teal-600 hover:bg-teal-700 text-white font-medium rounded-lg transition-all shadow-md hover:shadow-lg">
-                      Réserver
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </motion.div>
-          </div>
-
-          <div className="mt-20 text-center">
-            <button className="px-10 py-4 border-2 border-teal-600 text-teal-600 hover:bg-teal-50 text-lg font-medium rounded-lg transition-all duration-300 hover:shadow-md">
-              Découvrir toutes nos chambres
-            </button>
-          </div>
-        </div>
-      </section>
-
-
+    <div className="mt-20 text-center">
+      <button className="px-10 py-4 border-2 border-teal-600 text-teal-600 hover:bg-teal-50 text-lg font-medium rounded-lg transition-all duration-300 hover:shadow-md">
+        Découvrir toutes nos chambres
+      </button>
+    </div>
+  </div>
+</section>
 
 
       {/* Services Section - Design Premium */}
-      <motion.section
-        initial="hidden"
-        whileInView="visible"
-        viewport={{ once: true, margin: "-100px" }}
-        className="py-20 overflow-hidden"
-        style={{ backgroundColor: colors.lightTeal, fontFamily: 'Bahnschrift, sans-serif' }}
+    
+<motion.section
+  initial="hidden"
+  whileInView="visible"
+  viewport={{ once: true, margin: "-100px" }}
+  className="py-20 overflow-hidden"
+  style={{ backgroundColor: colors.lightTeal, fontFamily: 'Bahnschrift, sans-serif' }}
+>
+  <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    {/* Animated Header */}
+    <motion.div
+      className="text-center mb-16"
+      initial={{ opacity: 0, y: 30 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.6 }}
+      viewport={{ once: true }}
+    >
+      <motion.span
+        className="inline-block px-4 py-1.5 text-sm font-semibold rounded-full mb-4 tracking-wide"
+        style={{
+          color: colors.teal,
+          backgroundColor: `${colors.teal}20`
+        }}
+        initial={{ scale: 0.9 }}
+        whileInView={{ scale: 1 }}
+        transition={{ duration: 0.4, delay: 0.2 }}
       >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          {/* Animated Header */}
-          <motion.div
-            className="text-center mb-16"
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            viewport={{ once: true }}
-          >
-            <motion.span
-              className="inline-block px-4 py-1.5 text-sm font-semibold rounded-full mb-4 tracking-wide"
-              style={{
-                color: colors.teal,
-                backgroundColor: `${colors.teal}20`
-              }}
-              initial={{ scale: 0.9 }}
-              whileInView={{ scale: 1 }}
-              transition={{ duration: 0.4, delay: 0.2 }}
-            >
-              Ce que nous offrons
-            </motion.span>
-            <motion.h2
-              className="text-4xl md:text-5xl font-bold mb-4 tracking-tight"
-              style={{ color: colors.maroon }}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.3 }}
-            >
-              Des services <span style={{ color: colors.gold }}>exceptionnels</span>
-            </motion.h2>
-            <motion.p
-              className="text-xl max-w-3xl mx-auto leading-relaxed"
-              style={{ color: colors.darkTeal }}
-              initial={{ opacity: 0 }}
-              whileInView={{ opacity: 1 }}
-              transition={{ duration: 0.6, delay: 0.4 }}
-            >
-              Découvrez comment nous rendons votre expérience <span style={{ color: colors.maroon }}>inoubliable</span>
-            </motion.p>
-          </motion.div>
+        Ce que nous offrons
+      </motion.span>
+      <motion.h2
+        className="text-4xl md:text-5xl font-bold mb-4 tracking-tight"
+        style={{ color: colors.maroon }}
+        initial={{ opacity: 0, y: 20 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, delay: 0.3 }}
+      >
+        Des services <span style={{ color: colors.gold }}>exceptionnels</span>
+      </motion.h2>
+      <motion.p
+        className="text-xl max-w-3xl mx-auto leading-relaxed"
+        style={{ color: colors.darkTeal }}
+        initial={{ opacity: 0 }}
+        whileInView={{ opacity: 1 }}
+        transition={{ duration: 0.6, delay: 0.4 }}
+      >
+        Découvrez comment nous rendons votre expérience <span style={{ color: colors.maroon }}>inoubliable</span>
+      </motion.p>
+    </motion.div>
 
-          {/* Services Carousel with Infinite Loop */}
-          <Swiper
-            modules={[Autoplay]}
-            autoplay={{
-              delay: 4000,
-              disableOnInteraction: false,
-            }}
-            loop={true}
-            spaceBetween={30}
-            breakpoints={{
-              640: { slidesPerView: 1 },
-              768: { slidesPerView: 2 },
-              1024: { slidesPerView: 3 },
-              1280: { slidesPerView: 4 },
-            }}
-            className="py-8"
-          >
-            {services.map((service, index) => (
-              <SwiperSlide key={service.title}>
+    {/* Services Carousel with Infinite Loop */}
+<Swiper
+ref={swiperRef}
+  modules={[Autoplay]}
+  autoplay={{
+    delay: 4000,
+    disableOnInteraction: false,
+  }}
+  loop={true}
+  spaceBetween={30}
+  direction="horizontal"
+  slidesPerView={1}
+  breakpoints={{
+    640: { slidesPerView: 1 },
+    768: { slidesPerView: 2 },
+    1024: { slidesPerView: 3 },
+    1280: { slidesPerView: 4 },
+  }}
+  className="py-8"
+>
+     {services.map((service, index) => (
+  <SwiperSlide key={service.title}>
+    <motion.div
+      key={service.title}
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: index * 0.2 }}
+      className="text-center"
+    >
+              <div
+                className="h-full rounded-xl overflow-hidden transition-all duration-300 group-hover:shadow-xl relative"
+                style={{
+                  backgroundColor: 'white',
+                  border: `1px solid ${colors.gold}33`,
+                  boxShadow: '0 4px 20px rgba(0, 0, 0, 0.08)'
+                }}
+              >
                 <motion.div
-                  initial={{ opacity: 0, y: 50, scale: 0.95 }}
-                  whileInView={{ opacity: 1, y: 0, scale: 1 }}
-                  viewport={{ once: true }}
-                  transition={{
-                    type: "spring",
-                    stiffness: 100,
-                    damping: 15,
-                    delay: index * 0.1,
-                  }}
-                  whileHover={{
-                    y: -10,
-                    transition: { type: "spring", stiffness: 300 },
-                  }}
-                  className="group h-full"
-                >
-                  <div
-                    className="h-full rounded-xl overflow-hidden transition-all duration-300 group-hover:shadow-xl relative"
+                  className="absolute -top-10 -right-10 w-32 h-32 rounded-full opacity-0 group-hover:opacity-20"
+                  style={{ backgroundColor: colors.teal }}
+                  initial={{ scale: 0.5 }}
+                  whileHover={{ scale: 1 }}
+                  transition={{ duration: 0.8 }}
+                ></motion.div>
+
+                <div className="p-8 text-center relative z-10">
+                  <motion.div
+                    className="mx-auto flex items-center justify-center h-16 w-16 rounded-full mb-6 shadow-sm group-hover:shadow-md transition-all duration-500"
                     style={{
                       backgroundColor: 'white',
                       border: `1px solid ${colors.gold}33`,
-                      boxShadow: '0 4px 20px rgba(0, 0, 0, 0.08)'
+                      color: colors.teal
+                    }}
+                    whileHover={{
+                      rotate: [0, 10, -10, 0],
+                      transition: { duration: 0.6 },
                     }}
                   >
-                    <motion.div
-                      className="absolute -top-10 -right-10 w-32 h-32 rounded-full opacity-0 group-hover:opacity-20"
-                      style={{ backgroundColor: colors.teal }}
-                      initial={{ scale: 0.5 }}
-                      whileHover={{ scale: 1 }}
-                      transition={{ duration: 0.8 }}
-                    ></motion.div>
+                    <motion.div className="h-8 w-8" whileHover={{ scale: 1.1 }}>
+                      {service.icon && React.cloneElement(service.icon, {
+                        className: "h-8 w-8 transition-colors duration-300",
+                        style: { color: colors.teal }
+                      })}
+                    </motion.div>
+                  </motion.div>
 
-                    <div className="p-8 text-center relative z-10">
-                      <motion.div
-                        className="mx-auto flex items-center justify-center h-16 w-16 rounded-full mb-6 shadow-sm group-hover:shadow-md transition-all duration-500"
-                        style={{
-                          backgroundColor: 'white',
-                          border: `1px solid ${colors.gold}33`,
-                          color: colors.teal
-                        }}
-                        whileHover={{
-                          rotate: [0, 10, -10, 0],
-                          transition: { duration: 0.6 },
-                        }}
-                      >
-                        <motion.div className="h-8 w-8" whileHover={{ scale: 1.1 }}>
-                          {React.cloneElement(service.icon, {
-                            className: "h-8 w-8 transition-colors duration-300",
-                            style: { color: colors.teal }
-                          })}
-                        </motion.div>
-                      </motion.div>
+                  <h3
+                    className="text-2xl font-bold mb-3 transition-colors duration-300"
+                    style={{ color: colors.maroon }}
+                  >
+                    {service.title}
+                  </h3>
+                  <p
+                    className="mb-6 leading-relaxed transition-colors duration-300"
+                    style={{ color: colors.darkTeal }}
+                  >
+                    {service.description}
+                  </p>
 
-                      <h3
-                        className="text-2xl font-bold mb-3 transition-colors duration-300"
-                        style={{ color: colors.maroon }}
-                      >
-                        {service.title}
-                      </h3>
-                      <p
-                        className="mb-6 leading-relaxed transition-colors duration-300"
-                        style={{ color: colors.darkTeal }}
-                      >
-                        {service.description}
-                      </p>
+                  <motion.button
+                    className="inline-flex items-center font-medium transition-colors"
+                    style={{ color: colors.orange }}
+                    whileHover={{ x: 3 }}
+                  >
+                    En savoir plus
+                    <ArrowRight
+                      className="ml-2 h-4 w-4 transition-all duration-300 group-hover:translate-x-1 group-hover:scale-110"
+                      style={{ color: colors.orange }}
+                    />
+                  </motion.button>
+                </div>
+              </div>
+            </motion.div>
+          </SwiperSlide>
+        ))}
+      </Swiper>
+    
 
-                      <motion.button
-                        className="inline-flex items-center font-medium transition-colors"
-                        style={{ color: colors.orange }}
-                        whileHover={{ x: 3 }}
-                      >
-                        En savoir plus
-                        <ArrowRight
-                          className="ml-2 h-4 w-4 transition-all duration-300 group-hover:translate-x-1 group-hover:scale-110"
-                          style={{ color: colors.orange }}
-                        />
-                      </motion.button>
-                    </div>
-                  </div>
-                </motion.div>
-              </SwiperSlide>
-            ))}
-          </Swiper>
-
-          {/* CTA Button */}
-          <motion.div
-            className="mt-16 text-center"
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.5 }}
-            viewport={{ once: true }}
-          >
-            <motion.button
-              className="px-8 py-3.5 font-semibold rounded-full shadow-md hover:shadow-lg transition-all duration-300 relative overflow-hidden group"
-              style={{
-                background: `linear-gradient(to right, ${colors.orange}, ${colors.maroon})`,
-                color: 'white'
-              }}
-              whileHover={{
-                scale: 1.05,
-                boxShadow: `0 10px 25px -5px ${colors.orange}80`
-              }}
-              whileTap={{ scale: 0.98 }}
-            >
-              <span className="relative z-10 flex items-center justify-center">
-                Voir tous nos services
-                <ArrowRight className="ml-2 h-4 w-4 transition-all duration-300 group-hover:translate-x-1" />
-              </span>
-            </motion.button>
-          </motion.div>
-        </div>
-      </motion.section>
-
+    {/* CTA Button */}
+    <motion.div
+      className="mt-16 text-center"
+      initial={{ opacity: 0, y: 20 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      transition={{ delay: 0.5 }}
+      viewport={{ once: true }}
+    >
+      <motion.button
+        className="px-8 py-3.5 font-semibold rounded-full shadow-md hover:shadow-lg transition-all duration-300 relative overflow-hidden group"
+        style={{
+          background: `linear-gradient(to right, ${colors.orange}, ${colors.maroon})`,
+          color: 'white'
+        }}
+        whileHover={{
+          scale: 1.05,
+          boxShadow: `0 10px 25px -5px ${colors.orange}80`
+        }}
+        whileTap={{ scale: 0.98 }}
+      >
+        <span className="relative z-10 flex items-center justify-center">
+          Voir tous nos services
+          <ArrowRight className="ml-2 h-4 w-4 transition-all duration-300 group-hover:translate-x-1" />
+        </span>
+      </motion.button>
+    </motion.div>
+  </div>
+</motion.section>
 
       {/* Restaurant Section */}
       <section className="py-24" style={{ backgroundColor: colors.lightTeal }}>
@@ -1239,7 +854,7 @@ const isMobile = useIsMobile();
                   borderColor: colors.gold
                 }}>
                 <h3 className="font-semibold text-lg mb-3" style={{ color: colors.maroon }}>
-                  Horaires d'ouverture :
+                  Heures ouvertes :
                 </h3>
                 <ul className="space-y-2" style={{ color: colors.darkTeal }}>
                   <li className="flex items-center">
@@ -1281,11 +896,14 @@ const isMobile = useIsMobile();
               viewport={{ once: true }}
               className="relative h-[500px] rounded-2xl overflow-hidden shadow-2xl"
             >
-              <img
-                src="https://images.pexels.com/photos/67468/pexels-photo-67468.jpeg"
-                alt="Restaurant béninois"
-                className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
-              />
+               <Image
+    src="https://images.pexels.com/photos/67468/pexels-photo-67468.jpeg"
+    alt="Restaurant béninois"
+    className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
+    width={500} 
+    height={500}
+  />
+
               <div className="absolute inset-0"
                 style={{
                   background: `linear-gradient(to top, ${colors.maroon}30, transparent)`
