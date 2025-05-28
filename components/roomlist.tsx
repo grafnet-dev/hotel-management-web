@@ -31,14 +31,7 @@ interface RoomListProps {
   onBookNow: (room: Room) => void;
 }
 
-const colors = {
-  teal: '#2a9d8f',
-  gold: '#e9c46a',
-  orange: '#f4a261',
-  maroon: '#e76f51',
-  darkTeal: '#1e4e5f',
-  lightTeal: '#e0f2f1',
-};
+
 
 
 

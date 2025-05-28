@@ -59,6 +59,8 @@ export default function Home() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const swiperRef = useRef(null);
 
+  
+
 const services = [
   {
     title: 'Hébergement de luxe',
@@ -269,7 +271,7 @@ console.log("📦 Payload de recherche à envoyer :", updatedSearchPayload);
 
 
   return (
-    <div className="min-h-screen" style={{ fontFamily: 'Bahnschrift, sans-serif' }}>
+      <div className="min-h-screen" style={{ fontFamily: 'Bahnschrift, sans-serif' }}>
       {/* Hero Section */}
       <motion.section
         initial="hidden"
@@ -277,81 +279,231 @@ console.log("📦 Payload de recherche à envoyer :", updatedSearchPayload);
         className="relative h-screen overflow-hidden"
       >
         {/* Background Image with Overlay */}
-     <motion.div
-  className="absolute inset-0"
-  initial={{ scale: 1.1 }}
-  animate={{ scale: 1 }}
-  transition={{ duration: 1.2, ease: [0.25, 0.1, 0.25, 1] }}
->
+    <motion.div
+          className="absolute inset-0"
+          initial={{ scale: 1.1, rotate: 0.5 }}
+          animate={{ scale: 1, rotate: 0 }}
+          transition={{ duration: 2, ease: [0.25, 0.1, 0.25, 1] }}
+        >
   <Image
-    src="https://images.pexels.com/photos/261102/pexels-photo-261102.jpeg"
+    src="https://images.pexels.com/photos/1134176/pexels-photo-1134176.jpeg"
     alt="Bain de Lac Hotel"
     layout="fill"
     objectFit="cover"
   />
           <motion.div
-            className="absolute inset-0"
-            style={{ background: `linear-gradient(to right, ${colors.maroon}33, ${colors.teal}33)` }}
+            className="absolute inset-0 pointer-events-none"
             initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 1.5 }}
-          />
+            animate={{ opacity: [0, 1, 0] }}
+            transition={{ duration: 3, repeat: Infinity, delay: 2 }}
+          >
+            {[...Array(20)].map((_, i) => (
+              <motion.div
+                key={i}
+                className="absolute w-1 h-1 bg-yellow-200 rounded-full"
+                style={{
+                  left: `${Math.random() * 100}%`,
+                  top: `${Math.random() * 100}%`,
+                  boxShadow: '0 0 6px rgba(255, 215, 0, 0.8)'
+                }}
+                animate={{
+                  scale: [0, 1, 0],
+                  opacity: [0, 1, 0],
+                }}
+                transition={{
+                  duration: 2,
+                  repeat: Infinity,
+                  delay: Math.random() * 3,
+                }}
+              />
+            ))}
+          </motion.div>
         </motion.div>
 
         {/* Hero Content */}
-        <div className="relative h-full flex items-center justify-center text-center text-white px-4">
+        <div className="relative h-full flex items-center justify-center text-center text-white px-4 z-10">
           <motion.div
-            initial={{ opacity: 0, y: 40 }}
+            initial={{ opacity: 0, y: 60 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.3 }}
-            className="max-w-4xl"
+            transition={{ duration: 1.2, delay: 0.8, ease: [0.25, 0.1, 0.25, 1] }}
+            className="max-w-5xl"
           >
+            {/* Decorative Line Above Title */}
+            <motion.div
+              className="w-32 h-0.5 mx-auto mb-8"
+              style={{ backgroundColor: colors.gold }}
+              initial={{ width: 0 }}
+              animate={{ width: 128 }}
+              transition={{ duration: 1, delay: 1.2 }}
+            />
+
             <motion.h1
-              className="text-4xl md:text-6xl font-bold mb-4 tracking-tight"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.6, delay: 0.5 }}
+              className="text-5xl md:text-7xl font-bold mb-6 tracking-wide leading-tight"
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ 
+                duration: 1, 
+                delay: 1.0,
+                type: "spring",
+                stiffness: 100,
+                damping: 10
+              }}
               style={{
-                color: colors.gold,
-                textShadow: '2px 2px 4px rgba(0,0,0,0.5)'
+                background: `linear-gradient(135deg, ${colors.gold} 0%, #FFF8DC 50%, ${colors.gold} 100%)`,
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                textShadow: '0 4px 8px rgba(0,0,0,0.3)',
+                filter: 'drop-shadow(2px 2px 4px rgba(0,0,0,0.5))'
               }}
             >
               Bienvenue au Bain de Lac
             </motion.h1>
 
-            <motion.p
-              className="text-xl md:text-2xl mb-8 font-light"
+           <motion.p
+              className="text-2xl md:text-3xl mb-12 font-light leading-relaxed"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              transition={{ duration: 0.6, delay: 0.7 }}
-              style={{ color: colors.white }}
-            >
-              Une expérience unique au bord du lac
-            </motion.p>
-
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{
-                type: "spring",
-                stiffness: 300,
-                damping: 10,
-                delay: 0.9
+              transition={{ duration: 0.8, delay: 1.4 }}
+              style={{ 
+                color: colors.white,
+                textShadow: '1px 1px 3px rgba(0,0,0,0.7)'
               }}
             >
-              <Button
-                size="lg"
-                className="transition-all duration-300 transform hover:-translate-y-1 shadow-lg hover:shadow-xl"
-                style={{
-                  backgroundColor: colors.teal,
-                  borderColor: colors.gold,
-                  borderWidth: '2px'
+              Une expérience unique au bord du lac
+              <br />
+              <span className="text-xl opacity-90">Où le luxe rencontre la sérénité</span>
+            </motion.p>
+
+             <motion.div
+              className="flex flex-col sm:flex-row gap-6 justify-center items-center"
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{
+                type: "spring",
+                stiffness: 200,
+                damping: 15,
+                delay: 1.6
+              }}
+            >
+              <motion.div
+                whileHover={{ 
+                  scale: 1.05,
+                  boxShadow: "0 20px 40px rgba(255, 215, 0, 0.3)"
                 }}
+                whileTap={{ scale: 0.98 }}
               >
-                Découvrir
-              </Button>
-            </motion.div>
+                <Button
+                  size="lg"
+                  className="relative overflow-hidden group"
+                  style={{
+                    background: `linear-gradient(135deg, ${colors.teal} 0%, ${colors.darkTeal} 100%)`,
+                    border: `2px solid ${colors.gold}`,
+                    color: colors.white,
+                    boxShadow: '0 10px 30px rgba(0, 139, 139, 0.4)',
+                    position: 'relative'
+                  }}
+                >
+                  <span className="relative z-10">Découvrir nos Chambres</span>
+                  <motion.div
+                    className="absolute inset-0 bg-gradient-to-r from-transparent via-white to-transparent opacity-20"
+                    initial={{ x: '-100%' }}
+                    whileHover={{ x: '100%' }}
+                    transition={{ duration: 0.6 }}
+                  />
+                </Button>
+              </motion.div>
+          
+          <motion.div
+                whileHover={{ 
+                  scale: 1.05,
+                  boxShadow: "0 20px 40px rgba(255, 215, 0, 0.2)"
+                }}
+                whileTap={{ scale: 0.98 }}
+              >
+                <Button
+                  size="lg"
+                  className="relative overflow-hidden border-2 group"
+                  style={{
+                    backgroundColor: 'transparent',
+                    borderColor: colors.gold,
+                    color: colors.gold,
+                    backdropFilter: 'blur(10px)',
+                    background: 'rgba(255, 255, 255, 0.1)'
+                  }}
+                >
+                  <span className="relative z-10">Réserver Maintenant</span>
+                  <motion.div
+                    className="absolute inset-0"
+                    style={{ backgroundColor: colors.gold }}
+                    initial={{ scale: 0, opacity: 0 }}
+                    whileHover={{ scale: 1, opacity: 0.1 }}
+                    transition={{ duration: 0.3 }}
+                  />
+                </Button>
+              </motion.div>
           </motion.div>
+          <motion.div
+              className="flex flex-col sm:flex-row justify-center items-center mt-16 gap-6 sm:gap-8"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 1, delay: 2 }}
+            >
+              {[
+                { icon: "★", text: "5 Étoiles", desc: "Excellence" },
+                { icon: "🏨", text: "Luxe Premium", desc: "Confort" },
+                { icon: "🌊", text: "Vue sur Lac", desc: "Sérénité" }
+              ].map((item, index) => (
+                <motion.div
+                  key={index}
+                  className="text-center p-6 rounded-2xl backdrop-blur-md border"
+                  style={{
+                    backgroundColor: 'rgba(0, 0, 0, 0.4)',
+                    borderColor: colors.gold + '40',
+                    boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)',
+                    minWidth: '140px'
+                  }}
+                  initial={{ opacity: 0, y: 30, scale: 0.9 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  transition={{ duration: 0.8, delay: 2.2 + index * 0.15 }}
+                  whileHover={{ 
+                    scale: 1.05,
+                    backgroundColor: 'rgba(0, 139, 139, 0.2)',
+                    boxShadow: '0 12px 40px rgba(255, 215, 0, 0.2)'
+                  }}
+                >
+                  <motion.div 
+                    className="text-3xl mb-3"
+                    style={{ color: colors.gold }}
+                    animate={{ 
+                      textShadow: [
+                        '0 0 5px rgba(255, 215, 0, 0.5)',
+                        '0 0 20px rgba(255, 215, 0, 0.8)',
+                        '0 0 5px rgba(255, 215, 0, 0.5)'
+                      ]
+                    }}
+                    transition={{ duration: 2, repeat: Infinity }}
+                  >
+                    {item.icon}
+                  </motion.div>
+                  <div 
+                    className="text-sm font-semibold uppercase tracking-wider mb-1"
+                    style={{ color: colors.gold }}
+                  >
+                    {item.text}
+                  </div>
+                  <div 
+                    className="text-xs opacity-80"
+                    style={{ color: colors.white }}
+                  >
+                    {item.desc}
+                  </div>
+                </motion.div>
+              ))}
+            </motion.div>
+
+            
+</motion.div>
+
         </div>
 
         {/* Floating Arrow */}
