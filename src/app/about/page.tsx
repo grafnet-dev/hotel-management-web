@@ -3,7 +3,7 @@
 import { motion } from 'framer-motion';
 import { Card } from '../../../components/ui/card';
 
-// Définition des couleurs
+// Définition des couleurs exactes
 const colors = {
   teal: '#008080',       // Bleu sarcelle
   gold: '#D4AF37',       // Or
@@ -19,142 +19,319 @@ const container = {
   show: {
     opacity: 1,
     transition: {
-      staggerChildren: 0.2
+      staggerChildren: 0.15,
+      delayChildren: 0.1
     }
   }
 };
 
 const item = {
-  hidden: { opacity: 0, y: 30 },
-  show: { opacity: 1, y: 0, transition: { duration: 0.6 } }
+  hidden: { opacity: 0, y: 40 },
+  show: { 
+    opacity: 1, 
+    y: 0, 
+    transition: { 
+      duration: 0.8,
+      ease: [0.25, 0.1, 0.25, 1]
+    } 
+  }
 };
 
-const fadeIn = {
-  hidden: { opacity: 0 },
-  show: { opacity: 1, transition: { duration: 0.8 } }
+const fadeInUp = {
+  hidden: { opacity: 0, y: 60 },
+  show: { 
+    opacity: 1, 
+    y: 0, 
+    transition: { 
+      duration: 1,
+      ease: [0.25, 0.1, 0.25, 1]
+    } 
+  }
 };
 
 const slideIn = (direction = 'left') => ({
-  hidden: { opacity: 0, x: direction === 'left' ? -100 : 100 },
-  show: { opacity: 1, x: 0, transition: { duration: 0.8, ease: "easeOut" } }
+  hidden: { 
+    opacity: 0, 
+    x: direction === 'left' ? -80 : 80,
+    scale: 0.95
+  },
+  show: { 
+    opacity: 1, 
+    x: 0,
+    scale: 1,
+    transition: { 
+      duration: 1.2, 
+      ease: [0.25, 0.1, 0.25, 1]
+    } 
+  }
 });
+
+const scaleIn = {
+  hidden: { opacity: 0, scale: 0.8 },
+  show: { 
+    opacity: 1, 
+    scale: 1,
+    transition: { 
+      duration: 0.8,
+      ease: [0.25, 0.1, 0.25, 1]
+    }
+  }
+};
 
 export default function About() {
   return (
-    <div className="min-h-screen pt-16" style={{ fontFamily: 'Bahnschrift, sans-serif', backgroundColor: colors.lightTeal }}>
-      {/* Hero Section */}
-      <section className="relative h-[80vh] overflow-hidden">
+    <div className="min-h-screen pt-16" style={{ 
+      fontFamily: 'Bahnschrift, -apple-system, BlinkMacSystemFont, sans-serif', 
+      backgroundColor: colors.lightTeal 
+    }}>
+      {/* Hero Section Modernisé */}
+      <section className="relative h-screen overflow-hidden">
         <motion.div 
           className="absolute inset-0"
-          initial={{ scale: 1.1 }}
-          animate={{ scale: 1 }}
-          transition={{ duration: 1.5, ease: "easeOut" }}
+          initial={{ scale: 1.2, opacity: 0.8 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ duration: 2, ease: "easeOut" }}
         >
           <img
             src="https://images.pexels.com/photos/258154/pexels-photo-258154.jpeg"
-            alt="Hôtel au Bénin"
+            alt="Hôtel premium au Bénin"
             className="w-full h-full object-cover"
           />
-          <div className="absolute inset-0" style={{ background: `linear-gradient(to top, ${colors.maroon}70, ${colors.teal}40)` }} />
+          <div className="absolute inset-0" style={{ 
+            background: `linear-gradient(135deg, ${colors.maroon}80, ${colors.teal}60, ${colors.darkTeal}70)` 
+          }} />
         </motion.div>
         
-        <div className="relative h-full flex items-center justify-center text-center text-white px-4">
+        <div className="relative h-full flex items-center justify-center text-center text-white px-6">
           <motion.div
-            initial={{ opacity: 0, y: 50 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 1, delay: 0.3 }}
+            variants={fadeInUp}
+            initial="hidden"
+            animate="show"
+            className="max-w-5xl"
           >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.3, duration: 1 }}
+              className="mb-8"
+            >
+              <div className="inline-block px-8 py-3 rounded-full border-2 mb-6" 
+                   style={{ 
+                     borderColor: colors.gold,
+                     backgroundColor: `${colors.gold}20`
+                   }}>
+                <span className="text-sm font-semibold tracking-wider uppercase" 
+                      style={{ color: colors.gold }}>
+                  Excellence Hôtelière Béninoise
+                </span>
+              </div>
+            </motion.div>
+            
             <motion.h1 
-              className="text-5xl md:text-7xl font-bold mb-6 tracking-tight"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.5 }}
+              className="text-6xl md:text-8xl font-bold mb-8 leading-tight"
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.6, duration: 1 }}
               style={{ color: colors.cream }}
             >
-              <span className="block" style={{ color: colors.gold }}>Notre Histoire</span>
-              <span className="text-3xl md:text-4xl font-light mt-4 block">Cotonou, Bénin</span>
+              <span className="block" style={{ color: colors.gold }}>Notre</span>
+              <span className="block" style={{ color: colors.cream }}>Histoire</span>
             </motion.h1>
             
-            <motion.p 
-              className="text-xl md:text-2xl mb-8"
+            <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              transition={{ delay: 0.8 }}
-              style={{ color: colors.cream }}
+              transition={{ delay: 1, duration: 1 }}
+              className="space-y-4"
             >
-              Excellence hôtelière depuis 1985 à l'heure béninoise (GMT+1)
-            </motion.p>
+              <p className="text-2xl md:text-3xl font-light" style={{ color: colors.cream }}>
+                Cotonou, République du Bénin
+              </p>
+              <div className="flex items-center justify-center space-x-8 text-lg">
+                <span style={{ color: colors.gold }}>Depuis 1985</span>
+                <span style={{ color: colors.cream }}>•</span>
+                <span style={{ color: colors.gold }}>GMT+1</span>
+                <span style={{ color: colors.cream }}>•</span>
+                <span style={{ color: colors.gold }}>Excellence Africaine</span>
+              </div>
+            </motion.div>
           </motion.div>
         </div>
+
+        {/* Indicateur de scroll */}
+        <motion.div
+          className="absolute bottom-8 left-1/2 transform -translate-x-1/2"
+          animate={{ y: [0, 10, 0] }}
+          transition={{ repeat: Infinity, duration: 2 }}
+        >
+          <div className="w-6 h-10 border-2 rounded-full flex justify-center" 
+               style={{ borderColor: colors.gold }}>
+            <div className="w-1 h-3 bg-current rounded-full mt-2" 
+                 style={{ backgroundColor: colors.gold }} />
+          </div>
+        </motion.div>
       </section>
 
-      {/* Content Section */}
-      <section className="py-24" style={{ backgroundColor: colors.cream }}>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-16 items-center">
+      {/* Section Histoire Redesignée */}
+      <section className="py-32" style={{ backgroundColor: colors.cream }}>
+        <div className="max-w-7xl mx-auto px-6 lg:px-8">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-20 items-center">
             <motion.div
               variants={slideIn('left')}
               initial="hidden"
               whileInView="show"
-              viewport={{ once: true, margin: "-100px" }}
+              viewport={{ once: true, margin: "-150px" }}
+              className="space-y-8"
             >
-              <h2 className="text-4xl font-bold mb-6 tracking-tight" style={{ color: colors.teal }}>Notre Passion Africaine</h2>
-              <p className="mb-6 text-lg leading-relaxed" style={{ color: colors.darkTeal }}>
-                Depuis plus de 35 ans, <span style={{ color: colors.maroon, fontWeight: '600' }}>Le Bain de Lac</span> incarne l'excellence de l'hôtellerie ouest-africaine.
-                Niché au cœur de Cotonou, notre établissement combine le charme d'un patrimoine béninois
-                avec le confort moderne que nos clients distingués attendent.
-              </p>
-              <p className="mb-6 text-lg leading-relaxed" style={{ color: colors.darkTeal }}>
-                Chaque détail reflète notre culture, des motifs traditionnels dans notre décoration
-                à notre cuisine fusion alliant saveurs locales et techniques gastronomiques.
-              </p>
-              <div style={{ 
-                backgroundColor: `${colors.gold}20`,
-                borderLeft: `4px solid ${colors.gold}`,
-                padding: '1rem',
-                borderRadius: '0 0.5rem 0.5rem 0'
-              }}>
-                <p style={{ 
-                  color: colors.maroon,
-                  fontStyle: 'italic'
-                }}>
-                  "Nous ne construisons pas simplement un hôtel, nous créons une expérience authentiquement béninoise."
+              <div>
+                <motion.div
+                  initial={{ width: 0 }}
+                  whileInView={{ width: '4rem' }}
+                  transition={{ delay: 0.3, duration: 0.8 }}
+                  className="h-1 mb-8"
+                  style={{ backgroundColor: colors.gold }}
+                />
+                <h2 className="text-5xl font-bold mb-8 leading-tight" style={{ color: colors.teal }}>
+                  Notre Passion
+                  <span className="block" style={{ color: colors.maroon }}>Africaine</span>
+                </h2>
+              </div>
+              
+              <div className="space-y-6 text-lg leading-relaxed">
+                <p style={{ color: colors.darkTeal }}>
+                  Depuis plus de 35 ans, <strong style={{ color: colors.maroon }}>Le Bain de Lac</strong> représente 
+                  le summum de la qualité hôtelière en Afrique de la Ouest. Notre établissement 
+                  situé au cœur de Cotonou combine harmonieusement le patrimoine béninois 
+                  avec les standards internationaux de luxe.
+                </p>
+                <p style={{ color: colors.darkTeal }}>
+                  Chaque espace reflète notre identité culturelle unique, des motifs traditionnels 
+                  soigneusement intégrés dans notre architecture aux saveurs authentiques 
+                  de notre cuisine gastronomique fusion.
+                </p>
+                <p style={{ color: colors.darkTeal }}>
+                  Notre engagement envers la communauté béninoise et notre environnement 
+                  guide chacune de nos décisions, créant une expérience véritablement 
+                  durable et mémorable.
                 </p>
               </div>
+              
+              <motion.div 
+                className="relative p-8 rounded-xl"
+                style={{ 
+                  backgroundColor: `${colors.gold}15`,
+                  borderLeft: `6px solid ${colors.gold}`
+                }}
+                whileHover={{ scale: 1.02 }}
+                transition={{ duration: 0.3 }}
+              >
+                <div className="flex items-start space-x-4">
+                  <div className="text-4xl" style={{ color: colors.gold }}>❝</div>
+                  <div>
+                    <p className="text-xl font-medium italic mb-2" style={{ color: colors.maroon }}>
+                      Nous créons bien plus que des séjours. Nous offrons 
+                      des expériences authentiquement béninoises.
+                    </p>
+                    <p className="text-sm font-semibold" style={{ color: colors.darkTeal }}>
+                      — Direction Générale, Le Bain de Lac
+                    </p>
+                  </div>
+                </div>
+              </motion.div>
             </motion.div>
             
             <motion.div
               variants={slideIn('right')}
               initial="hidden"
               whileInView="show"
-              viewport={{ once: true, margin: "-100px" }}
-              className="relative h-[500px] rounded-2xl overflow-hidden shadow-2xl"
+              viewport={{ once: true, margin: "-150px" }}
+              className="relative"
             >
-              <img
-                src="https://images.pexels.com/photos/161758/governor-s-mansion-montgomery-alabama-grand-staircase-161758.jpeg"
-                alt="Intérieur de l'hôtel"
-                className="w-full h-full object-cover"
-              />
-              <div className="absolute inset-0" style={{ background: `linear-gradient(to top, ${colors.maroon}30, transparent)` }} />
+              <div className="grid grid-cols-2 gap-6">
+                <motion.div 
+                  className="space-y-6"
+                  variants={container}
+                  initial="hidden"
+                  whileInView="show"
+                  viewport={{ once: true }}
+                >
+                  <motion.div variants={item} className="relative h-64 rounded-2xl overflow-hidden shadow-xl">
+                    <img
+                      src="https://images.pexels.com/photos/161758/governor-s-mansion-montgomery-alabama-grand-staircase-161758.jpeg"
+                      alt="Architecture intérieure"
+                      className="w-full h-full object-cover"
+                    />
+                    <div className="absolute inset-0" style={{ 
+                      background: `linear-gradient(to top, ${colors.maroon}40, transparent)` 
+                    }} />
+                  </motion.div>
+                  <motion.div variants={item} className="relative h-48 rounded-2xl overflow-hidden shadow-xl">
+                    <img
+                      src="https://images.pexels.com/photos/164595/pexels-photo-164595.jpeg"
+                      alt="Chambre premium"
+                      className="w-full h-full object-cover"
+                    />
+                    <div className="absolute inset-0" style={{ 
+                      background: `linear-gradient(to top, ${colors.teal}40, transparent)` 
+                    }} />
+                  </motion.div>
+                </motion.div>
+                <motion.div 
+                  className="space-y-6 pt-12"
+                  variants={container}
+                  initial="hidden"
+                  whileInView="show"
+                  viewport={{ once: true }}
+                >
+                  <motion.div variants={item} className="relative h-48 rounded-2xl overflow-hidden shadow-xl">
+                    <img
+                      src="https://images.pexels.com/photos/958545/pexels-photo-958545.jpeg"
+                      alt="Gastronomie"
+                      className="w-full h-full object-cover"
+                    />
+                    <div className="absolute inset-0" style={{ 
+                      background: `linear-gradient(to top, ${colors.orange}40, transparent)` 
+                    }} />
+                  </motion.div>
+                  <motion.div variants={item} className="relative h-64 rounded-2xl overflow-hidden shadow-xl">
+                    <img
+                      src="https://images.pexels.com/photos/3551238/pexels-photo-3551238.jpeg"
+                      alt="Spa et bien-être"
+                      className="w-full h-full object-cover"
+                    />
+                    <div className="absolute inset-0" style={{ 
+                      background: `linear-gradient(to top, ${colors.gold}40, transparent)` 
+                    }} />
+                  </motion.div>
+                </motion.div>
+              </div>
             </motion.div>
           </div>
         </div>
       </section>
 
-      {/* Values Section */}
-      <section className="py-24" style={{ backgroundColor: `${colors.teal}10` }}>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      {/* Section Valeurs Modernisée */}
+      <section className="py-32" style={{ backgroundColor: colors.lightTeal }}>
+        <div className="max-w-7xl mx-auto px-6 lg:px-8">
           <motion.div
             initial={{ opacity: 0 }}
             whileInView={{ opacity: 1 }}
             viewport={{ once: true }}
-            className="text-center mb-16"
+            className="text-center mb-20"
           >
-            <h2 className="text-4xl font-bold tracking-tight mb-4" style={{ color: colors.maroon }}>
-              <span style={{ color: colors.gold }}>Nos</span> Valeurs
+            <motion.div
+              initial={{ width: 0 }}
+              whileInView={{ width: '6rem' }}
+              transition={{ delay: 0.2, duration: 0.8 }}
+              className="h-1 mx-auto mb-8"
+              style={{ backgroundColor: colors.gold }}
+            />
+            <h2 className="text-5xl font-bold mb-6" style={{ color: colors.maroon }}>
+              Nos <span style={{ color: colors.gold }}>Valeurs</span>
             </h2>
-            <p className="text-xl max-w-2xl mx-auto" style={{ color: colors.teal }}>
-              Les principes qui guident notre engagement quotidien
+            <p className="text-xl max-w-3xl mx-auto leading-relaxed" style={{ color: colors.darkTeal }}>
+              Les principes fondamentaux qui guident notre excellence quotidienne 
+              et notre engagement envers nos clients
             </p>
           </motion.div>
           
@@ -163,42 +340,59 @@ export default function About() {
             initial="hidden"
             whileInView="show"
             viewport={{ once: true }}
-            className="grid grid-cols-1 md:grid-cols-3 gap-8"
+            className="grid grid-cols-1 md:grid-cols-3 gap-10"
           >
             {[
               {
                 title: "Excellence",
-                description: "Nous visons la perfection dans chaque service rendu à nos clients.",
+                description: "Nous recherchons la perfection dans chaque détail de nos services, dépassant constamment les attentes de notre clientèle distinguée.",
                 icon: "⭐",
-                color: colors.gold
+                color: colors.gold,
+                gradient: `linear-gradient(135deg, ${colors.gold}20, ${colors.gold}05)`
               },
               {
                 title: "Authenticité",
-                description: "Nous célébrons notre riche héritage culturel béninois.",
+                description: "Nous célébrons et préservons notre riche patrimoine culturel béninois, offrant une expérience véritablement africaine.",
                 icon: "🌍",
-                color: colors.orange
+                color: colors.orange,
+                gradient: `linear-gradient(135deg, ${colors.orange}20, ${colors.orange}05)`
               },
               {
                 title: "Durabilité",
-                description: "Engagés dans un tourisme responsable et respectueux de notre environnement.",
+                description: "Nous nous engageons dans un tourisme responsable, respectueux de notre environnement et bénéfique pour notre communauté.",
                 icon: "♻️",
-                color: colors.teal
+                color: colors.teal,
+                gradient: `linear-gradient(135deg, ${colors.teal}20, ${colors.teal}05)`
               }
             ].map((value, index) => (
               <motion.div 
                 key={value.title}
                 variants={item}
-                whileHover={{ y: -10 }}
+                whileHover={{ y: -15, scale: 1.02 }}
+                transition={{ duration: 0.3 }}
+                className="group"
               >
-                <Card className="p-8 h-full rounded-xl transition-all duration-300 hover:shadow-lg"
+                <Card className="p-10 h-full rounded-3xl border-0 shadow-lg group-hover:shadow-2xl transition-all duration-500"
                   style={{ 
-                    backgroundColor: 'white',
-                    border: `1px solid ${value.color}33`
+                    background: `linear-gradient(135deg, white, ${value.gradient})`,
+                    borderTop: `4px solid ${value.color}`
                   }}
                 >
-                  <div className="text-4xl mb-4" style={{ color: value.color }}>{value.icon}</div>
-                  <h3 className="text-2xl font-bold mb-4 tracking-tight" style={{ color: value.color }}>{value.title}</h3>
-                  <p style={{ color: colors.darkTeal }}>{value.description}</p>
+                  <div className="text-center">
+                    <motion.div 
+                      className="text-6xl mb-6 inline-block"
+                      whileHover={{ scale: 1.2, rotate: 5 }}
+                      transition={{ duration: 0.3 }}
+                    >
+                      {value.icon}
+                    </motion.div>
+                    <h3 className="text-3xl font-bold mb-6" style={{ color: value.color }}>
+                      {value.title}
+                    </h3>
+                    <p className="text-lg leading-relaxed" style={{ color: colors.darkTeal }}>
+                      {value.description}
+                    </p>
+                  </div>
                 </Card>
               </motion.div>
             ))}
@@ -206,60 +400,86 @@ export default function About() {
         </div>
       </section>
 
-      {/* Stats Section */}
-      <section className="py-24" style={{ 
-        background: `linear-gradient(135deg, ${colors.maroon}, ${colors.teal})`
+      {/* Section Statistiques Redesignée */}
+      <section className="py-32" style={{ 
+        background: `linear-gradient(135deg, ${colors.maroon}, ${colors.darkTeal}, ${colors.teal})`
       }}>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <motion.div
-            variants={container}
-            initial="hidden"
-            whileInView="show"
-            viewport={{ once: true }}
-            className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center"
-          >
-            {[
-              { number: "35+", label: "Années d'Excellence", delay: 0, color: colors.gold },
-              { number: "50", label: "Chambres & Suites", delay: 0.2, color: colors.orange },
-              { number: "2", label: "Restaurants Étoilés", delay: 0.4, color: colors.cream },
-              { number: "1000+", label: "Clients Satisfaits", delay: 0.6, color: colors.gold }
-            ].map((stat) => (
-              <motion.div
-                key={stat.label}
-                variants={item}
-                transition={{ delay: stat.delay }}
-                className="text-white"
-              >
-                <motion.div 
-                  className="text-5xl font-bold mb-2"
-                  initial={{ scale: 0 }}
-                  whileInView={{ scale: 1 }}
-                  transition={{ type: "spring", stiffness: 100 }}
-                  style={{ color: stat.color }}
-                >
-                  {stat.number}
-                </motion.div>
-                <div className="text-xl" style={{ color: colors.cream }}>{stat.label}</div>
-              </motion.div>
-            ))}
-          </motion.div>
-        </div>
-      </section>
-
-      {/* Services Section */}
-      <section className="py-24" style={{ backgroundColor: colors.lightTeal }}>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto px-6 lg:px-8">
           <motion.div
             initial={{ opacity: 0 }}
             whileInView={{ opacity: 1 }}
             viewport={{ once: true }}
             className="text-center mb-16"
           >
-            <h2 className="text-4xl font-bold tracking-tight mb-4" style={{ color: colors.maroon }}>
-              <span style={{ color: colors.gold }}>Nos</span> Services Exceptionnels
+            <h2 className="text-4xl font-bold mb-4" style={{ color: colors.cream }}>
+              Notre Impact en <span style={{ color: colors.gold }}>Chiffres</span>
             </h2>
-            <p className="text-xl max-w-2xl mx-auto" style={{ color: colors.teal }}>
-              Découvrez ce qui rend votre séjour inoubliable
+            <div className="w-24 h-1 mx-auto" style={{ backgroundColor: colors.gold }} />
+          </motion.div>
+
+          <motion.div
+            variants={container}
+            initial="hidden"
+            whileInView="show"
+            viewport={{ once: true }}
+            className="grid grid-cols-2 md:grid-cols-4 gap-12"
+          >
+            {[
+              { number: "35+", label: "Années d'Excellence", color: colors.gold, suffix: "" },
+              { number: "50", label: "Chambres & Suites", color: colors.orange, suffix: "" },
+              { number: "2", label: "Restaurants Étoilés", color: colors.cream, suffix: "" },
+              { number: "1000", label: "Clients Satisfaits", color: colors.gold, suffix: "+" }
+            ].map((stat, index) => (
+              <motion.div
+                key={stat.label}
+                variants={item}
+                className="text-center group"
+                whileHover={{ scale: 1.05 }}
+              >
+                <motion.div 
+                  className="text-6xl md:text-7xl font-bold mb-4"
+                  initial={{ scale: 0, opacity: 0 }}
+                  whileInView={{ scale: 1, opacity: 1 }}
+                  transition={{ 
+                    type: "spring", 
+                    stiffness: 100,
+                    delay: index * 0.1 
+                  }}
+                  style={{ color: stat.color }}
+                >
+                  {stat.number}{stat.suffix}
+                </motion.div>
+                <div className="text-xl font-medium" style={{ color: colors.cream }}>
+                  {stat.label}
+                </div>
+              </motion.div>
+            ))}
+          </motion.div>
+        </div>
+      </section>
+
+      {/* Section Services Premium */}
+      <section className="py-32" style={{ backgroundColor: colors.cream }}>
+        <div className="max-w-7xl mx-auto px-6 lg:px-8">
+          <motion.div
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true }}
+            className="text-center mb-20"
+          >
+            <motion.div
+              initial={{ width: 0 }}
+              whileInView={{ width: '6rem' }}
+              transition={{ delay: 0.2, duration: 0.8 }}
+              className="h-1 mx-auto mb-8"
+              style={{ backgroundColor: colors.gold }}
+            />
+            <h2 className="text-5xl font-bold mb-6" style={{ color: colors.maroon }}>
+              Services <span style={{ color: colors.gold }}>Exceptionnels</span>
+            </h2>
+            <p className="text-xl max-w-3xl mx-auto leading-relaxed" style={{ color: colors.darkTeal }}>
+              Découvrez les services premium qui font de votre séjour 
+              une expérience inoubliable au cœur du Bénin
             </p>
           </motion.div>
           
@@ -268,26 +488,29 @@ export default function About() {
             initial="hidden"
             whileInView="show"
             viewport={{ once: true }}
-            className="grid grid-cols-1 md:grid-cols-3 gap-8"
+            className="grid grid-cols-1 lg:grid-cols-3 gap-12"
           >
             {[
               {
                 title: "Hébergement Premium",
-                description: "Chambres spacieuses avec vue imprenable, décorées avec des éléments artisanaux locaux.",
+                description: "Chambres et suites spacieuses avec vues panoramiques, décorées avec des éléments artisanaux locaux et équipées des dernières technologies.",
                 image: "https://images.pexels.com/photos/164595/pexels-photo-164595.jpeg",
-                color: colors.teal
+                color: colors.teal,
+                gradient: `linear-gradient(45deg, ${colors.teal}80, ${colors.darkTeal}60)`
               },
               {
                 title: "Gastronomie Étoilée",
-                description: "Cuisine fusion alliant saveurs béninoises et techniques gastronomiques internationales.",
+                description: "Deux restaurants étoilés proposant une cuisine fusion innovante alliant saveurs béninoises traditionnelles et techniques culinaires internationales.",
                 image: "https://images.pexels.com/photos/958545/pexels-photo-958545.jpeg",
-                color: colors.maroon
+                color: colors.maroon,
+                gradient: `linear-gradient(45deg, ${colors.maroon}80, ${colors.maroon}60)`
               },
               {
                 title: "Spa & Bien-être",
-                description: "Soins traditionnels et modernes dans un cadre apaisant inspiré de la nature béninoise.",
+                description: "Centre de bien-être complet offrant soins traditionnels africains et thérapies modernes dans un environnement inspiré de la nature béninoise.",
                 image: "https://images.pexels.com/photos/3551238/pexels-photo-3551238.jpeg",
-                color: colors.orange
+                color: colors.orange,
+                gradient: `linear-gradient(45deg, ${colors.orange}80, ${colors.gold}60)`
               }
             ].map((service, index) => (
               <motion.div 
@@ -295,23 +518,46 @@ export default function About() {
                 variants={item}
                 className="group"
                 whileHover={{ y: -10 }}
+                transition={{ duration: 0.4 }}
               >
-                <Card className="overflow-hidden h-full border-0 shadow-lg hover:shadow-xl transition-all duration-300"
+                <Card className="overflow-hidden h-full border-0 shadow-xl group-hover:shadow-2xl transition-all duration-500 rounded-3xl"
                   style={{ backgroundColor: 'white' }}
                 >
-                  <div className="relative h-60 overflow-hidden">
-                    <img
+                  <div className="relative h-80 overflow-hidden">
+                    <motion.img
                       src={service.image}
                       alt={service.title}
-                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                      className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                      whileHover={{ scale: 1.1 }}
                     />
                     <div className="absolute inset-0" style={{ 
-                      background: `linear-gradient(to top, ${service.color}60, transparent)`
+                      background: service.gradient
                     }} />
+                    <div className="absolute top-6 left-6">
+                      <div className="px-4 py-2 rounded-full" style={{ 
+                        backgroundColor: `${colors.cream}90`
+                      }}>
+                        <span className="text-sm font-bold" style={{ color: service.color }}>
+                          Premium
+                        </span>
+                      </div>
+                    </div>
                   </div>
-                  <div className="p-6">
-                    <h3 className="text-2xl font-bold mb-2 tracking-tight" style={{ color: service.color }}>{service.title}</h3>
-                    <p style={{ color: colors.darkTeal }}>{service.description}</p>
+                  <div className="p-8">
+                    <h3 className="text-2xl font-bold mb-4" style={{ color: service.color }}>
+                      {service.title}
+                    </h3>
+                    <p className="text-lg leading-relaxed" style={{ color: colors.darkTeal }}>
+                      {service.description}
+                    </p>
+                    <motion.div 
+                      className="mt-6 flex items-center text-sm font-semibold"
+                      style={{ color: service.color }}
+                      whileHover={{ x: 5 }}
+                    >
+                      Découvrir
+                      <span className="ml-2">→</span>
+                    </motion.div>
                   </div>
                 </Card>
               </motion.div>

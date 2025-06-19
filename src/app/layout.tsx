@@ -8,7 +8,7 @@ import { Toaster } from '../../components/ui/toaster';
 
 const inter = Inter({ 
   subsets: ['latin'],
-  variable: '--font-inter', // Ajout pour une meilleure gestion
+  variable: '--font-inter', 
 });
 
 export const metadata: Metadata = {
@@ -31,8 +31,8 @@ export default function RootLayout({
         <ThemeProvider 
           attribute="class" 
           defaultTheme="light"
-          enableSystem={true} // Optionnel: détection automatique du thème système
-          disableTransitionOnChange // Évite les flashs lors du changement de thème
+          enableSystem={true} 
+          disableTransitionOnChange 
         >
           <Navbar />
           <main className="flex-1">

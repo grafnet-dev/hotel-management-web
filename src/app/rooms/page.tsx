@@ -8,7 +8,6 @@ import { format } from "date-fns";
 import { cn } from '../../../lib/utils';
 import {  User,  ChevronLeft,Utensils,Coffee,Wine,ShoppingBag ,Sparkles,Star, ChevronRight,Wifi,Users,DollarSign,Settings ,Filter ,RefreshCw ,Snowflake,Tv,Shield, CalendarIcon ,SearchIcon, Bed ,CheckCircle, CalendarDays,Clock } from 'lucide-react';
 import { Label } from "../../../components/ui/label";
-import { useToast } from "../../../hooks/use-toast";
 import { Popover, PopoverContent, PopoverTrigger } from '../../../components/ui/popover';
 import "react-day-picker/style.css";
 import type { DateRange } from "react-day-picker";
@@ -53,7 +52,6 @@ interface Room {
   title: string;
   description: string;
   adults: number;
- 
   size: string;
   price: number;
   hourlyPrice?: number;
@@ -76,33 +74,20 @@ interface Room {
 
 
 export default function Rooms({ allRooms }: { allRooms: Room[] }) {
-  const [selectedRoom, setSelectedRoom] = useState<Room | null>(null); 
+  
  const [currentPage, setCurrentPage] = useState(1);
-const bookingTypes = ['night', 'half-day', 'hourly'] as const;
+
   const [date, setDate] = useState<DateRange | Date | undefined>();
   const [isDayUse, setIsDayUse] = useState(false);
    const [isFiltersOpen, setIsFiltersOpen] = useState(false);
-  const [bookingDetails, setBookingDetails] = useState({
-  bookingType: '',
-  checkIn: '',
-  checkOut: '',
-  bookingType: 'night',
-  nights: 0,
-  total: 0,
-  firstName: '',
-  lastName: '',
-  email: '',
-  phone: '',
-  idType: 'cni',
-  idNumber: '',
-  specialRequests: '',
-  paymentMethod: 'full',
-  paymentOption: 'mobile'
-});
+
 
 const [price, setPrice] = useState(0);
-const [rooms, setRooms] = useState<{ id: number; adults: number; children: number; }[]>([]);
+const [rooms, setRooms] = useState([{ id: 1, adults: 2, children: 0 }]);
 const [searchRooms, setSearchRooms] = useState([{ id: 1, adults: 2, children: 0 }]);
+{searchRooms.map((room, index) => (
+  <div key={index}>{room.id} - {room.adults} adults, {room.children} children</div>
+))}
 const roomsPerPage = 6;
   const totalPages = Math.ceil(allRooms?.length / roomsPerPage);
 
@@ -143,44 +128,23 @@ const isMobileDevice = useIsMobileDevice();
 if (isMobileDevice) {
   // render a mobile-specific component or apply a mobile-specific style
 }
-  if (!bookingTypes.includes(bookingDetails.bookingType)) {
-    console.error('Invalid booking type');
-  }
-  const { toast } = useToast();
+ 
   
 
-   const addRoom = () => {
-    setSearchRooms([...searchRooms, { id: Date.now(), adults: 2, children: 0 }]);
-    addRoom();
-  };
+const addRoom = () => {
+  setSearchRooms(prev => [
+    ...prev,
+    { id: Date.now(), adults: 2, children: 0 }
+  ]);
+};
 
-  const handleBookNow = () => {
-    toast({
-      title: "Réservation confirmée",
-      description: `Votre réservation pour la ${selectedRoom?.title} a été confirmée. Un email de confirmation vous a été envoyé.`,
-    });
-   
-    setSelectedRoom(null);
-    // Réinitialiser les détails de réservation
-    setBookingDetails({
-      checkIn: '',
-      checkOut: '',
-      bookingType: 'night',
-      nights: 0,
-      total: 0,
-      firstName: '',
-      lastName: '',
-      email: '',
-      phone: '',
-      idType: 'cni',
-      idNumber: '',
-      specialRequests: '',
-      paymentMethod: 'full',
-      paymentOption: 'mobile'
-    });
-  };
+const validateRoomGuests = () => {
+  console.log("Chambres validées:", rooms);
+  console.log("Chambres validées:", searchRooms);
+};
+validateRoomGuests();
 
-   
+
   
   const useIsMobile = () => {
     const [isMobile, setIsMobile] = useState(false);
@@ -240,10 +204,13 @@ if (isMobileDevice) {
   
     
 const updateRoom = (index: number, field: 'adults' | 'children', value: number) => {
-  const updated = [...rooms];
-  (updated[index] as Room)[field] = value;
-  setRooms(updated);
+  setRooms(prev => {
+    const updated = [...prev];
+    updated[index] = { ...updated[index], [field]: value };
+    return updated;
+  });
 };
+
   
    const totalAdults = rooms.reduce((acc, r) => acc + r.adults, 0);
   const totalChildren = rooms.reduce((acc, r) => acc + r.children, 0);
@@ -418,108 +385,185 @@ console.log("📦 Payload de recherche à envoyer :", updatedSearchPayload);
     </section>
 
   {/* Search Section */}
-        <motion.section
-          initial={{ opacity: 0, y: 40 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-100px" }}
-          transition={{ duration: 0.8, ease: [0.25, 0.1, 0.25, 1] }}
-          className="py-16 relative"
-        >
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <motion.div
-              whileHover={{ y: -5, transition: { type: "spring", stiffness: 300 } }}
-              whileTap={{ scale: 0.99 }}
+   {/* Search Section - Using your exact code */}
+      <motion.section
+        initial={{ opacity: 0, y: 40 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, margin: "-100px" }}
+        transition={{ duration: 0.8, ease: [0.25, 0.1, 0.25, 1] }}
+        className="py-16 relative"
+      >
+         <div className="absolute inset-0 rounded-xl backdrop-blur-sm">
+          <motion.div
+            className="absolute top-10 left-10 w-32 h-32 rounded-full opacity-10"
+            style={{ backgroundColor: colors.gold }}
+            animate={{ 
+              scale: [1, 1.2, 1],
+              rotate: [0, 180, 360]
+            }}
+            transition={{ duration: 20, repeat: Infinity }}
+          />
+          <motion.div
+            className="absolute bottom-10 right-10 w-24 h-24 rounded-full opacity-10"
+            style={{ backgroundColor: colors.teal }}
+            animate={{ 
+              scale: [1.2, 1, 1.2],
+              rotate: [360, 180, 0]
+            }}
+            transition={{ duration: 15, repeat: Infinity }}
+          />
+        </div>
+
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <motion.div
+            whileHover={{ 
+              y: -8,
+              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)'
+            }}
+            whileTap={{ scale: 0.98 }}
+            transition={{ type: "spring", stiffness: 300, damping: 20 }}
+          >
+            <Card
+              className="-mt-32 relative z-10 p-8 md:p-10 border-0 shadow-2xl rounded-3xl overflow-hidden backdrop-blur-sm"
+              style={{ 
+                background: `linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.9) 100%)`,
+                border: `3px solid ${colors.gold}`,
+                boxShadow: `0 20px 40px -12px rgba(128, 0, 32, 0.3), 0 0 0 1px ${colors.gold}33`
+              }}
             >
-              <Card
-                className="-mt-32 relative z-10 p-6 md:p-8 border-0 shadow-xl rounded-2xl overflow-hidden bg-white"
-                style={{ border: `2px solid ${colors.gold}` }}
+              {/* Decorative Header */}
+              <motion.div 
+                className="text-center mb-8"
+                initial={{ opacity: 0, y: -20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.2 }}
               >
-                <div className="flex flex-wrap gap-x-8 gap-y-6">
-                  {/* Date & Day Use */}
+                <div className="flex items-center justify-center mb-3">
                   <motion.div
-                    className="flex-1 min-w-[240px] space-y-2"
-                    initial={{ opacity: 0, x: -20 }}
-                    whileInView={{ opacity: 1, x: 0 }}
-                    transition={{ duration: 0.4, delay: 0.1 }}
-                    viewport={{ once: true }}
+                    animate={{ rotate: [0, 10, -10, 0] }}
+                    transition={{ duration: 2, repeat: Infinity, delay: 1 }}
                   >
-                    <Label className="text-sm font-medium flex items-center" style={{ color: colors.darkTeal }}>
-                      <CalendarDays className="h-4 w-4 mr-2" style={{ color: colors.orange }} />
-                      {isDayUse ? "Quel jour ?" : "Quand ?"}
-  
-                    </Label>
-  
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <motion.div whileHover={{ scale: 1.02 }}>
-                          <Button
-                            id="date"
-                            variant="outline"
-                            className={cn(
-                              "w-full justify-start text-left font-normal hover:bg-gray-50",
-                              !date && "text-muted-foreground"
-                            )}
-                            style={{ borderColor: colors.teal }}
-  
-                          >
-                            <CalendarIcon className="mr-2 h-4 w-4" />
-                            {getLabel()}
-                          </Button>
-                        </motion.div>
-                      </PopoverTrigger>
-                      <PopoverContent
-                        className="w-auto p-0 bg-white"
-                        align="start"
-                        style={{ borderColor: colors.teal }}
-                      >
-                        {isDayUse ? (
-                          <DayPicker
-                            mode="single"
-                            selected={date instanceof Date ? date : undefined}
-                            onSelect={setDate}
-                            numberOfMonths={isMobile ? 1 : 2}
-                            showOutsideDays
-                            required={false}
-                            disabled={{ before: new Date() }}
-                            modifiersClassNames={{
-                              selected: "bg-orange-500 text-white",
-                            }}
-                            className="p-3"
-                          />
-                        ) : (
-                          <DayPicker
-                            mode="range"
-                            selected={typeof date === 'object' && date && 'from' in date ? date as DateRange : undefined}
-                            onSelect={setDate}
-                            numberOfMonths={isMobile ? 1 : 2}
-                            showOutsideDays
-                            required={false}
-                            disabled={{ before: new Date() }}
-                            modifiersClassNames={{
-                              selected: "bg-orange-500 text-white",
-                              range_start: "rounded-l-md",
-                              range_end: "rounded-r-md"
-                            }}
-                            className="p-3"
-                          />
-                        )}
-                        <motion.div
-                          initial={{ opacity: 0, y: -5 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          className="text-sm text-muted-foreground"
-                        >
-                          {getFeedback() && (
-                            <div className="text-sm text-muted-foreground">
-                              {getFeedback()}
-                            </div>
+                    <Sparkles className="h-6 w-6 mr-2" style={{ color: colors.gold }} />
+                  </motion.div>
+                  <h2 
+                    className="text-2xl md:text-3xl font-bold tracking-wide"
+                    style={{ 
+                      color: colors.maroon,
+                      fontFamily: 'Bahnschrift, sans-serif'
+                    }}
+                  >
+                    Réservez Votre Séjour
+                  </h2>
+                  <motion.div
+                    animate={{ rotate: [0, -10, 10, 0] }}
+                    transition={{ duration: 2, repeat: Infinity, delay: 1.5 }}
+                  >
+                    <Sparkles className="h-6 w-6 ml-2" style={{ color: colors.gold }} />
+                  </motion.div>
+                </div>
+                <div 
+                  className="w-24 h-1 mx-auto rounded-full"
+                  style={{ backgroundColor: colors.gold }}
+                />
+              </motion.div>
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
+                {/* Date & Day Use */}
+                <motion.div
+                  className="space-y-3"
+                  initial={{ opacity: 0, x: -30 }}
+                  whileInView={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.6, delay: 0.3 }}
+                  viewport={{ once: true }}
+                >
+                  <Label 
+                    className="text-base font-bold flex items-center tracking-wide" 
+                    style={{ 
+                      color: colors.darkTeal,
+                      fontFamily: 'Bahnschrift, sans-serif'
+                    }}
+                  >
+                    <CalendarDays className="h-5 w-5 mr-3" style={{ color: colors.orange }} />
+                    {isDayUse ? "JOUR DE VISITE" : "DATES DE SÉJOUR"}
+                  </Label>
+                  <p className="text-sm text-muted-foreground">
+                    {isDayUse ? "Veuillez choisir une date" : "Veuillez choisir les dates de votre séjour"}
+                  </p>
+
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <motion.div whileHover={{ scale: 1.02 }}>
+                        <Button
+                          id="date"
+                          variant="outline"
+                          className={cn(
+                            "w-full justify-start text-left font-normal hover:bg-gray-50",
+                            !date && "text-muted-foreground"
                           )}
-                        </motion.div>
-                      </PopoverContent>
-                    </Popover>
-  
-                    {/* Toggle Day Use */}
-                    <div className="flex items-center gap-2 pt-2">
-                      <input
+                          style={{ borderColor: colors.teal }}
+
+                        >
+                          <CalendarIcon className="mr-2 h-4 w-4" />
+                          {getLabel()}
+                        </Button>
+                      </motion.div>
+                    </PopoverTrigger>
+                    <PopoverContent
+                      className="w-auto p-0 bg-white"
+                      align="start"
+                      style={{ borderColor: colors.teal }}
+                    >
+                      {isDayUse ? (
+                        <DayPicker
+                          mode="single"
+                          selected={date instanceof Date ? date : undefined}
+                          onSelect={setDate}
+                          numberOfMonths={isMobile ? 1 : 2}
+                          showOutsideDays
+                          required={false}
+                          disabled={{ before: new Date() }}
+                          modifiersClassNames={{
+                            selected: "bg-orange-500 text-white",
+                          }}
+                          className="p-3"
+                        />
+                      ) : (
+                        <DayPicker
+                          mode="range"
+                          selected={typeof date === 'object' && date && 'from' in date ? date as DateRange : undefined}
+                          onSelect={setDate}
+                          numberOfMonths={isMobile ? 1 : 2}
+                          showOutsideDays
+                          required={false}
+                          disabled={{ before: new Date() }}
+                          modifiersClassNames={{
+                            selected: "bg-orange-500 text-white",
+                            range_start: "rounded-l-md",
+                            range_end: "rounded-r-md"
+                          }}
+                          className="p-3"
+                        />
+                      )}
+                      <motion.div
+                        initial={{ opacity: 0, y: -5 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="text-sm text-muted-foreground"
+                      >
+                        {getFeedback() && (
+                          <div className="text-sm text-muted-foreground">
+                            {getFeedback()}
+                          </div>
+                        )}
+                      </motion.div>
+                    </PopoverContent>
+                  </Popover>
+
+                  {/* Toggle Day Use */}
+                   <motion.div 
+                      className="flex items-center gap-3 mt-3 p-3 rounded-lg"
+                      style={{ backgroundColor: 'rgba(0, 139, 139, 0.05)' }}
+                      whileHover={{ backgroundColor: 'rgba(0, 139, 139, 0.1)' }}
+                    >
+                      <motion.input
                         type="checkbox"
                         id="dayuse"
                         checked={isDayUse}
@@ -527,147 +571,161 @@ console.log("📦 Payload de recherche à envoyer :", updatedSearchPayload);
                           setIsDayUse(e.target.checked);
                           setDate(undefined);
                         }}
-                        className="accent-orange-500 h-4 w-4"
+                        className="w-5 h-5 rounded transition-all duration-200"
+                        style={{ accentColor: colors.orange }}
+                        whileTap={{ scale: 0.9 }}
                       />
-                      <label htmlFor="dayuse" className="text-sm text-gray-600">Réservation de jour (Day use)</label>
-                    </div>
-                  </motion.div>
-  
-                  {/* Invités et chambres */}
-                  <motion.div
-                    className="flex-1 min-w-[280px] space-y-2"
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.4, delay: 0.2 }}
-                    viewport={{ once: true }}
-                  >
-                    <Label className="text-sm font-medium" style={{ color: colors.darkTeal }}>
-                      Invités & chambres
-                    </Label>
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <motion.div whileHover={{ scale: 1.02 }}>
-                          <Button
-                            variant="outline"
-                            className="w-full justify-start text-left font-normal hover:bg-gray-50"
-                            style={{ borderColor: colors.teal }}
-                          >
-                            🛏️ {rooms.length} chambre{rooms.length > 1 ? 's' : ''}, {totalAdults} adulte{totalAdults > 1 ? 's' : ''}, {totalChildren} enfant{totalChildren > 1 ? 's' : ''}
-                          </Button>
-                        </motion.div>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-[320px] p-4 bg-white rounded-xl shadow-xl space-y-4" align="start">
-                        {rooms.map((room, index) => (
-                          <div key={index} className="space-y-2">
-                            <div className="font-medium text-sm text-gray-700">Chambre {index + 1}</div>
-                            <div className="flex space-x-4">
-                              {/* Adultes */}
-                              <div className="flex flex-col items-center space-y-1">
-                                <span className="text-xs text-gray-500">Adultes</span>
-                                <div className="flex items-center space-x-2">
-                                  <Button
-                                    variant="outline"
-                                    size="icon"
-                                    onClick={() => updateRoom(index, 'adults', Math.max(1, room.adults - 1))}
-                                    style={{ borderColor: colors.teal }}
-                                  >
-                                    –
-                                  </Button>
-                                  <span className="w-6 text-center">{room.adults}</span>
-                                  <Button
-                                    variant="outline"
-                                    size="icon"
-                                    onClick={() => updateRoom(index, 'adults', Math.min(4, room.adults + 1))}
-                                    style={{ borderColor: colors.teal }}
-                                  >
-                                    +
-                                  </Button>
-                                </div>
+                      <label 
+                        htmlFor="dayuse" 
+                        className="text-sm font-semibold cursor-pointer select-none tracking-wide"
+                        style={{ 
+                          color: colors.darkTeal,
+                          fontFamily: 'Bahnschrift, sans-serif'
+                        }}
+                      >
+                        RÉSERVATION DE JOUR (DAY USE)
+                      </label>
+                    </motion.div>
+                </motion.div>
+
+                {/* Invités et chambres */}
+                <motion.div
+                  className="flex-1 min-w-[280px] space-y-2"
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.4, delay: 0.2 }}
+                  viewport={{ once: true }}
+                >
+                  <Label className="text-sm font-medium" style={{ color: colors.darkTeal }}>
+                    Invités & chambres
+                  </Label>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <motion.div whileHover={{ scale: 1.02 }}>
+                        <Button
+                          variant="outline"
+                          className="w-full justify-start text-left font-normal hover:bg-gray-50"
+                          style={{ borderColor: colors.teal }}
+                        >
+                          🛏️ {rooms.length} chambre{rooms.length > 1 ? 's' : ''}, {totalAdults} adulte{totalAdults > 1 ? 's' : ''}, {totalChildren} enfant{totalChildren > 1 ? 's' : ''}
+                        </Button>
+                      </motion.div>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-[320px] p-4 bg-white rounded-xl shadow-xl space-y-4" align="start">
+                      {rooms.map((room, index) => (
+                        <div key={index} className="space-y-2">
+                          <div className="font-medium text-sm text-gray-700">Chambre {index + 1}</div>
+                          <div className="flex space-x-4">
+                            {/* Adultes */}
+                            <div className="flex flex-col items-center space-y-1">
+                              <span className="text-xs text-gray-500">Adultes</span>
+                              <div className="flex items-center space-x-2">
+                                <Button
+                                  variant="outline"
+                                  size="icon"
+                                  onClick={() => updateRoom(index, 'adults', Math.max(1, room.adults - 1))}
+                                  style={{ borderColor: colors.teal }}
+                                >
+                                  –
+                                </Button>
+                                <span className="w-6 text-center">{room.adults}</span>
+                                <Button
+                                  variant="outline"
+                                  size="icon"
+                                  onClick={() => updateRoom(index, 'adults', Math.min(4, room.adults + 1))}
+                                  style={{ borderColor: colors.teal }}
+                                >
+                                  +
+                                </Button>
                               </div>
-  
-                              {/* Enfants */}
-                              <div className="flex flex-col items-center space-y-1">
-                                <span className="text-xs text-gray-500">Enfants</span>
-                                <div className="flex items-center space-x-2">
-                                  <Button
-                                    variant="outline"
-                                    size="icon"
-                                    onClick={() => updateRoom(index, 'children', Math.max(0, room.children - 1))}
-                                    style={{ borderColor: colors.teal }}
-                                  >
-                                    –
-                                  </Button>
-                                  <span className="w-6 text-center">{room.children}</span>
-                                  <Button
-                                    variant="outline"
-                                    size="icon"
-                                    onClick={() => updateRoom(index, 'children', Math.min(3, room.children + 1))}
-                                    style={{ borderColor: colors.teal }}
-                                  >
-                                    +
-                                  </Button>
-                                </div>
+                            </div>
+
+                            {/* Enfants */}
+                            <div className="flex flex-col items-center space-y-1">
+                              <span className="text-xs text-gray-500">Enfants</span>
+                              <div className="flex items-center space-x-2">
+                                <Button
+                                  variant="outline"
+                                  size="icon"
+                                  onClick={() => updateRoom(index, 'children', Math.max(0, room.children - 1))}
+                                  style={{ borderColor: colors.teal }}
+                                >
+                                  –
+                                </Button>
+                                <span className="w-6 text-center">{room.children}</span>
+                                <Button
+                                  variant="outline"
+                                  size="icon"
+                                  onClick={() => updateRoom(index, 'children', Math.min(3, room.children + 1))}
+                                  style={{ borderColor: colors.teal }}
+                                >
+                                  +
+                                </Button>
                               </div>
                             </div>
                           </div>
-                        ))}
-                        <Button
-                          variant="outline"
-                          onClick={addRoom}
-                          className="w-full text-sm"
-                          style={{ borderColor: colors.teal }}
-                        >
-                          ➕ Ajouter une chambre
-                        </Button>
-                        <Button
-                          onClick={validateGuests}
-                          className="w-full bg-orange-500 text-white hover:bg-orange-600"
-  
-                        >
-                          ✅ Valider
-                        </Button>
-                      </PopoverContent>
-                    </Popover>
-                  </motion.div>
-  
-                  {/* Search Button */}
-                  <motion.div
-                    className="flex items-end flex-1 min-w-[240px]"
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    whileInView={{ opacity: 1, scale: 1 }}
-                    transition={{ type: "spring", stiffness: 300, delay: 0.6 }}
-                    viewport={{ once: true }}
-                  >
-                    <motion.div
-                      whileHover={{ scale: 1.03, boxShadow: `0 10px 25px -5px ${colors.orange}4D` }}
-                      whileTap={{ scale: 0.97 }}
-                      className="w-full"
-                    >
+                        </div>
+                      ))}
                       <Button
-                        className="w-full h-12 font-medium shadow-lg hover:shadow-xl transition-all duration-300 group"
-                        style={{
-                          background: `linear-gradient(to right, ${colors.orange}, ${colors.maroon})`,
-                          color: 'white'
-                        }}
-                        onClick={handleSearch}
+  variant="outline"
+  onClick={addRoom}
+  className="w-full text-sm"
+  style={{ borderColor: colors.teal }}
+>
+  ➕ Ajouter une chambre
+</Button>
+
+                      <Button
+                        onClick={validateGuests}
+                        className="w-full bg-orange-500 text-white hover:bg-orange-600"
+
                       >
-                        <motion.span
-                          initial={{ x: 0 }}
-                          whileHover={{ x: 2 }}
-                          className="inline-flex items-center"
-                        >
-                          <SearchIcon className="mr-2 h-4 w-4 transition-transform group-hover:scale-110" />
-                          <span className="hidden sm:inline">Rechercher</span>
-                          <span className="sm:hidden">🔍</span>
-                        </motion.span>
+                        ✅ Valider
                       </Button>
-                    </motion.div>
+                    </PopoverContent>
+                  </Popover>
+                </motion.div>
+
+                {/* Search Button */}
+                <motion.div
+                  className="flex items-end flex-1 min-w-[240px]"
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  whileInView={{ opacity: 1, scale: 1 }}
+                  transition={{ type: "spring", stiffness: 300, delay: 0.6 }}
+                  viewport={{ once: true }}
+                >
+                  <motion.div
+                    whileHover={{ scale: 1.03, boxShadow: `0 10px 25px -5px ${colors.orange}4D` }}
+                    whileTap={{ scale: 0.97 }}
+                    className="w-full"
+                  >
+                    <Button
+                      className="w-full h-12 font-medium shadow-lg hover:shadow-xl transition-all duration-300 group"
+                      style={{
+                        background: `linear-gradient(to right, ${colors.orange}, ${colors.maroon})`,
+                        color: 'white'
+                      }}
+                      onClick={handleSearch}
+                    >
+                      <motion.span
+                        initial={{ x: 0 }}
+                        whileHover={{ x: 2 }}
+                        className="inline-flex items-center"
+                      >
+                        <SearchIcon className="mr-2 h-4 w-4 transition-transform group-hover:scale-110" />
+                        <span className="hidden sm:inline">Rechercher</span>
+                        <span className="sm:hidden">🔍</span>
+                      </motion.span>
+                    </Button>
                   </motion.div>
-                </div>
-              </Card>
-            </motion.div>
-          </div>
-        </motion.section>
+                </motion.div>
+              </div>
+            </Card>
+          </motion.div>
+        </div>
+      </motion.section>
+
+
 
 
     {/* Rooms Section  */}
@@ -997,7 +1055,7 @@ console.log("📦 Payload de recherche à envoyer :", updatedSearchPayload);
         </div>
 
         {/* Room Cards */}
-       <RoomList rooms={currentRooms} onBookNow={() => console.log('Book now clicked!')} />
+       <RoomList  onBookNow={() => console.log('Book now clicked!')} />
 
 
         {/* Pagination */}

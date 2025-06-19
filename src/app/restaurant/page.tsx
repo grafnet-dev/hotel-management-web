@@ -4,19 +4,20 @@ import { motion } from 'framer-motion';
 import { Card } from '../../../components/ui/card';
 import { Button } from '../../../components/ui/button';
 import { useState } from 'react';
+import Image from 'next/image';
 
-// Définition des couleurs
+
 const colors = {
-  teal: '#008080',       // Bleu sarcelle
-  gold: '#D4AF37',       // Or
-  orange: '#FF8C42',     // Orange
-  maroon: '#800020',     // Marron
-  lightTeal: '#E6F2F2',  // Sarcelle clair
-  darkTeal: '#006666',   // Sarcelle foncé
-  cream: '#F5F5DC',      // Crème
+ teal: "#005D7C",
+  gold: "#CE9226",     
+  orange: '#FF8C42',     
+  maroon: '#800020',     
+  lightTeal: '#E6F2F2',  
+  darkTeal: '#006666',   
+  cream: '#F5F5DC',     
 };
 
-// Animation variants
+
 const container = {
   hidden: { opacity: 0 },
   show: {
@@ -32,10 +33,8 @@ const item = {
   show: { opacity: 1, y: 0, transition: { duration: 0.5 } }
 };
 
-const fadeIn = {
-  hidden: { opacity: 0 },
-  show: { opacity: 1, transition: { duration: 0.8 } }
-};
+
+
 
 const slideIn = (direction = 'left') => ({
   hidden: { opacity: 0, x: direction === 'left' ? -50 : 50 },
@@ -54,16 +53,22 @@ export default function Restaurant() {
     message: ''
   });
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
-  };
+ const handleChange = (e: React.ChangeEvent<HTMLSelectElement | HTMLInputElement>) => {
+  const { name, value } = e.target;
+  setFormData(prev => ({
+    ...prev,
+    [name]: value
+  }));
+};
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
+const handleTextAreaChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+  const { name, value } = e.target;
+  setFormData(prev => ({ ...prev, [name]: value }));
+};
+
+const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  e.preventDefault();
+  // Ici vous ajouteriez la logique pour envoyer les données
     // Ici vous ajouteriez la logique pour envoyer les données
     alert(`Réservation envoyée pour ${formData.name}`);
     setShowReservationForm(false);
@@ -211,14 +216,15 @@ export default function Restaurant() {
           animate={{ scale: 1 }}
           transition={{ duration: 1.5, ease: "easeOut" }}
         >
-          <img
-            src="https://images.pexels.com/photos/67468/pexels-photo-67468.jpeg"
-            alt="Restaurant"
-            className="w-full h-full object-cover"
-          />
-          <div className="absolute inset-0" style={{ 
-            background: `linear-gradient(to top, ${colors.maroon}70, ${colors.teal}40)`
-          }} />
+           <Image
+    src="https://images.pexels.com/photos/67468/pexels-photo-67468.jpeg"
+    alt="Restaurant"
+    layout="fill"
+    objectFit="cover"
+  />
+  <div className="absolute inset-0" style={{ 
+    background: `linear-gradient(to top, ${colors.maroon}70, ${colors.teal}40)`
+  }} />
         </motion.div>
         
         <div className="relative h-full flex items-center justify-center text-center text-white px-4">
@@ -246,7 +252,7 @@ export default function Restaurant() {
               transition={{ delay: 0.8 }}
               style={{ color: colors.cream }}
             >
-              Excellence gastronomique à l'heure béninoise
+             Art culinaire et tradition béninoise sublimés
             </motion.p>
             
             <motion.div
@@ -297,21 +303,17 @@ export default function Restaurant() {
               <div>
                 <label htmlFor="name" className="block text-sm font-medium mb-1" style={{ color: colors.teal }}>Nom complet</label>
                 <input
-                  type="text"
-                  id="name"
-                  name="name"
-                  value={formData.name}
-                  onChange={handleChange}
-                  required
-                  className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:border-transparent"
-                  style={{ 
-                    borderColor: colors.teal,
-                    focus: { 
-                      ringColor: colors.gold,
-                      borderColor: 'transparent'
-                    }
-                  }}
-                />
+  type="text"
+  id="name"
+  name="name"
+  value={formData.name}
+  onChange={handleChange}
+  required
+  className={`w-full px-4 py-2 border rounded-lg ${formData.name ? 'focused' : ''}`}
+  style={{ 
+    borderColor: colors.teal,
+  }}
+/>
               </div>
               
               <div className="grid grid-cols-2 gap-4">
@@ -376,12 +378,12 @@ export default function Restaurant() {
               
               <div>
                 <label htmlFor="guests" className="block text-sm font-medium mb-1" style={{ color: colors.teal }}>Nombre de personnes</label>
-                <select
+                 <select
                   id="guests"
                   name="guests"
                   value={formData.guests}
                   onChange={handleChange}
-                  className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:border-transparent"
+                  className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:border-transparent transition-all"
                   style={{ borderColor: colors.teal }}
                 >
                   {[1, 2, 3, 4, 5, 6, 7, 8].map(num => (
@@ -392,15 +394,15 @@ export default function Restaurant() {
               
               <div>
                 <label htmlFor="message" className="block text-sm font-medium mb-1" style={{ color: colors.teal }}>Demandes spéciales</label>
-                <textarea
-                  id="message"
-                  name="message"
-                  value={formData.message}
-                  onChange={handleChange}
-                  rows={3}
-                  className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:border-transparent"
-                  style={{ borderColor: colors.teal }}
-                />
+             <textarea
+  id="message"
+  name="message"
+  value={formData.message}
+  onChange={handleTextAreaChange}
+  rows={3}
+  className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:border-transparent"
+  style={{ borderColor: colors.teal }}
+/>
               </div>
               
               <Button 
@@ -429,11 +431,13 @@ export default function Restaurant() {
               viewport={{ once: true }}
               className="relative h-[500px] rounded-2xl overflow-hidden shadow-2xl"
             >
-              <img
-                src="https://images.pexels.com/photos/3338497/pexels-photo-3338497.jpeg"
-                alt="Chef"
-                className="w-full h-full object-cover"
-              />
+             <Image
+  src="https://images.pexels.com/photos/3338497/pexels-photo-3338497.jpeg"
+  alt="Chef"
+  className="w-full h-full object-cover"
+  width={500} 
+  height={500} 
+/>
               <div className="absolute inset-0" style={{ 
                 background: `linear-gradient(to top, ${colors.maroon}30, transparent)`
               }} />
@@ -456,7 +460,7 @@ export default function Restaurant() {
                 backgroundColor: `${colors.gold}15`,
                 borderColor: colors.gold
               }}>
-                <h3 className="font-semibold text-lg mb-3" style={{ color: colors.maroon }}>Horaires d'ouverture :</h3>
+                <h3 className="font-semibold text-lg mb-3" style={{ color: colors.maroon }}>Heures de service :</h3>
                 <ul className="space-y-2" style={{ color: colors.darkTeal }}>
                   <li className="flex items-center">
                     <span className="w-32 font-medium">Petit-déjeuner :</span>
@@ -501,7 +505,7 @@ export default function Restaurant() {
               <span style={{ color: colors.gold }}>Notre</span> Carte
             </h2>
             <p className="text-xl max-w-2xl mx-auto" style={{ color: colors.teal }}>
-              Une sélection de plats raffinés préparés avec des ingrédients locaux et d'importation
+             Une sélection de plats raffinés cuisinés avec des produits locaux et importés.
             </p>
           </motion.div>
           
@@ -512,13 +516,13 @@ export default function Restaurant() {
             viewport={{ once: true }}
             className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
           >
-            {menuSections.map((section, index) => (
-              <motion.div 
-                key={section.key}
-                variants={item}
-                className="relative"
-                whileHover={{ y: -10 }}
-              >
+           {menuSections.map((section, index) => (
+  <motion.div 
+    key={section.key}
+    variants={item}
+    className={`relative ${index % 2 === 0 ? 'bg-gray-100' : ''}`}
+    whileHover={{ y: -10 }}
+  >
                 <Card className="p-8 h-full rounded-xl shadow-sm hover:shadow-md transition-all"
                   style={{ 
                     backgroundColor: 'white',
@@ -591,7 +595,7 @@ export default function Restaurant() {
               <span style={{ color: colors.gold }}>Notre</span> Galerie
             </h2>
             <p className="text-xl max-w-2xl mx-auto" style={{ color: colors.teal }}>
-              Découvrez l'ambiance et les créations de notre restaurant à Cotonou
+             Explorez la cuisine raffinée du restaurant de l hôtel Bain Du Lac à Cotonou
             </p>
           </motion.div>
           
@@ -616,11 +620,18 @@ export default function Restaurant() {
                 className="relative h-80 rounded-2xl overflow-hidden group"
                 whileHover={{ y: -10 }}
               >
-                <img
-                  src={image}
-                  alt={`Gallery ${index + 1}`}
-                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                />
+               <Image
+  src={image}
+  alt={`Gallery ${index + 1}`}
+  fill
+  sizes="(max-width: 768px) 100vw,
+          (max-width: 1200px) 50vw,
+          33vw"
+  style={{
+    objectFit: 'cover',
+  }}
+  className="transition-transform duration-500 group-hover:scale-110"
+/>
                 <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity"
                   style={{ 
                     background: `linear-gradient(to top, ${colors.maroon}50, transparent)`

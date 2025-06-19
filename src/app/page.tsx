@@ -10,7 +10,7 @@ import { Label } from '../../components/ui/label';
 import RoomList from '../../components/roomlist';
 import {
   Space as  Utensils, Dumbbell, Hotel, ArrowRight, CalendarDays, ChevronDown, Wifi,ParkingCircle,Tv2,Baby, Briefcase, Umbrella,
-  PhoneCall,Bell,Bath,Waves,Bus,Glasses 
+  PhoneCall,Bell,Bath,Waves,Bus,Glasses,Sparkles 
 } from 'lucide-react';
 import { Calendar as CalendarIcon, Search as SearchIcon } from "lucide-react";
 import { Swiper, SwiperSlide } from 'swiper/react';
@@ -29,9 +29,9 @@ import { fr } from "date-fns/locale";
 
 const colors = {
   darkTeal: "#1e4e5f",
-  teal: "#2a9d8f",
+  teal: "#005D7C",
   lightTeal: "#e0f2f1",
-  gold: "#e9c46a",
+  gold: "#CE9226",
   orange: "#f4a261",
   maroon: "#e76f51",
   white: "#ffffff",
@@ -55,11 +55,14 @@ export default function Home() {
   const [date, setDate] = useState<DateRange | Date | undefined>();
   const [isDayUse, setIsDayUse] = useState(false);
   const [rooms, setRooms] = useState<{ id: number; adults: number; children: number; }[]>([]);
-  
+
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const swiperRef = useRef(null);
-
-  
+  const randomValues = useRef({
+    left: Math.random() * 100,
+    top: Math.random() * 100,
+    delay: Math.random() * 3,
+  });
 
 const services = [
   {
@@ -271,52 +274,57 @@ console.log("📦 Payload de recherche à envoyer :", updatedSearchPayload);
 
 
   return (
-      <div className="min-h-screen" style={{ fontFamily: 'Bahnschrift, sans-serif' }}>
-      {/* Hero Section */}
-      <motion.section
-        initial="hidden"
-        animate="visible"
-        className="relative h-screen overflow-hidden"
-      >
-        {/* Background Image with Overlay */}
+     <div className="min-h-screen" style={{ fontFamily: 'Bahnschrift, sans-serif' }}>
+  {/* Hero Section - Version améliorée */}
+  <motion.section
+    initial="hidden"
+    animate="visible"
+    className="relative h-screen overflow-hidden"
+  >
+    {/* Background Image with Enhanced Overlay */}
     <motion.div
-          className="absolute inset-0"
-          initial={{ scale: 1.1, rotate: 0.5 }}
-          animate={{ scale: 1, rotate: 0 }}
-          transition={{ duration: 2, ease: [0.25, 0.1, 0.25, 1] }}
-        >
-  <Image
-    src="https://images.pexels.com/photos/1134176/pexels-photo-1134176.jpeg"
-    alt="Bain de Lac Hotel"
-    layout="fill"
-    objectFit="cover"
-  />
+      className="absolute inset-0"
+      initial={{ scale: 1.1 }}
+      animate={{ scale: 1 }}
+      transition={{ duration: 2, ease: [0.25, 0.1, 0.25, 1] }}
+    >
+
+ 
+      <Image
+        src="https://images.pexels.com/photos/1134176/pexels-photo-1134176.jpeg"
+        alt="Bain de Lac Hotel"
+        layout="fill"
+        objectFit="cover"
+        priority
+        className="opacity-90"
+      />
+   
           <motion.div
             className="absolute inset-0 pointer-events-none"
             initial={{ opacity: 0 }}
             animate={{ opacity: [0, 1, 0] }}
             transition={{ duration: 3, repeat: Infinity, delay: 2 }}
           >
-            {[...Array(20)].map((_, i) => (
-              <motion.div
-                key={i}
-                className="absolute w-1 h-1 bg-yellow-200 rounded-full"
-                style={{
-                  left: `${Math.random() * 100}%`,
-                  top: `${Math.random() * 100}%`,
-                  boxShadow: '0 0 6px rgba(255, 215, 0, 0.8)'
-                }}
-                animate={{
-                  scale: [0, 1, 0],
-                  opacity: [0, 1, 0],
-                }}
-                transition={{
-                  duration: 2,
-                  repeat: Infinity,
-                  delay: Math.random() * 3,
-                }}
-              />
-            ))}
+           {[...Array(20)].map((_, i) => (
+  <motion.div
+    key={i} // Add this line
+    className="absolute w-1 h-1 bg-yellow-200 rounded-full"
+    style={{
+      left: `${randomValues.current.left}%`,
+      top: `${randomValues.current.top}%`,
+      boxShadow: "0 0 6px rgba(255, 215, 0, 0.8)",
+    }}
+    animate={{
+      scale: [0, 1, 0],
+      opacity: [0, 1, 0],
+    }}
+    transition={{
+      duration: 2,
+      repeat: Infinity,
+      delay: randomValues.current.delay,
+    }}
+  />
+))}
           </motion.div>
         </motion.div>
 
@@ -375,34 +383,33 @@ console.log("📦 Payload de recherche à envoyer :", updatedSearchPayload);
             </motion.p>
 
              <motion.div
-              className="flex flex-col sm:flex-row gap-6 justify-center items-center"
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{
-                type: "spring",
-                stiffness: 200,
-                damping: 15,
-                delay: 1.6
+          className="flex flex-col sm:flex-row gap-4 justify-center items-center"
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 1.6 }}
+        >
+          <motion.div
+            whileHover={{ scale: 1.03 }}
+            whileTap={{ scale: 0.98 }}
+            className="relative"
+          >
+            <div 
+              className="absolute inset-0 rounded-lg blur-md opacity-0 group-hover:opacity-80 transition-opacity duration-300"
+              style={{ 
+                backgroundColor: colors.gold,
+                zIndex: 0
+              }}
+            />
+            <Button
+              size="lg"
+              className="relative z-10 transition-all duration-300"
+              style={{
+                background: `linear-gradient(135deg, ${colors.teal} 0%, ${colors.darkTeal} 100%)`,
+                border: `1px solid ${colors.gold}`,
+                color: colors.white,
+                boxShadow: `0 4px 20px ${colors.teal}40`
               }}
             >
-              <motion.div
-                whileHover={{ 
-                  scale: 1.05,
-                  boxShadow: "0 20px 40px rgba(255, 215, 0, 0.3)"
-                }}
-                whileTap={{ scale: 0.98 }}
-              >
-                <Button
-                  size="lg"
-                  className="relative overflow-hidden group"
-                  style={{
-                    background: `linear-gradient(135deg, ${colors.teal} 0%, ${colors.darkTeal} 100%)`,
-                    border: `2px solid ${colors.gold}`,
-                    color: colors.white,
-                    boxShadow: '0 10px 30px rgba(0, 139, 139, 0.4)',
-                    position: 'relative'
-                  }}
-                >
                   <span className="relative z-10">Découvrir nos Chambres</span>
                   <motion.div
                     className="absolute inset-0 bg-gradient-to-r from-transparent via-white to-transparent opacity-20"
@@ -442,65 +449,7 @@ console.log("📦 Payload de recherche à envoyer :", updatedSearchPayload);
                 </Button>
               </motion.div>
           </motion.div>
-          <motion.div
-              className="flex flex-col sm:flex-row justify-center items-center mt-16 gap-6 sm:gap-8"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 1, delay: 2 }}
-            >
-              {[
-                { icon: "★", text: "5 Étoiles", desc: "Excellence" },
-                { icon: "🏨", text: "Luxe Premium", desc: "Confort" },
-                { icon: "🌊", text: "Vue sur Lac", desc: "Sérénité" }
-              ].map((item, index) => (
-                <motion.div
-                  key={index}
-                  className="text-center p-6 rounded-2xl backdrop-blur-md border"
-                  style={{
-                    backgroundColor: 'rgba(0, 0, 0, 0.4)',
-                    borderColor: colors.gold + '40',
-                    boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)',
-                    minWidth: '140px'
-                  }}
-                  initial={{ opacity: 0, y: 30, scale: 0.9 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  transition={{ duration: 0.8, delay: 2.2 + index * 0.15 }}
-                  whileHover={{ 
-                    scale: 1.05,
-                    backgroundColor: 'rgba(0, 139, 139, 0.2)',
-                    boxShadow: '0 12px 40px rgba(255, 215, 0, 0.2)'
-                  }}
-                >
-                  <motion.div 
-                    className="text-3xl mb-3"
-                    style={{ color: colors.gold }}
-                    animate={{ 
-                      textShadow: [
-                        '0 0 5px rgba(255, 215, 0, 0.5)',
-                        '0 0 20px rgba(255, 215, 0, 0.8)',
-                        '0 0 5px rgba(255, 215, 0, 0.5)'
-                      ]
-                    }}
-                    transition={{ duration: 2, repeat: Infinity }}
-                  >
-                    {item.icon}
-                  </motion.div>
-                  <div 
-                    className="text-sm font-semibold uppercase tracking-wider mb-1"
-                    style={{ color: colors.gold }}
-                  >
-                    {item.text}
-                  </div>
-                  <div 
-                    className="text-xs opacity-80"
-                    style={{ color: colors.white }}
-                  >
-                    {item.desc}
-                  </div>
-                </motion.div>
-              ))}
-            </motion.div>
-
+          
             
 </motion.div>
 
@@ -531,29 +480,101 @@ console.log("📦 Payload de recherche à envoyer :", updatedSearchPayload);
         transition={{ duration: 0.8, ease: [0.25, 0.1, 0.25, 1] }}
         className="py-16 relative"
       >
+         <div className="absolute inset-0 rounded-xl backdrop-blur-sm">
+          <motion.div
+            className="absolute top-10 left-10 w-32 h-32 rounded-full opacity-10"
+            style={{ backgroundColor: colors.gold }}
+            animate={{ 
+              scale: [1, 1.2, 1],
+              rotate: [0, 180, 360]
+            }}
+            transition={{ duration: 20, repeat: Infinity }}
+          />
+          <motion.div
+            className="absolute bottom-10 right-10 w-24 h-24 rounded-full opacity-10"
+            style={{ backgroundColor: colors.teal }}
+            animate={{ 
+              scale: [1.2, 1, 1.2],
+              rotate: [360, 180, 0]
+            }}
+            transition={{ duration: 15, repeat: Infinity }}
+          />
+        </div>
+
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
-            whileHover={{ y: -5, transition: { type: "spring", stiffness: 300 } }}
-            whileTap={{ scale: 0.99 }}
+            whileHover={{ 
+              y: -8,
+              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)'
+            }}
+            whileTap={{ scale: 0.98 }}
+            transition={{ type: "spring", stiffness: 300, damping: 20 }}
           >
             <Card
-              className="-mt-32 relative z-10 p-6 md:p-8 border-0 shadow-xl rounded-2xl overflow-hidden bg-white"
-              style={{ border: `2px solid ${colors.gold}` }}
+              className="-mt-32 relative z-10 p-8 md:p-10 border-0 shadow-2xl rounded-3xl overflow-hidden backdrop-blur-sm"
+              style={{ 
+                background: `linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.9) 100%)`,
+                border: `3px solid ${colors.gold}`,
+                boxShadow: `0 20px 40px -12px rgba(128, 0, 32, 0.3), 0 0 0 1px ${colors.gold}33`
+              }}
             >
-              <div className="flex flex-wrap gap-x-8 gap-y-6">
+              {/* Decorative Header */}
+              <motion.div 
+                className="text-center mb-8"
+                initial={{ opacity: 0, y: -20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.2 }}
+              >
+                <div className="flex items-center justify-center mb-3">
+                  <motion.div
+                    animate={{ rotate: [0, 10, -10, 0] }}
+                    transition={{ duration: 2, repeat: Infinity, delay: 1 }}
+                  >
+                    <Sparkles className="h-6 w-6 mr-2" style={{ color: colors.gold }} />
+                  </motion.div>
+                  <h2 
+                    className="text-2xl md:text-3xl font-bold tracking-wide"
+                    style={{ 
+                      color: colors.maroon,
+                      fontFamily: 'Bahnschrift, sans-serif'
+                    }}
+                  >
+                    Réservez Votre Séjour
+                  </h2>
+                  <motion.div
+                    animate={{ rotate: [0, -10, 10, 0] }}
+                    transition={{ duration: 2, repeat: Infinity, delay: 1.5 }}
+                  >
+                    <Sparkles className="h-6 w-6 ml-2" style={{ color: colors.gold }} />
+                  </motion.div>
+                </div>
+                <div 
+                  className="w-24 h-1 mx-auto rounded-full"
+                  style={{ backgroundColor: colors.gold }}
+                />
+              </motion.div>
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
                 {/* Date & Day Use */}
                 <motion.div
-                  className="flex-1 min-w-[240px] space-y-2"
-                  initial={{ opacity: 0, x: -20 }}
+                  className="space-y-3"
+                  initial={{ opacity: 0, x: -30 }}
                   whileInView={{ opacity: 1, x: 0 }}
-                  transition={{ duration: 0.4, delay: 0.1 }}
+                  transition={{ duration: 0.6, delay: 0.3 }}
                   viewport={{ once: true }}
                 >
-                  <Label className="text-sm font-medium flex items-center" style={{ color: colors.darkTeal }}>
-                    <CalendarDays className="h-4 w-4 mr-2" style={{ color: colors.orange }} />
-                    {isDayUse ? "Quel jour ?" : "Quand ?"}
-
+                  <Label 
+                    className="text-base font-bold flex items-center tracking-wide" 
+                    style={{ 
+                      color: colors.darkTeal,
+                      fontFamily: 'Bahnschrift, sans-serif'
+                    }}
+                  >
+                    <CalendarDays className="h-5 w-5 mr-3" style={{ color: colors.orange }} />
+                    {isDayUse ? "JOUR DE VISITE" : "DATES DE SÉJOUR"}
                   </Label>
+                  <p className="text-sm text-muted-foreground">
+                    {isDayUse ? "Veuillez choisir une date" : "Veuillez choisir les dates de votre séjour"}
+                  </p>
 
                   <Popover>
                     <PopoverTrigger asChild>
@@ -624,19 +645,34 @@ console.log("📦 Payload de recherche à envoyer :", updatedSearchPayload);
                   </Popover>
 
                   {/* Toggle Day Use */}
-                  <div className="flex items-center gap-2 pt-2">
-                    <input
-                      type="checkbox"
-                      id="dayuse"
-                      checked={isDayUse}
-                      onChange={(e) => {
-                        setIsDayUse(e.target.checked);
-                        setDate(undefined);
-                      }}
-                      className="accent-orange-500 h-4 w-4"
-                    />
-                    <label htmlFor="dayuse" className="text-sm text-gray-600">Réservation de jour (Day use)</label>
-                  </div>
+                   <motion.div 
+                      className="flex items-center gap-3 mt-3 p-3 rounded-lg"
+                      style={{ backgroundColor: 'rgba(0, 139, 139, 0.05)' }}
+                      whileHover={{ backgroundColor: 'rgba(0, 139, 139, 0.1)' }}
+                    >
+                      <motion.input
+                        type="checkbox"
+                        id="dayuse"
+                        checked={isDayUse}
+                        onChange={(e) => {
+                          setIsDayUse(e.target.checked);
+                          setDate(undefined);
+                        }}
+                        className="w-5 h-5 rounded transition-all duration-200"
+                        style={{ accentColor: colors.orange }}
+                        whileTap={{ scale: 0.9 }}
+                      />
+                      <label 
+                        htmlFor="dayuse" 
+                        className="text-sm font-semibold cursor-pointer select-none tracking-wide"
+                        style={{ 
+                          color: colors.darkTeal,
+                          fontFamily: 'Bahnschrift, sans-serif'
+                        }}
+                      >
+                        RÉSERVATION DE JOUR (DAY USE)
+                      </label>
+                    </motion.div>
                 </motion.div>
 
                 {/* Invités et chambres */}
@@ -803,177 +839,427 @@ console.log("📦 Payload de recherche à envoyer :", updatedSearchPayload);
 </section>
 
 
-      {/* Services Section - Design Premium */}
+{/* Services Section - Design Premium Enhanced */}
     
 <motion.section
   initial="hidden"
   whileInView="visible"
   viewport={{ once: true, margin: "-100px" }}
-  className="py-20 overflow-hidden"
+  className="py-24 overflow-hidden relative"
   style={{ backgroundColor: colors.lightTeal, fontFamily: 'Bahnschrift, sans-serif' }}
 >
-  <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-    {/* Animated Header */}
+  {/* Background Decorative Elements */}
+  <div className="absolute inset-0 overflow-hidden pointer-events-none">
     <motion.div
-      className="text-center mb-16"
+      className="absolute top-10 left-10 w-72 h-72 rounded-full opacity-5"
+      style={{ backgroundColor: colors.gold }}
+      animate={{ 
+        scale: [1, 1.1, 1],
+        rotate: [0, 180, 360] 
+      }}
+      transition={{ 
+        duration: 20,
+        repeat: Infinity,
+        ease: "linear"
+      }}
+    />
+    <motion.div
+      className="absolute bottom-20 right-20 w-96 h-96 rounded-full opacity-3"
+      style={{ backgroundColor: colors.maroon }}
+      animate={{ 
+        scale: [1.1, 1, 1.1],
+        rotate: [360, 180, 0] 
+      }}
+      transition={{ 
+        duration: 25,
+        repeat: Infinity,
+        ease: "linear"
+      }}
+    />
+    <motion.div
+      className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-64 h-64 rounded-full opacity-4"
+      style={{ backgroundColor: colors.teal }}
+      animate={{ 
+        scale: [1, 1.2, 1],
+        opacity: [0.04, 0.08, 0.04]
+      }}
+      transition={{ 
+        duration: 15,
+        repeat: Infinity,
+        ease: "easeInOut"
+      }}
+    />
+  </div>
+
+  <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+    {/* Animated Header with Enhanced Design */}
+    <motion.div
+      className="text-center mb-20"
       initial={{ opacity: 0, y: 30 }}
       whileInView={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.6 }}
+      transition={{ duration: 0.8 }}
       viewport={{ once: true }}
     >
-      <motion.span
-        className="inline-block px-4 py-1.5 text-sm font-semibold rounded-full mb-4 tracking-wide"
-        style={{
-          color: colors.teal,
-          backgroundColor: `${colors.teal}20`
-        }}
-        initial={{ scale: 0.9 }}
-        whileInView={{ scale: 1 }}
-        transition={{ duration: 0.4, delay: 0.2 }}
-      >
-        Ce que nous offrons
-      </motion.span>
+      <motion.div className="relative inline-block mb-6">
+        <motion.span
+          className="inline-block px-6 py-2 text-sm font-bold rounded-full tracking-wide relative overflow-hidden"
+          style={{
+            color: colors.teal,
+            backgroundColor: 'white',
+            border: `2px solid ${colors.teal}30`,
+            boxShadow: `0 4px 20px ${colors.teal}20`
+          }}
+          initial={{ scale: 0.8, opacity: 0 }}
+          whileInView={{ scale: 1, opacity: 1 }}
+          transition={{ duration: 0.6, delay: 0.2 }}
+          whileHover={{ 
+            scale: 1.05,
+            boxShadow: `0 6px 25px ${colors.teal}30`
+          }}
+        >
+          <motion.div
+            className="absolute inset-0 rounded-full opacity-0"
+            style={{ backgroundColor: `${colors.teal}10` }}
+            whileHover={{ opacity: 1 }}
+            transition={{ duration: 0.3 }}
+          />
+          <span className="relative z-10 flex items-center">
+            <motion.div
+              className="w-2 h-2 rounded-full mr-2"
+              style={{ backgroundColor: colors.gold }}
+              animate={{ 
+                scale: [1, 1.2, 1],
+                opacity: [1, 0.7, 1]
+              }}
+              transition={{
+                duration: 2,
+                repeat: Infinity,
+                ease: "easeInOut"
+              }}
+            />
+            Ce que nous offrons
+          </span>
+        </motion.span>
+      </motion.div>
+
       <motion.h2
-        className="text-4xl md:text-5xl font-bold mb-4 tracking-tight"
+        className="text-5xl md:text-6xl font-extrabold mb-6 tracking-tight leading-tight"
         style={{ color: colors.maroon }}
+        initial={{ opacity: 0, y: 30 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.8, delay: 0.3 }}
+      >
+        Des services{" "}
+        <motion.span 
+          style={{ 
+            background: `linear-gradient(135deg, ${colors.gold} 0%, ${colors.orange} 100%)`,
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+            backgroundClip: 'text'
+          }}
+          animate={{
+            backgroundPosition: ['0% 50%', '100% 50%', '0% 50%'],
+          }}
+          transition={{
+            duration: 3,
+            repeat: Infinity,
+            ease: "easeInOut"
+          }}
+        >
+          exceptionnels
+        </motion.span>
+      </motion.h2>
+
+      <motion.p
+        className="text-xl max-w-4xl mx-auto leading-relaxed"
+        style={{ color: colors.darkTeal }}
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, delay: 0.3 }}
+        transition={{ duration: 0.8, delay: 0.5 }}
       >
-        Des services <span style={{ color: colors.gold }}>exceptionnels</span>
-      </motion.h2>
-      <motion.p
-        className="text-xl max-w-3xl mx-auto leading-relaxed"
-        style={{ color: colors.darkTeal }}
-        initial={{ opacity: 0 }}
-        whileInView={{ opacity: 1 }}
-        transition={{ duration: 0.6, delay: 0.4 }}
-      >
-        Découvrez comment nous rendons votre expérience <span style={{ color: colors.maroon }}>inoubliable</span>
+        Découvrez comment nous rendons votre expérience{" "}
+        <motion.span 
+          style={{ 
+            color: colors.maroon,
+            fontWeight: '600'
+          }}
+          whileHover={{ 
+            textShadow: `2px 2px 4px ${colors.maroon}30`
+          }}
+        >
+          inoubliable
+        </motion.span>
       </motion.p>
+
+      {/* Decorative Line */}
+      <motion.div 
+        className="w-24 h-1 mx-auto mt-8 rounded-full"
+        style={{ 
+          background: `linear-gradient(90deg, ${colors.teal}, ${colors.gold}, ${colors.maroon})`
+        }}
+        initial={{ scaleX: 0 }}
+        whileInView={{ scaleX: 1 }}
+        transition={{ duration: 1, delay: 0.7 }}
+      />
     </motion.div>
 
-    {/* Services Carousel with Infinite Loop */}
-<Swiper
-ref={swiperRef}
-  modules={[Autoplay]}
-  autoplay={{
-    delay: 4000,
-    disableOnInteraction: false,
-  }}
-  loop={true}
-  spaceBetween={30}
-  direction="horizontal"
-  slidesPerView={1}
-  breakpoints={{
-    640: { slidesPerView: 1 },
-    768: { slidesPerView: 2 },
-    1024: { slidesPerView: 3 },
-    1280: { slidesPerView: 4 },
-  }}
-  className="py-8"
->
-     {services.map((service, index) => (
-  <SwiperSlide key={service.title}>
+    {/* Enhanced Services Carousel */}
     <motion.div
-      key={service.title}
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: index * 0.2 }}
-      className="text-center"
+      initial={{ opacity: 0, y: 40 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.8, delay: 0.3 }}
+      viewport={{ once: true }}
     >
-              <div
-                className="h-full rounded-xl overflow-hidden transition-all duration-300 group-hover:shadow-xl relative"
+      <Swiper
+        ref={swiperRef}
+        modules={[Autoplay]}
+        autoplay={{
+          delay: 5000,
+          disableOnInteraction: false,
+        }}
+        loop={true}
+        spaceBetween={32}
+        direction="horizontal"
+        slidesPerView={1}
+        breakpoints={{
+          640: { slidesPerView: 1, spaceBetween: 20 },
+          768: { slidesPerView: 2, spaceBetween: 24 },
+          1024: { slidesPerView: 3, spaceBetween: 28 },
+          1280: { slidesPerView: 4, spaceBetween: 32 },
+        }}
+        className="py-12"
+      >
+        {services.map((service, index) => (
+          <SwiperSlide key={service.title}>
+            <motion.div
+              initial={{ opacity: 0, y: 30, scale: 0.9 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              transition={{ 
+                delay: index * 0.15,
+                duration: 0.6,
+                ease: "easeOut"
+              }}
+              className="text-center h-full"
+            >
+              <motion.div
+                className="h-full rounded-2xl overflow-hidden transition-all duration-500 relative group cursor-pointer"
                 style={{
                   backgroundColor: 'white',
-                  border: `1px solid ${colors.gold}33`,
-                  boxShadow: '0 4px 20px rgba(0, 0, 0, 0.08)'
+                  border: `1px solid ${colors.gold}20`,
+                  boxShadow: '0 8px 32px rgba(0, 0, 0, 0.08)'
+                }}
+                whileHover={{
+                  y: -8,
+                  boxShadow: `0 20px 40px ${colors.teal}15, 0 0 0 1px ${colors.gold}30`,
+                  transition: { duration: 0.3 }
                 }}
               >
+                {/* Gradient Overlay Effect */}
                 <motion.div
-                  className="absolute -top-10 -right-10 w-32 h-32 rounded-full opacity-0 group-hover:opacity-20"
-                  style={{ backgroundColor: colors.teal }}
-                  initial={{ scale: 0.5 }}
-                  whileHover={{ scale: 1 }}
-                  transition={{ duration: 0.8 }}
-                ></motion.div>
+                  className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500"
+                  style={{
+                    background: `linear-gradient(135deg, ${colors.teal}03 0%, ${colors.gold}05 50%, ${colors.maroon}03 100%)`
+                  }}
+                />
+
+                {/* Decorative Corner Elements */}
+                <motion.div
+                  className="absolute top-0 right-0 w-20 h-20 opacity-0 group-hover:opacity-20 transition-opacity duration-500"
+                  style={{
+                    background: `radial-gradient(circle at center, ${colors.gold}40 0%, transparent 70%)`
+                  }}
+                  animate={{
+                    rotate: [0, 360],
+                  }}
+                  transition={{
+                    duration: 8,
+                    repeat: Infinity,
+                    ease: "linear"
+                  }}
+                />
 
                 <div className="p-8 text-center relative z-10">
                   <motion.div
-                    className="mx-auto flex items-center justify-center h-16 w-16 rounded-full mb-6 shadow-sm group-hover:shadow-md transition-all duration-500"
+                    className="mx-auto flex items-center justify-center h-20 w-20 rounded-2xl mb-6 relative group/icon"
                     style={{
                       backgroundColor: 'white',
-                      border: `1px solid ${colors.gold}33`,
-                      color: colors.teal
+                      border: `2px solid ${colors.gold}30`,
+                      color: colors.teal,
+                      boxShadow: `0 4px 20px ${colors.teal}15`
                     }}
                     whileHover={{
-                      rotate: [0, 10, -10, 0],
-                      transition: { duration: 0.6 },
+                      rotate: [0, -10, 10, 0],
+                      scale: 1.1,
+                      boxShadow: `0 8px 30px ${colors.teal}25`,
+                      transition: { duration: 0.6 }
                     }}
                   >
-                    <motion.div className="h-8 w-8" whileHover={{ scale: 1.1 }}>
+                    {/* Icon Background Glow */}
+                    <motion.div
+                      className="absolute inset-0 rounded-2xl opacity-0 group-hover/icon:opacity-100"
+                      style={{ backgroundColor: `${colors.teal}08` }}
+                      transition={{ duration: 0.3 }}
+                    />
+                    
+                    <motion.div 
+                      className="h-10 w-10 relative z-10" 
+                      whileHover={{ 
+                        scale: 1.15,
+                        filter: `drop-shadow(0 4px 8px ${colors.teal}30)`
+                      }}
+                    >
                       {service.icon && React.cloneElement(service.icon, {
-                        className: "h-8 w-8 transition-colors duration-300",
+                        className: "h-10 w-10 transition-all duration-300",
                         style: { color: colors.teal }
                       })}
                     </motion.div>
+
+                    {/* Animated Ring */}
+                    <motion.div
+                      className="absolute inset-0 rounded-2xl border-2 opacity-0 group-hover/icon:opacity-60"
+                      style={{ borderColor: colors.gold }}
+                      animate={{
+                        scale: [1, 1.2, 1],
+                        opacity: [0, 0.6, 0]
+                      }}
+                      transition={{
+                        duration: 2,
+                        repeat: Infinity,
+                        ease: "easeInOut"
+                      }}
+                    />
                   </motion.div>
 
-                  <h3
-                    className="text-2xl font-bold mb-3 transition-colors duration-300"
+                  <motion.h3
+                    className="text-2xl font-bold mb-4 transition-all duration-300"
                     style={{ color: colors.maroon }}
+                    whileHover={{ 
+                      scale: 1.02,
+                      textShadow: `2px 2px 4px ${colors.maroon}20`
+                    }}
                   >
                     {service.title}
-                  </h3>
-                  <p
-                    className="mb-6 leading-relaxed transition-colors duration-300"
+                  </motion.h3>
+
+                  <motion.p
+                    className="mb-8 leading-relaxed text-base transition-colors duration-300"
                     style={{ color: colors.darkTeal }}
+                    initial={{ opacity: 0.8 }}
+                    whileHover={{ opacity: 1 }}
                   >
                     {service.description}
-                  </p>
+                  </motion.p>
 
                   <motion.button
-                    className="inline-flex items-center font-medium transition-colors"
-                    style={{ color: colors.orange }}
-                    whileHover={{ x: 3 }}
+                    className="inline-flex items-center font-semibold transition-all duration-300 relative group/btn px-4 py-2 rounded-full"
+                    style={{ 
+                      color: colors.orange,
+                      border: `1px solid ${colors.orange}30`
+                    }}
+                    whileHover={{ 
+                      x: 5,
+                      backgroundColor: `${colors.orange}08`,
+                      borderColor: `${colors.orange}50`,
+                      boxShadow: `0 4px 15px ${colors.orange}20`
+                    }}
+                    whileTap={{ scale: 0.98 }}
                   >
-                    En savoir plus
-                    <ArrowRight
-                      className="ml-2 h-4 w-4 transition-all duration-300 group-hover:translate-x-1 group-hover:scale-110"
-                      style={{ color: colors.orange }}
-                    />
+                    <span className="relative z-10">En savoir plus</span>
+                    <motion.div
+                      className="ml-2"
+                      animate={{
+                        x: [0, 3, 0]
+                      }}
+                      transition={{
+                        duration: 1.5,
+                        repeat: Infinity,
+                        ease: "easeInOut"
+                      }}
+                    >
+                      <ArrowRight
+                        className="h-4 w-4 transition-all duration-300"
+                        style={{ color: colors.orange }}
+                      />
+                    </motion.div>
                   </motion.button>
                 </div>
-              </div>
+
+                {/* Bottom Accent Line */}
+                <motion.div
+                  className="absolute bottom-0 left-0 right-0 h-1 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-center"
+                  style={{ 
+                    background: `linear-gradient(90deg, ${colors.teal}, ${colors.gold}, ${colors.maroon})`
+                  }}
+                />
+              </motion.div>
             </motion.div>
           </SwiperSlide>
         ))}
       </Swiper>
-    
+    </motion.div>
 
-    {/* CTA Button */}
+    {/* Enhanced CTA Button */}
     <motion.div
-      className="mt-16 text-center"
-      initial={{ opacity: 0, y: 20 }}
+      className="mt-20 text-center"
+      initial={{ opacity: 0, y: 30 }}
       whileInView={{ opacity: 1, y: 0 }}
-      transition={{ delay: 0.5 }}
+      transition={{ delay: 0.8, duration: 0.8 }}
       viewport={{ once: true }}
     >
       <motion.button
-        className="px-8 py-3.5 font-semibold rounded-full shadow-md hover:shadow-lg transition-all duration-300 relative overflow-hidden group"
+        className="relative px-10 py-4 font-bold text-lg rounded-full shadow-lg hover:shadow-xl transition-all duration-500 overflow-hidden group/cta"
         style={{
-          background: `linear-gradient(to right, ${colors.orange}, ${colors.maroon})`,
-          color: 'white'
+          background: `linear-gradient(135deg, ${colors.orange}, ${colors.maroon})`,
+          color: 'white',
+          border: `2px solid transparent`
         }}
         whileHover={{
           scale: 1.05,
-          boxShadow: `0 10px 25px -5px ${colors.orange}80`
+          boxShadow: `0 15px 35px -5px ${colors.orange}50, 0 0 0 2px ${colors.gold}30`,
+          transition: { duration: 0.3 }
         }}
         whileTap={{ scale: 0.98 }}
       >
+        {/* Animated Background */}
+        <motion.div
+          className="absolute inset-0 opacity-0 group-hover/cta:opacity-100"
+          style={{
+            background: `linear-gradient(135deg, ${colors.maroon}, ${colors.orange})`
+          }}
+          transition={{ duration: 0.5 }}
+        />
+
+        {/* Shimmer Effect */}
+        <motion.div
+          className="absolute inset-0 opacity-0 group-hover/cta:opacity-30"
+          style={{
+            background: `linear-gradient(90deg, transparent, ${colors.gold}60, transparent)`
+          }}
+          animate={{
+            x: ['-100%', '100%']
+          }}
+          transition={{
+            duration: 2,
+            repeat: Infinity,
+            ease: "linear"
+          }}
+        />
+
         <span className="relative z-10 flex items-center justify-center">
           Voir tous nos services
-          <ArrowRight className="ml-2 h-4 w-4 transition-all duration-300 group-hover:translate-x-1" />
+          <motion.div
+            className="ml-3"
+            animate={{
+              x: [0, 5, 0]
+            }}
+            transition={{
+              duration: 1.5,
+              repeat: Infinity,
+              ease: "easeInOut"
+            }}
+          >
+            <ArrowRight className="h-5 w-5" />
+          </motion.div>
         </span>
       </motion.button>
     </motion.div>

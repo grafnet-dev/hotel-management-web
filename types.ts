@@ -9,30 +9,78 @@ export type RoomImage = {
   image: string;
 };
 
-export type Room = {
+export type ReservationType = {
   id: number;
   name: string;
-  room_type: string;
-  bed_type: string;
-  num_person: number;
-  surface_area: number;
-  price_per_night: number;
-  hourly_rate?: number;
-  is_day_use: boolean;
-  day_use_price?: number;
-  day_use_check_in?: number;
-  day_use_check_out?: number;
-  default_check_in_time: number;
-  default_check_out_time: number;
-  flooring_type: string;
-  view: string;
-  floor: string | null;
-  is_pets_allowed: boolean;
-  is_smoking_allowed: boolean;
-  in_maintenance: boolean;
-  is_available: boolean;
-  status: string;
-  image: string;
-  room_images: RoomImage[];
-  amenities: Amenity[];
+  code: string;
+  description: string | boolean;
+  is_flexible: boolean;
+  slots: ReservationSlot[];
 };
+export type ReservationSlot = {
+  checkin_time: number;
+  checkout_time: number;
+};
+// types/room.ts
+
+
+export interface Image {
+  id: number;
+  url: string;
+}
+
+
+
+
+export type Room = {
+    id: number;
+  name: string;
+  status: string;
+  room_type: string;
+  num_person: number;
+  is_available: boolean;
+  price_per_night: number;
+  day_use_price: number;
+  hourly_rate: number;
+  floor: string;
+  surface_area: number;
+  view: string | boolean;
+  bed_type: string | boolean;
+  flooring_type: string | boolean;
+  image: string;
+  is_smoking_allowed: boolean;
+  is_pets_allowed: boolean;
+  in_maintenance: boolean;
+  checkin_date?: string;
+  checkout_date?: string;
+  room_images: {
+    image: string;
+  }[];
+  amenities: Array<{
+    id: number;
+    name: string;
+    description: string | boolean;
+    icon: string;
+  }>;
+  reservation_types: Array<{
+    id: number;
+    name: string;
+    code: string;
+    description: string | boolean;
+    is_flexible: boolean;
+    slots: Array<{
+      checkin_time: number;
+      checkout_time: number;
+    }>;
+  }>;
+  pricing: Array<{
+    reservation_type_id: number;
+    reservation_type_name: string;
+    price: number;
+    hourly_price: number;
+    is_hourly_based: boolean;
+    currency: string | null;
+  }>;
+
+};
+

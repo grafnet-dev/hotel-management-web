@@ -1,174 +1,325 @@
-import { Mail, Phone, MapPin, Facebook, Instagram, Twitter } from 'lucide-react';
+
+import { Mail, Phone, MapPin, Facebook, Instagram, Twitter, Send, Heart, Star, Clock, Shield, Award } from 'lucide-react';
 import Link from 'next/link';
+
+const colors = {
+  teal: "#005D7C",
+  gold: "#CE9226",     
+  orange: '#FF8C42',     
+  maroon: '#800020',     
+  lightTeal: '#E6F2F2',  
+  darkTeal: '#006666',   
+  cream: '#F5F5DC',     
+};
 
 export function Footer() {
   return (
-    <footer className="bg-gradient-to-b from-sky-900 to-sky-950 text-white">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-          {/* Logo et description */}
-          <div className="space-y-4">
-            <h3 
-              className="text-xl font-bold mb-2 text-amber-400"
-              style={{ fontFamily: 'Bahnschrift, sans-serif' }}
-            >
-              Hôtel Prestige Bénin
-            </h3>
-            <p className="text-sky-200 text-sm">
-              Votre havre de paix au cœur de Cotonou, alliant luxe africain et modernité pour un séjour inoubliable.
-            </p>
-            <div className="flex items-center space-x-2 mt-4">
-              <div className="w-10 h-10 rounded-full bg-amber-500 flex items-center justify-center">
-                <Phone className="h-4 w-4 text-white" />
+    <footer className="relative overflow-hidden" style={{ background: `linear-gradient(135deg, ${colors.teal} 0%, ${colors.darkTeal} 50%, ${colors.maroon} 100%)` }}>
+      {/* Decorative Elements */}
+      <div className="absolute inset-0 opacity-10">
+        <div className="absolute top-10 left-20 w-32 h-32 rounded-full" style={{ backgroundColor: colors.gold }}></div>
+        <div className="absolute bottom-20 right-32 w-24 h-24 rounded-full" style={{ backgroundColor: colors.orange }}></div>
+        <div className="absolute top-32 right-20 w-16 h-16 rounded-full" style={{ backgroundColor: colors.cream }}></div>
+        <div className="absolute bottom-10 left-1/3 w-20 h-20 rounded-full" style={{ backgroundColor: colors.gold }}></div>
+      </div>
+
+      {/* Awards/Certifications Banner */}
+      <div className="relative border-b border-white/20 py-6">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex flex-wrap justify-center items-center gap-8 text-center">
+            <div className="flex items-center gap-2 text-white">
+              <Award className="w-5 h-5" style={{ color: colors.gold }} />
+              <span className="text-sm font-medium" style={{ fontFamily: 'Bahnschrift, sans-serif' }}>
+                Hôtel 5 étoiles certifié
+              </span>
+            </div>
+            <div className="flex items-center gap-2 text-white">
+              <Shield className="w-5 h-5" style={{ color: colors.gold }} />
+              <span className="text-sm font-medium" style={{ fontFamily: 'Bahnschrift, sans-serif' }}>
+                Service sécurisé 24h/24
+              </span>
+            </div>
+            <div className="flex items-center gap-2 text-white">
+              <Star className="w-5 h-5" style={{ color: colors.gold }} />
+              <span className="text-sm font-medium" style={{ fontFamily: 'Bahnschrift, sans-serif' }}>
+                Excellence béninoise
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12">
+          
+          {/* Logo et description améliorés */}
+          <div className="space-y-6">
+            <div className="space-y-4">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-xl flex items-center justify-center shadow-lg" 
+                     style={{ background: `linear-gradient(45deg, ${colors.gold}, ${colors.orange})` }}>
+                  <Heart className="h-6 w-6 text-white" />
+                </div>
+                <h3 
+                  className="text-2xl font-bold text-white leading-tight"
+                  style={{ fontFamily: 'Bahnschrift, sans-serif' }}
+                >
+                  Hôtel Prestige<br />
+                  <span style={{ color: colors.gold }}>Bénin</span>
+                </h3>
               </div>
-              <div>
-                <p className="text-xs text-sky-300">Service disponible 24h/24</p>
-                <p className="font-medium">+229 21 30 40 50</p>
+              
+              <p className="text-white/80 leading-relaxed" style={{ fontFamily: 'Bahnschrift, sans-serif' }}>
+             Séjournez à Bain du Lac  et vivez une expérience unique mêlant confort, élégance et chaleur béninoise.
+              </p>
+            </div>
+
+            {/* Contact rapide avec design amélioré */}
+            <div className="p-6 rounded-2xl border border-white/20 backdrop-blur-sm" 
+                 style={{ background: `linear-gradient(135deg, ${colors.gold}22, ${colors.orange}11)` }}>
+              <div className="flex items-center gap-4">
+                <div className="w-14 h-14 rounded-full flex items-center justify-center shadow-lg" 
+                     style={{ backgroundColor: colors.gold }}>
+                  <Phone className="h-6 w-6 text-white" />
+                </div>
+                <div>
+                  <p className="text-xs font-medium mb-1" style={{ color: colors.cream, fontFamily: 'Bahnschrift, sans-serif' }}>
+                    Service disponible 24h/24
+                  </p>
+                  <p className="font-bold text-lg text-white" style={{ fontFamily: 'Bahnschrift, sans-serif' }}>
+                    +229 21 30 40 50
+                  </p>
+                </div>
               </div>
             </div>
           </div>
           
-          {/* Contact */}
-          <div>
-            <h3 
-              className="text-lg font-semibold mb-4 text-amber-400 border-b border-amber-500 pb-2"
-              style={{ fontFamily: 'Bahnschrift, sans-serif' }}
-            >
-              Contact
-            </h3>
-            <div className="space-y-3">
-              <p className="flex items-start gap-3">
-                <MapPin className="h-5 w-5 text-amber-400 mt-0.5 flex-shrink-0" />
-                <span className="text-sky-200">
-                  Rue des Cocotiers, Haie Vive<br />
-                  Cotonou, Bénin
-                </span>
-              </p>
-              <p className="flex items-center gap-3">
-                <Phone className="h-5 w-5 texjbhqds,nSXt-amber-400" />
-                <span className="text-sky-200">+229 96 00 00 00 (WhatsApp)</span>
-              </p>
-              <p className="flex items-center gap-3">
-                <Mail className="h-5 w-5 text-amber-400" />
-                <span className="text-sky-200">contact@hotelprestige.bj</span>
-              </p>
+          {/* Contact amélioré */}
+          <div className="space-y-6">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-8 h-1 rounded-full" style={{ backgroundColor: colors.gold }}></div>
+              <h3 
+                className="text-xl font-bold text-white"
+                style={{ fontFamily: 'Bahnschrift, sans-serif' }}
+              >
+                Contact
+              </h3>
+            </div>
+            
+            <div className="space-y-5">
+              {[
+                {
+                  icon: MapPin,
+                  title: "Adresse",
+                  content: ["Rue des Cocotiers, Haie Vive", "Cotonou, Bénin"],
+                  color: colors.orange
+                },
+                {
+                  icon: Phone,
+                  title: "WhatsApp",
+                  content: ["+229 96 00 00 00"],
+                  color: colors.gold
+                },
+                {
+                  icon: Mail,
+                  title: "Email",
+                  content: ["contact@hotelprestige.bj"],
+                  color: colors.cream
+                }
+              ].map((contact, index) => (
+                <div key={index} className="flex items-start gap-4 group hover:transform hover:translate-x-2 transition-all duration-300">
+                  <div className="w-10 h-10 rounded-xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300" 
+                       style={{ backgroundColor: `${contact.color}33`, border: `2px solid ${contact.color}` }}>
+                    <contact.icon className="h-5 w-5" style={{ color: contact.color }} />
+                  </div>
+                  <div className="flex-1">
+                    <h4 className="font-semibold text-sm mb-1" style={{ color: contact.color, fontFamily: 'Bahnschrift, sans-serif' }}>
+                      {contact.title}
+                    </h4>
+                    {contact.content.map((line, i) => (
+                      <p key={i} className="text-white/90 text-sm leading-relaxed" style={{ fontFamily: 'Bahnschrift, sans-serif' }}>
+                        {line}
+                      </p>
+                    ))}
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
 
-          {/* Liens rapides */}
-          <div>
-            <h3 
-              className="text-lg font-semibold mb-4 text-amber-400 border-b border-amber-500 pb-2"
-              style={{ fontFamily: 'Bahnschrift, sans-serif' }}
-            >
-              Liens rapides
-            </h3>
-            <ul className="space-y-3">
-              <li>
-                <Link 
-                  href="/rooms" 
-                  className="hover:text-amber-400 text-sky-200 transition-colors flex items-center"
-                >
-                  <span className="w-2 h-2 bg-amber-400 rounded-full mr-2"></span>
-                  Nos chambres
-                </Link>
-              </li>
-              <li>
-                <Link 
-                  href="/spa" 
-                  className="hover:text-amber-400 text-sky-200 transition-colors flex items-center"
-                >
-                  <span className="w-2 h-2 bg-amber-400 rounded-full mr-2"></span>
-                  Spa & Bien-être
-                </Link>
-              </li>
-              <li>
-                <Link 
-                  href="/restaurant" 
-                  className="hover:text-amber-400 text-sky-200 transition-colors flex items-center"
-                >
-                  <span className="w-2 h-2 bg-amber-400 rounded-full mr-2"></span>
-                  Restaurant La Teranga
-                </Link>
-              </li>
-              <li>
-                <Link 
-                  href="/events" 
-                  className="hover:text-amber-400 text-sky-200 transition-colors flex items-center"
-                >
-                  <span className="w-2 h-2 bg-amber-400 rounded-full mr-2"></span>
-                  Évènements & Séminaires
-                </Link>
-              </li>
+          {/* Liens rapides améliorés */}
+          <div className="space-y-6">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-8 h-1 rounded-full" style={{ backgroundColor: colors.gold }}></div>
+              <h3 
+                className="text-xl font-bold text-white"
+                style={{ fontFamily: 'Bahnschrift, sans-serif' }}
+              >
+                Nos Services
+              </h3>
+            </div>
+            
+            <ul className="space-y-4">
+              {[
+                { href: "/rooms", label: "Nos chambres", icon: "🏨" },
+                { href: "/spa", label: "Spa & Bien-être", icon: "🧘" },
+                { href: "/restaurant", label: "Restaurant La Teranga", icon: "🍽️" },
+                { href: "/events", label: "Évènements & Séminaires", icon: "🎉" },
+                { href: "/tours", label: "Excursions & Tours", icon: "🗺️" },
+                { href: "/services", label: "Services VIP", icon: "⭐" }
+              ].map((item, index) => (
+                <li key={index}>
+                  <Link 
+                    href={item.href} 
+                    className="group flex items-center gap-3 text-white/90 hover:text-white transition-all duration-300 hover:transform hover:translate-x-2"
+                  >
+                    <div className="w-8 h-8 rounded-lg flex items-center justify-center text-sm transition-all duration-300 group-hover:scale-110" 
+                         style={{ backgroundColor: `${colors.gold}22` }}>
+                      {item.icon}
+                    </div>
+                    <span style={{ fontFamily: 'Bahnschrift, sans-serif' }} className="group-hover:font-medium">
+                      {item.label}
+                    </span>
+                    <div className="w-0 h-0.5 group-hover:w-4 transition-all duration-300" 
+                         style={{ backgroundColor: colors.gold }}></div>
+                  </Link>
+                </li>
+              ))}
             </ul>
           </div>
 
-          {/* Réseaux sociaux */}
-          <div>
-            <h3 
-              className="text-lg font-semibold mb-4 text-amber-400 border-b border-amber-500 pb-2"
-              style={{ fontFamily: 'Bahnschrift, sans-serif' }}
-            >
-              Suivez-nous
-            </h3>
-            <p className="text-sky-200 mb-4 text-sm">
-              Découvrez nos actualités et offres spéciales
+          {/* Réseaux sociaux et newsletter améliorés */}
+          <div className="space-y-8">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-8 h-1 rounded-full" style={{ backgroundColor: colors.gold }}></div>
+              <h3 
+                className="text-xl font-bold text-white"
+                style={{ fontFamily: 'Bahnschrift, sans-serif' }}
+              >
+                Suivez-nous
+              </h3>
+            </div>
+            
+            <p className="text-white/80 leading-relaxed" style={{ fontFamily: 'Bahnschrift, sans-serif' }}>
+              Découvrez nos actualités, offres spéciales et la beauté du Bénin à travers nos réseaux sociaux.
             </p>
-            <div className="flex space-x-4">
-              <Link 
-                href="#" 
-                className="hover:text-amber-400 text-sky-200 transition-colors bg-sky-800 p-2 rounded-full hover:bg-amber-500"
-              >
-                <Facebook className="h-5 w-5" />
-              </Link>
-              <Link 
-                href="#" 
-                className="hover:text-amber-400 text-sky-200 transition-colors bg-sky-800 p-2 rounded-full hover:bg-amber-500"
-              >
-                <Instagram className="h-5 w-5" />
-              </Link>
-              <Link 
-                href="#" 
-                className="hover:text-amber-400 text-sky-200 transition-colors bg-sky-800 p-2 rounded-full hover:bg-amber-500"
-              >
-                <Twitter className="h-5 w-5" />
-              </Link>
+            
+            {/* Réseaux sociaux avec design moderne */}
+            <div className="flex gap-3">
+              {[
+                { icon: Facebook, href: "#", label: "Facebook" },
+                { icon: Instagram, href: "#", label: "Instagram" },
+                { icon: Twitter, href: "#", label: "Twitter" }
+              ].map((social, index) => (
+                <Link 
+                  key={index}
+                  href={social.href} 
+                  className="group relative w-12 h-12 rounded-xl flex items-center justify-center transition-all duration-300 hover:scale-110 hover:-translate-y-1"
+                  style={{ 
+                    background: `linear-gradient(135deg, ${colors.gold}44, ${colors.orange}33)`,
+                    border: `1px solid ${colors.gold}66`
+                  }}
+                  title={social.label}
+                >
+                  <social.icon className="h-5 w-5 text-white group-hover:scale-110 transition-transform duration-300" />
+                  <div className="absolute inset-0 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                       style={{ background: `linear-gradient(135deg, ${colors.gold}, ${colors.orange})` }}></div>
+                </Link>
+              ))}
             </div>
 
-            {/* Newsletter */}
-            <div className="mt-6">
-              <h4 className="text-sm font-medium mb-2 text-sky-200">
-                Abonnez-vous à notre newsletter
-              </h4>
-              <div className="flex">
+            {/* Newsletter avec design moderne */}
+            <div className="p-6 rounded-2xl border border-white/20" 
+                 style={{ background: `linear-gradient(135deg, ${colors.darkTeal}88, ${colors.teal}44)` }}>
+              <div className="flex items-center gap-2 mb-3">
+                <Mail className="w-5 h-5" style={{ color: colors.gold }} />
+                <h4 className="font-bold text-white" style={{ fontFamily: 'Bahnschrift, sans-serif' }}>
+                  Newsletter
+                </h4>
+              </div>
+              <p className="text-white/80 text-sm mb-4" style={{ fontFamily: 'Bahnschrift, sans-serif' }}>
+                Recevez nos offres exclusives
+              </p>
+              <div className="flex gap-2">
                 <input 
-                  type="email" 
-                  placeholder="Votre email" 
-                  className="px-3 py-2 text-sm text-gray-400 rounded-l-md focus:outline-none focus:ring-1 focus:ring-amber-400 w-full"
-                />
+  type="email" 
+  placeholder="Votre email" 
+  className="flex-1 px-4 py-3 text-sm rounded-xl border-0 focus:outline-none focus:ring-2 transition-all duration-300"
+  style={{ 
+    backgroundColor: colors.cream,
+    color: colors.darkTeal,
+    fontFamily: 'Bahnschrift, sans-serif',
+    boxShadow: `0 0 0 2px ${colors.gold}`, 
+  }}
+/>
                 <button 
-                  className="bg-amber-500 hover:bg-amber-600 text-white px-3 py-2 rounded-r-md text-sm transition-colors"
-                  style={{ fontFamily: 'Bahnschrift, sans-serif' }}
+                  className="px-4 py-3 rounded-xl text-white font-bold transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-xl"
+                  style={{ 
+                    background: `linear-gradient(45deg, ${colors.gold}, ${colors.orange})`,
+                    fontFamily: 'Bahnschrift, sans-serif'
+                  }}
                 >
-                  OK
+                  <Send className="w-4 h-4" />
                 </button>
+              </div>
+            </div>
+
+            {/* Horaires de contact */}
+            <div className="flex items-center gap-3 p-4 rounded-xl border border-white/20">
+              <Clock className="w-5 h-5" style={{ color: colors.gold }} />
+              <div>
+                <p className="text-white font-medium text-sm" style={{ fontFamily: 'Bahnschrift, sans-serif' }}>
+                  Réception 24h/24
+                </p>
+                <p className="text-white/70 text-xs" style={{ fontFamily: 'Bahnschrift, sans-serif' }}>
+                  Toujours à votre service
+                </p>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Copyright */}
-        <div className="mt-12 pt-6 border-t border-sky-800 text-center">
-          <p className="text-sky-300 text-sm">
-            &copy; {new Date().getFullYear()} Hôtel Prestige Bénin. Tous droits réservés. | 
-            <Link href="/privacy" className="hover:text-amber-400 ml-1">Politique de confidentialité</Link> | 
-            <Link href="/terms" className="hover:text-amber-400 ml-1">Conditions d'utilisation</Link>
-          </p>
-          <p className="text-xs text-sky-400 mt-2">
-            Conçu avec passion pour mettre en valeur l'hospitalité béninoise
-          </p>
+        {/* Copyright section améliorée */}
+        <div className="mt-16 pt-8 border-t border-white/20">
+          <div className="flex flex-col lg:flex-row justify-between items-center gap-6">
+            <div className="text-center lg:text-left">
+              <p className="text-white/90 font-medium" style={{ fontFamily: 'Bahnschrift, sans-serif' }}>
+                &copy; {new Date().getFullYear()} Hôtel Prestige Bénin. Tous droits réservés.
+              </p>
+              <p className="text-white/60 text-sm mt-1" style={{ fontFamily: 'Bahnschrift, sans-serif' }}>
+                Conçu avec <Heart className="inline w-4 h-4 mx-1" style={{ color: colors.gold }} /> pour valoriser l hospitalité béninoise
+              </p>
+            </div>
+            
+            <div className="flex flex-wrap justify-center gap-6 text-sm">
+              <Link 
+                href="/privacy" 
+                className="text-white/80 hover:text-white transition-colors hover:underline"
+                style={{ fontFamily: 'Bahnschrift, sans-serif' }}
+              >
+                Politique de confidentialité
+              </Link>
+              <Link 
+                href="/terms" 
+                className="text-white/80 hover:text-white transition-colors hover:underline"
+                style={{ fontFamily: 'Bahnschrift, sans-serif' }}
+              >
+               Conditions générales
+              </Link>
+              <Link 
+                href="/cookies" 
+                className="text-white/80 hover:text-white transition-colors hover:underline"
+                style={{ fontFamily: 'Bahnschrift, sans-serif' }}
+              >
+                Politique des cookies
+              </Link>
+            </div>
+          </div>
         </div>
       </div>
+
+      {/* Bottom gradient */}
+      <div className="h-2" style={{ background: `linear-gradient(90deg, ${colors.gold}, ${colors.orange}, ${colors.maroon}, ${colors.teal})` }}></div>
     </footer>
   );
 }
