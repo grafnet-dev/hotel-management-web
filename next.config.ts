@@ -6,6 +6,8 @@ module.exports = {
       'images.unsplash.com',
       'picsum.photos',
       'cdn-icons-png.flaticon.com',
+      'i.pravatar.cc',
+     
     ],
   },
 };
