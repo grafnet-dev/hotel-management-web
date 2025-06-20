@@ -1092,29 +1092,7 @@ console.log("📦 Payload de recherche à envoyer :", updatedSearchPayload);
       {/* Main Content - Room Cards */}
       <div className="lg:w-3/4">
         {/* Results Header - Version améliorée */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
-          <div>
-            <h2 className="text-2xl md:text-3xl font-bold text-gray-800">
-              {currentRooms.length} {currentRooms.length > 1 ? 'chambres disponibles' : 'chambre disponible'}
-            </h2>
-            <p className="text-teal-700 text-sm mt-1">
-             <span className="font-medium">Derniere chambre disponible !</span> - Ne tardez pas à réserver
-
-            </p>
-          </div>
-          <div className="flex items-center bg-white border border-gray-200 rounded-lg px-3 py-2">
-            <label htmlFor="sort" className="text-sm text-gray-600 mr-2 whitespace-nowrap">Trier par :</label>
- <select 
-          id="sort"
-          className="appearance-none bg-transparent pr-8 text-gray-700 focus:outline-none focus:ring-0 cursor-pointer"
-        >
-          <option value="popularity">Plus populaires</option>
-          <option value="price-asc">Prix croissant</option>
-          <option value="price-desc">Prix décroissant</option>
-          <option value="rating">Meilleures notes</option>
-        </select>
-          </div>
-        </div>
+       
 
         {/* Room Cards */}
        <RoomList  onBookNow={() => console.log('Book now clicked!')} />

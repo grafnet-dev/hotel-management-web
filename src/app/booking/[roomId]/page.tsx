@@ -12,6 +12,8 @@ import Image from 'next/image';
 import { 
  
   Users, 
+  PlusCircle,
+  Trash2,
   Maximize2, 
   Mountain, 
   BedDouble, 
@@ -98,7 +100,13 @@ interface Room {
 
 
 
+interface SelectedRoom {
+  id: number;
+  quantity: number;
+}
+
 interface BookingFormData {
+  selectedRooms: SelectedRoom[];
   guestInfo: {
     fullName: string;
     email: string;
@@ -119,7 +127,6 @@ interface BookingFormData {
     option: 'full' | 'partial' | 'onsite';
   };
 }
-
 
 
 export default function BookingForm() {
@@ -714,27 +721,29 @@ export default function BookingForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
 
-  const [formData, setFormData] = useState<BookingFormData>({
-    guestInfo: {
-      fullName: '',
-      email: '',
-      phone: '',
-      specialRequests: ''
-    },
-    reservationDetails: {
-      reservationType: '',
-      checkInDate: '',
-      checkOutDate: '',
-      checkInTime: '',
-      checkOutTime: '',
-      hours: 1,
-      guests: 1
-    },
-    paymentInfo: {
-      method: 'card',
-      option: 'full'
-    }
-  });
+const [formData, setFormData] = useState<BookingFormData>({
+  selectedRooms: [{ id: parseInt(roomId), quantity: 1 }], // Initialise avec la chambre actuelle
+  guestInfo: {
+    fullName: '',
+    email: '',
+    phone: '',
+    specialRequests: ''
+  },
+  reservationDetails: {
+    reservationType: '',
+    checkInDate: '',
+    checkOutDate: '',
+    checkInTime: '',
+    checkOutTime: '',
+    hours: 1,
+    guests: 1
+  },
+  paymentInfo: {
+    method: 'card',
+    option: 'full'
+  }
+});
+  
 
   useEffect(() => {
     // Find room by ID
@@ -763,26 +772,105 @@ export default function BookingForm() {
     p => p.reservation_type_id === selectedReservationType?.id
   );
 
+  const handleQuantityChange = (roomId: number, newQuantity: number) => {
+  setFormData(prev => ({
+    ...prev,
+    selectedRooms: prev.selectedRooms.map(room => 
+      room.id === roomId ? { ...room, quantity: Math.max(1, newQuantity) } : room
+    )
+  }));
+};
+
+const handleAddRoom = () => {
+  // Sauvegarde temporaire dans sessionStorage
+  sessionStorage.setItem('tempSelectedRooms', JSON.stringify(formData.selectedRooms));
+  router.push(`/rooms/selection?type=${formData.reservationDetails.reservationType}`);
+};
+
+
+const handleRemoveRoom = (roomId: number) => {
+  setFormData(prev => ({
+    ...prev,
+    selectedRooms: prev.selectedRooms.filter(room => room.id !== roomId)
+  }));
+};
+
   const calculateTotalPrice = () => {
-    if (!selectedPricing) return 0;
+  return formData.selectedRooms.reduce((total, selectedRoom) => {
+    const room = sampleRooms.find(r => r.id === selectedRoom.id);
+    if (!room) return total;
+    
+    const reservationType = room.reservation_types.find(
+      rt => rt.code === formData.reservationDetails.reservationType
+    );
+    const pricing = room.pricing.find(
+      p => p.reservation_type_id === reservationType?.id
+    );
+    
+    if (!pricing) return total;
 
-    if (formData.reservationDetails.reservationType === 'flexible' && selectedPricing.is_hourly_based) {
-      return selectedPricing.hourly_price * formData.reservationDetails.hours;
-    }
-
-    if (formData.reservationDetails.reservationType === 'day_use') {
-      return room?.day_use_price || 0;
-    }
-
-    if (formData.reservationDetails.reservationType === 'classic') {
+    let roomTotal = 0;
+    
+    if (formData.reservationDetails.reservationType === 'flexible' && pricing.is_hourly_based) {
+      roomTotal = pricing.hourly_price * formData.reservationDetails.hours;
+    } 
+    else if (formData.reservationDetails.reservationType === 'day_use') {
+      roomTotal = room.day_use_price || 0;
+    } 
+    else if (formData.reservationDetails.reservationType === 'classic') {
       const checkIn = new Date(formData.reservationDetails.checkInDate);
       const checkOut = new Date(formData.reservationDetails.checkOutDate);
       const nights = Math.ceil((checkOut.getTime() - checkIn.getTime()) / (1000 * 60 * 60 * 24));
-      return selectedPricing.price * Math.max(1, nights);
+      roomTotal = pricing.price * Math.max(1, nights);
+    } 
+    else {
+      roomTotal = pricing.price;
     }
+    
+    return total + (roomTotal * selectedRoom.quantity);
+  }, 0);
+};
 
-    return selectedPricing.price;
-  };
+const calculateRoomPrice = (room: Room, quantity: number): number => {
+  const reservationType = room.reservation_types.find(
+    rt => rt.code === formData.reservationDetails.reservationType
+  );
+  const pricing = room.pricing.find(
+    p => p.reservation_type_id === reservationType?.id
+  );
+  
+  if (!pricing) return 0;
+
+  let price = 0;
+  
+  if (formData.reservationDetails.reservationType === 'flexible' && pricing.is_hourly_based) {
+    price = pricing.hourly_price * formData.reservationDetails.hours;
+  } 
+  else if (formData.reservationDetails.reservationType === 'day_use') {
+    price = room.day_use_price || 0;
+  } 
+  else if (formData.reservationDetails.reservationType === 'classic') {
+    const checkIn = new Date(formData.reservationDetails.checkInDate);
+    const checkOut = new Date(formData.reservationDetails.checkOutDate);
+    const nights = Math.ceil((checkOut.getTime() - checkIn.getTime()) / (1000 * 60 * 60 * 24));
+    price = pricing.price * Math.max(1, nights);
+  } 
+  else {
+    price = pricing.price;
+  }
+  
+  return price * quantity;
+};
+
+// Helper function pour les labels de paiement
+const getPaymentMethodLabel = (method: string) => {
+  switch(method) {
+    case 'card': return 'Carte bancaire';
+    case 'mobile': return 'Mobile Money';
+    case 'cash': return 'Espèces';
+    default: return method;
+  }
+};
 
 const handleInputChange = (section: keyof BookingFormData, field: string, value: string | number) => {
   setFormData(prev => ({
@@ -839,6 +927,126 @@ const handleInputChange = (section: keyof BookingFormData, field: string, value:
     );
   }
 
+  const RoomSelection = ({ 
+  rooms, 
+  selectedRooms, 
+  onQuantityChange,
+  onAddRoom,
+  onRemoveRoom
+}: {
+  rooms: Room[];
+  selectedRooms: SelectedRoom[];
+  onQuantityChange: (roomId: number, quantity: number) => void;
+  onAddRoom: () => void;
+  onRemoveRoom: (roomId: number) => void;
+}) => {
+  return (
+    <div className="space-y-6">
+      {/* Liste des chambres sélectionnées */}
+      {selectedRooms.length > 0 ? (
+        <>
+          <div className="space-y-4">
+            {selectedRooms.map((selectedRoom) => {
+              const room = rooms.find(r => r.id === selectedRoom.id);
+              if (!room) return null;
+              
+              return (
+                <Card 
+                  key={room.id} 
+                  className="p-4 flex flex-col md:flex-row gap-4 border-2 border-teal-500 bg-teal-50"
+                >
+                  <div className="md:w-1/4 relative">
+                    <Image
+                      src={room.image}
+                      alt={room.name}
+                      width={200}
+                      height={150}
+                      className="rounded-md object-cover w-full h-full"
+                    />
+                    <Badge className="absolute top-2 left-2 bg-teal-600 text-white">
+                      {selectedRoom.quantity}x
+                    </Badge>
+                  </div>
+                  
+                  <div className="md:w-2/4 space-y-2">
+                    <div className="flex justify-between items-start">
+                      <h4 className="font-bold text-lg">{room.name}</h4>
+                      <span className="font-bold text-teal-600">
+                        {(room.price_per_night * selectedRoom.quantity).toLocaleString()} FCFA
+                      </span>
+                    </div>
+                    
+                    <div className="flex flex-wrap gap-2">
+                      <Badge variant="outline" className="flex items-center gap-1">
+                        <BedDouble className="h-3 w-3" />
+                        {room.room_type}
+                      </Badge>
+                      <Badge variant="outline" className="flex items-center gap-1">
+                        <Users className="h-3 w-3" />
+                        {room.num_person} pers.
+                      </Badge>
+                    </div>
+                  </div>
+                  
+                  <div className="md:w-1/4 flex flex-col items-end justify-between gap-2">
+                    <div className="flex items-center gap-2 bg-white rounded-full p-1">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="h-8 w-8 p-0 rounded-full"
+                        onClick={() => onQuantityChange(room.id, selectedRoom.quantity - 1)}
+                        disabled={selectedRoom.quantity <= 1}
+                      >
+                        -
+                      </Button>
+                      <span className="w-6 text-center font-medium">{selectedRoom.quantity}</span>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="h-8 w-8 p-0 rounded-full"
+                        onClick={() => onQuantityChange(room.id, selectedRoom.quantity + 1)}
+                        disabled={selectedRoom.quantity >= 5}
+                      >
+                        +
+                      </Button>
+                    </div>
+                    
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="text-red-500 hover:text-red-700"
+                      onClick={() => onRemoveRoom(room.id)}
+                    >
+                      <Trash2 className="h-4 w-4 mr-1" />
+                      Supprimer
+                    </Button>
+                  </div>
+                </Card>
+              );
+            })}
+          </div>
+          
+          <Button 
+            type="button" 
+            variant="outline"
+            className="w-full mt-2"
+            onClick={onAddRoom}
+          >
+            <PlusCircle className="h-4 w-4 mr-2" />
+            Ajouter une autre chambre
+          </Button>
+        </>
+      ) : (
+        <div className="text-center py-8 border-2 border-dashed rounded-lg">
+          <p className="text-gray-500 mb-4">Aucune chambre sélectionnée</p>
+          <Button onClick={onAddRoom}>
+            Sélectionner une chambre
+          </Button>
+        </div>
+      )}
+    </div>
+  );
+};
   return (
     <div className="min-h-screen pt-16 bg-gradient-to-br from-gray-50 to-white">
       <div className="max-w-4xl mx-auto px-4 py-8">
@@ -975,6 +1183,28 @@ const handleInputChange = (section: keyof BookingFormData, field: string, value:
                 <h3 className="text-xl font-bold mb-6" style={{ color: colors.maroon }}>
                   Détails de la réservation
                 </h3>
+                 <div className="mb-6">
+        <Label className="text-base font-semibold mb-3 block">Chambres sélectionnées</Label>
+       <RoomSelection
+  rooms={sampleRooms}
+  selectedRooms={formData.selectedRooms}
+  onQuantityChange={(roomId, newQuantity) => {
+    setFormData(prev => ({
+      ...prev,
+      selectedRooms: prev.selectedRooms.map(room => 
+        room.id === roomId ? { ...room, quantity: newQuantity } : room
+      )
+    }));
+  }}
+  onAddRoom={() => router.push('/rooms/selection?type=classic')}
+  onRemoveRoom={(roomId) => {
+    setFormData(prev => ({
+      ...prev,
+      selectedRooms: prev.selectedRooms.filter(room => room.id !== roomId)
+    }));
+  }}
+/>
+      </div>
 
                 {/* Reservation Type Selection */}
                 <div className="mb-6">
@@ -1027,12 +1257,13 @@ const handleInputChange = (section: keyof BookingFormData, field: string, value:
                     <div>
                       <Label>Date d'arrivée</Label>
                       <Input
-                        type="date"
-                        value={formData.reservationDetails.checkInDate}
-                        onChange={(e) => handleInputChange('reservationDetails', 'checkInDate', e.target.value)}
-                        min={new Date().toISOString().split('T')[0]}
-                        className="mt-2"
-                      />
+  type="date"
+  value={formData.reservationDetails.checkInDate}
+  onChange={(e) => handleInputChange('reservationDetails', 'checkInDate', e.target.value)}
+  min={new Date().toISOString().split('T')[0]}
+  className="mt-2"
+  customProperty="checkInDate"
+/>
                     </div>
                     <div>
                       <Label>Date de départ</Label>
@@ -1148,24 +1379,26 @@ const handleInputChange = (section: keyof BookingFormData, field: string, value:
                     <Label>Nom complet *</Label>
                     <div className="relative mt-2">
                       <Input
-                        value={formData.guestInfo.fullName}
-                        onChange={(e) => handleInputChange('guestInfo', 'fullName', e.target.value)}
-                        className="pl-10"
-                        required
-                      />
+  value={formData.guestInfo.fullName}
+  onChange={(e) => handleInputChange('guestInfo', 'fullName', e.target.value)}
+  className="pl-10"
+  required
+  customProperty="fullName" // add customProperty prop
+/>
                       <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                     </div>
                   </div>
                   <div>
                     <Label>Email *</Label>
                     <div className="relative mt-2">
-                      <Input
-                        type="email"
-                        value={formData.guestInfo.email}
-                        onChange={(e) => handleInputChange('guestInfo', 'email', e.target.value)}
-                        className="pl-10"
-                        required
-                      />
+                     <Input
+  type="email"
+  value={formData.guestInfo.email}
+  onChange={(e) => handleInputChange('guestInfo', 'email', e.target.value)}
+  className="pl-10"
+  required
+  customProperty="email" // add customProperty prop
+/>
                       <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                     </div>
                   </div>
@@ -1174,13 +1407,14 @@ const handleInputChange = (section: keyof BookingFormData, field: string, value:
                 <div className="mb-6">
                   <Label>Téléphone *</Label>
                   <div className="relative mt-2">
-                    <Input
-                      type="tel"
-                      value={formData.guestInfo.phone}
-                      onChange={(e) => handleInputChange('guestInfo', 'phone', e.target.value)}
-                      className="pl-10"
-                      required
-                    />
+                   <Input
+  type="tel"
+  value={formData.guestInfo.phone}
+  onChange={(e) => handleInputChange('guestInfo', 'phone', e.target.value)}
+  className="pl-10"
+  customProperty="phone"
+  required
+/>
                     <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                   </div>
                 </div>
@@ -1325,72 +1559,132 @@ const handleInputChange = (section: keyof BookingFormData, field: string, value:
           )}
 
           {currentStep === 4 && isSuccess && (
-            <motion.div
-              key="step4"
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.9 }}
-            >
-              <Card className="p-8 text-center">
-                <motion.div
-                  initial={{ scale: 0 }}
-                  animate={{ scale: 1 }}
-                  transition={{ delay: 0.2, type: "spring" }}
-                >
-                  <CheckCircle className="h-16 w-16 text-green-500 mx-auto mb-4" />
-                </motion.div>
-                
-                <h3 className="text-2xl font-bold mb-4" style={{ color: colors.maroon }}>
-                  Réservation confirmée !
-                </h3>
-                
-                <p className="text-gray-600 mb-6">
-                  Merci {formData.guestInfo.fullName.split(' ')[0]} ! Votre réservation a été confirmée.
-                  Vous recevrez un email de confirmation à {formData.guestInfo.email}.
-                </p>
+  <motion.div
+    key="step4"
+    initial={{ opacity: 0, scale: 0.9 }}
+    animate={{ opacity: 1, scale: 1 }}
+    exit={{ opacity: 0, scale: 0.9 }}
+  >
+    <Card className="p-8 text-center">
+      <motion.div
+        initial={{ scale: 0 }}
+        animate={{ scale: 1 }}
+        transition={{ delay: 0.2, type: "spring" }}
+      >
+        <CheckCircle className="h-16 w-16 text-green-500 mx-auto mb-4" />
+      </motion.div>
+      
+      <h3 className="text-2xl font-bold mb-4" style={{ color: colors.maroon }}>
+        Réservation confirmée !
+      </h3>
+      
+      <p className="text-gray-600 mb-6">
+        Merci {formData.guestInfo.fullName.split(' ')[0]} ! Votre réservation a été confirmée.
+        Vous recevrez un email de confirmation à {formData.guestInfo.email}.
+      </p>
 
-                <div className="bg-gray-50 p-6 rounded-lg mb-6 text-left">
-                  <h4 className="font-semibold mb-4">Détails de votre réservation</h4>
-                  <div className="space-y-2 text-sm">
-                    <div className="flex justify-between">
-                      <span>Chambre:</span>
-                      <span className="font-medium">{room.name}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Type:</span>
-                      <span className="font-medium">{selectedReservationType?.name}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Total payé:</span>
-                      <span className="font-bold" style={{ color: colors.teal }}>
-                        {formData.paymentInfo.option === 'partial' 
-                          ? Math.ceil(calculateTotalPrice() / 2).toLocaleString()
-                          : formData.paymentInfo.option === 'onsite'
-                          ? '0'
-                          : calculateTotalPrice().toLocaleString()
-                        } FCFA
-                      </span>
-                    </div>
-                  </div>
+      {/* Section détaillée des chambres */}
+      <div className="bg-gray-50 p-6 rounded-lg mb-6 text-left">
+        <h4 className="font-semibold mb-4">Détails de votre réservation</h4>
+        
+        {/* Liste des chambres réservées */}
+        <div className="space-y-4 mb-4">
+          {formData.selectedRooms.map(selectedRoom => {
+            const room = sampleRooms.find(r => r.id === selectedRoom.id);
+            if (!room) return null;
+            
+            return (
+              <div key={room.id} className="border-b pb-3">
+                <div className="flex justify-between">
+                  <span className="font-medium">
+                    {room.name} <span className="text-gray-500">(x{selectedRoom.quantity})</span>
+                  </span>
+                  <span>
+                    {calculateRoomPrice(room, selectedRoom.quantity).toLocaleString()} FCFA
+                  </span>
                 </div>
+                <div className="text-sm text-gray-600 mt-1">
+                  {formData.reservationDetails.reservationType === 'classic' && (
+                    <span>
+                      Du {formData.reservationDetails.checkInDate} au {formData.reservationDetails.checkOutDate}
+                    </span>
+                  )}
+                  {formData.reservationDetails.reservationType === 'day_use' && (
+                    <span>Day use - {formData.reservationDetails.checkInDate}</span>
+                  )}
+                  {formData.reservationDetails.reservationType === 'flexible' && (
+                    <span>
+                      {formData.reservationDetails.hours} heure(s) - {formData.reservationDetails.checkInDate}
+                    </span>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </div>
 
-                <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                  <Button
-                    onClick={() => router.push('/rooms')}
-                    variant="outline"
-                  >
-                    Retour aux chambres
-                  </Button>
-                  <Button
-                    onClick={() => router.push('/')}
-                    className="bg-teal-600 hover:bg-teal-700"
-                  >
-                    Accueil
-                  </Button>
-                </div>
-              </Card>
-            </motion.div>
+        {/* Récapitulatif financier */}
+        <div className="space-y-2 pt-2 border-t">
+          <div className="flex justify-between">
+            <span>Sous-total:</span>
+            <span>{calculateTotalPrice().toLocaleString()} FCFA</span>
+          </div>
+          
+          {formData.paymentInfo.option === 'partial' && (
+            <>
+              <div className="flex justify-between">
+                <span>Acompte (50%):</span>
+                <span>{Math.ceil(calculateTotalPrice() / 2).toLocaleString()} FCFA</span>
+              </div>
+              <div className="flex justify-between text-gray-600 text-sm">
+                <span>Reste à payer:</span>
+                <span>{Math.floor(calculateTotalPrice() / 2).toLocaleString()} FCFA</span>
+              </div>
+            </>
           )}
+          
+          <div className="flex justify-between font-bold mt-2">
+            <span>Total {formData.paymentInfo.option === 'partial' ? 'partiel' : ''}:</span>
+            <span style={{ color: colors.teal }}>
+              {formData.paymentInfo.option === 'partial' 
+                ? Math.ceil(calculateTotalPrice() / 2).toLocaleString()
+                : formData.paymentInfo.option === 'onsite'
+                ? '0 (sur place)'
+                : calculateTotalPrice().toLocaleString()
+              } FCFA
+            </span>
+          </div>
+          
+          <div className="text-sm text-gray-500 mt-2">
+            Mode de paiement: {getPaymentMethodLabel(formData.paymentInfo.method)}
+          </div>
+        </div>
+      </div>
+
+      {/* Actions */}
+      <div className="flex flex-col sm:flex-row gap-4 justify-center">
+        <Button
+          onClick={() => router.push('/rooms')}
+          variant="outline"
+        >
+          Voir autres chambres
+        </Button>
+        <Button
+          onClick={() => router.push('/my-bookings')} // Ajoutez cette route si nécessaire
+          className="bg-gold hover:bg-gold-dark"
+        >
+          Mes réservations
+        </Button>
+        <Button
+          onClick={() => router.push('/')}
+          className="bg-teal-600 hover:bg-teal-700"
+        >
+          Accueil
+        </Button>
+      </div>
+    </Card>
+  </motion.div>
+)}
         </AnimatePresence>
       </div>
     </div>
