@@ -1,5 +1,5 @@
 import './globals.css';
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next'; // Ajoutez Viewport
 import { Inter } from 'next/font/google';
 import { Navbar } from '../../components/navbar';
 import { Footer } from '../../components/footer';
@@ -14,6 +14,11 @@ const inter = Inter({
 export const metadata: Metadata = {
   title: 'Bain de Lac - Hôtel de Luxe',
   description: 'Découvrez notre hôtel de charme au bord du lac, offrant des services haut de gamme pour un séjour inoubliable.',
+  
+};
+
+// Ajoutez ce nouvel export
+export const viewport: Viewport = {
   themeColor: [
     { media: '(prefers-color-scheme: light)', color: 'white' },
     { media: '(prefers-color-scheme: dark)', color: 'black' },

@@ -2,109 +2,141 @@
 import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { useState } from 'react';
-import { Heart, Users, Maximize, Bed } from 'lucide-react';
+import { Heart, Users, Bed, Clock } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { ReservationType, Room } from '../types';
 
-const CardRoom = ({ room, onViewDetails }) => {
+interface CardRoomProps {
+  room: Room;
+  onViewDetails: () => void;
+  onBookNow: () => void;
+}
+
+
+const CardRoom = ({ room, onViewDetails, onBookNow }: CardRoomProps) => {
   const [isFavorite, setIsFavorite] = useState(false);
   const router = useRouter();
-
   const isAvailable = room.is_available && !room.in_maintenance;
 
-  const handleBookNow = () => {
-    if (isAvailable) {
-      router.push(`/booking/${room.id}`);
-    }
-  };
+  const formatHour = (hour: number): string => `${hour}h`;
+
+const handleBookNow = () => {
+  if (isAvailable) {
+    router.push(`/booking/${room.id}`);
+    onBookNow();
+  }
+};
+
+
+
+const getPriceForType = (typeId: number) => {
+  const pricing = room.pricing?.find(value => value.reservation_type_id === typeId);
+  return pricing?.price 
+    ? `${pricing.price.toLocaleString()} FCFA` 
+    : pricing?.hourly_price 
+      ? `${pricing.hourly_price.toLocaleString()} FCFA/h` 
+      : '';
+};
 
   return (
     <motion.div
-      whileHover={{ scale: 1.02 }}
-      className="bg-white rounded-2xl overflow-hidden shadow-md border border-gray-200 w-full max-w-md mx-auto"
-      style={{ minHeight: '420px' }}
+      whileHover={{ y: -5 }}
+      className="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-100 transition-all duration-200 hover:shadow-xl"
     >
-      {/* Image */}
-      <div className="relative h-60">
+      {/* Image Header */}
+      <div className="relative h-48 w-full">
         <Image
           src={room.image}
           alt={room.name}
-          layout="fill"
-          objectFit="cover"
-          className="rounded-t-2xl"
+          fill
+          className="object-cover"
+          sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, 33vw"
         />
-
-        {/* Favori */}
-        <button
-          onClick={() => setIsFavorite(!isFavorite)}
-          className="absolute top-3 left-3 p-2 bg-white rounded-full shadow"
-        >
-          <Heart
-            className={`w-5 h-5 ${isFavorite ? 'fill-red-500 text-red-500' : 'text-gray-400'}`}
-          />
-        </button>
-
-        {/* Statut */}
-        <div className={`absolute top-3 right-3 px-2 py-1 rounded text-xs font-semibold ${
-          isAvailable ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
-        }`}>
-          {isAvailable ? 'Disponible' : 'Indisponible'}
+        
+        {/* Badges overlay */}
+        <div className="absolute inset-0 flex justify-between items-start p-3">
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              setIsFavorite(!isFavorite);
+            }}
+            className="p-2 bg-white/90 rounded-full backdrop-blur-sm"
+          >
+            <Heart className={`w-4 h-4 ${isFavorite ? 'fill-red-500 text-red-500' : 'text-gray-400'}`} />
+          </button>
+          
+          <div className={`px-2 py-1 text-xs font-medium rounded-full ${isAvailable ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+            {isAvailable ? 'Disponible' : 'Indisponible'}
+          </div>
         </div>
-
-        {/* Prix */}
-        <div className="absolute bottom-3 left-3 bg-black/70 text-white rounded px-3 py-1 text-sm">
-          <div className="font-bold text-lg">{room.price_per_night?.toLocaleString()} FCFA</div>
-          <div className="text-xs">par nuit</div>
+        
+        {/* Price overlay */}
+        <div className="absolute bottom-3 left-3 bg-black/80 text-white px-3 py-1 rounded-full text-sm font-medium">
+          {room.price_per_night?.toLocaleString()} FCFA
         </div>
       </div>
 
-      {/* Contenu */}
-      <div className="p-5">
-        <h3 className="font-semibold text-2xl mb-4">{room.name}</h3>
-
-        {/* Infos principales */}
-        <div className="grid grid-cols-3 gap-4 mb-4 text-sm text-gray-600">
-          <div className="flex items-center gap-1">
-            <Maximize className="w-4 h-4" />
+      {/* Content */}
+      <div className="p-4">
+        {/* Title and basic info */}
+        <div className="flex justify-between items-start mb-2">
+          <h3 className="text-lg font-semibold text-gray-900">{room.name}</h3>
+          <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
             {room.surface_area}m²
-          </div>
-          <div className="flex items-center gap-1">
-            <Users className="w-4 h-4" />
-            {room.num_person} pers
-          </div>
-          <div className="flex items-center gap-1">
-            <Bed className="w-4 h-4" />
-            Étage {room.floor}
+          </span>
+        </div>
+        
+        {/* Meta info */}
+        <div className="flex items-center gap-3 text-xs text-gray-500 mb-3">
+          <span className="flex items-center">
+            <Users className="w-3 h-3 mr-1" /> {room.num_person} pers
+          </span>
+          <span className="flex items-center">
+            <Bed className="w-3 h-3 mr-1" /> {room.bed_type}
+          </span>
+          <span>Étage {room.floor}</span>
+        </div>
+
+        {/* Reservation options - Compact version */}
+        <div className="mb-4">
+          <h4 className="text-xs font-medium text-gray-500 mb-2 flex items-center">
+            <Clock className="w-3 h-3 mr-1" /> OPTIONS DE RÉSERVATION
+          </h4>
+          
+          <div className="space-y-2">
+            {room.reservation_types?.map((type: ReservationType) => (
+              <div key={type.id} className="flex justify-between items-center text-sm">
+                <div>
+                  <span className="font-medium">{type.name}</span>
+                  {!type.is_flexible && type.slots?.length > 0 && (
+                    <span className="text-xs text-gray-500 ml-2">
+                      {formatHour(type.slots[0].checkin_time)}-{formatHour(type.slots[0].checkout_time)}
+                    </span>
+                  )}
+                </div>
+                <span className="font-medium text-orange-600">
+                  {getPriceForType(type.id)}
+                </span>
+              </div>
+            ))}
           </div>
         </div>
 
-        {/* Type de lit */}
-        {room.bed_type && (
-          <div className="text-sm text-gray-600 mb-2">
-            🛏️ {room.bed_type}
-          </div>
-        )}
-
-        {/* Horaires */}
-        <div className="text-sm text-gray-600 mb-5">
-          ⏰ Arrivée: {room.check_in_time || '14:00'} • Départ: {room.check_out_time || '12:00'}
-        </div>
-
-        {/* Boutons */}
-        <div className="flex gap-4">
+        {/* Buttons */}
+        <div className="flex gap-2">
           <button
             onClick={onViewDetails}
-            className="flex-1 border border-gray-300 text-gray-700 py-3 px-4 rounded-md font-medium hover:bg-gray-100 transition"
+            className="flex-1 py-2 text-sm border border-gray-300 rounded-lg hover:bg-gray-50 transition"
           >
-            Voir détails
+            Détails
           </button>
-
           <button
             onClick={handleBookNow}
             disabled={!isAvailable}
-            className={`flex-1 py-3 px-4 rounded-md font-medium transition ${
+            className={`flex-1 py-2 text-sm rounded-lg transition ${
               isAvailable
                 ? 'bg-orange-500 hover:bg-orange-600 text-white'
-                : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                : 'bg-gray-200 text-gray-500 cursor-not-allowed'
             }`}
           >
             Réserver

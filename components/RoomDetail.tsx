@@ -1,24 +1,21 @@
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useState } from 'react';
-import { MoonIcon,ClockIcon,SunIcon } from '@heroicons/react/24/solid';
+import { MoonIcon, ClockIcon, SunIcon } from '@heroicons/react/24/solid';
 import { Room } from '../types';
-
 
 const colors = {
   darkTeal: "#1e4e5f",
   teal: "#005D7C",
   lightTeal: "#e0f2f1",
-   gold: "#CE9226",
+  gold: "#CE9226",
   orange: "#f4a261",
   maroon: "#e76f51",
-   darkMaroon: "#...your desired color code...", 
+  darkMaroon: "#d63031",
   white: "#ffffff",
   black: "#1a1a1a",
   gray: "#f8f9fa"
 };
-
-
 
 // Animation variants
 const backdropVariants = {
@@ -30,6 +27,7 @@ const slideInUp = {
   hidden: { y: 100, opacity: 0 },
   visible: { y: 0, opacity: 1 },
 };
+
 const scaleIn = {
   hidden: { opacity: 0, scale: 0 },
   visible: { opacity: 1, scale: 1, transition: { duration: 0.3 } }
@@ -49,8 +47,6 @@ const modalVariants = {
   },
   exit: { y: 50, opacity: 0 }
 };
-
-
 
 const featureIcons = {
   floor: (
@@ -118,6 +114,7 @@ const featureIcons = {
     </div>
   ),
 };
+
 type RoomDetailProps = {
   room: Room;
   onClose: () => void;
@@ -140,9 +137,9 @@ const RoomDetail = ({ room, onClose }: RoomDetailProps) => {
   };
 
   const roomDescriptions = {
-    deluxe: `Cette chambre Deluxe offre un espace genereux de ${room.surface_area}m² avec une vue imprenable sur ${room.view}. Le lit ${room.bed_type} vous garantit un sommeil profond, tandis que les materiaux nobles comme le ${room.flooring_type} au sol creent une ambiance chaleureuse et raffinee. Parfaite pour ${room.num_person} personne${room.num_person > 1 ? 's' : ''}, cette chambre allie elegance et fonctionnalite.`,
-    suite: `La Suite Presidentielle est un havre de paix de ${room.surface_area}m² avec vue sur ${room.view}. Dotee d un lit ${room.bed_type} et d un sol en ${room.flooring_type}, elle offre un espace luxueux avec des finitions haut de gamme. Ideale pour ${room.num_person} personne${room.num_person > 1 ? 's' : ''}, cette suite incarne l excellence avec des equipements premium.`,
-    standard: `Cette chambre confortable de ${room.surface_area}m² avec vue sur ${room.view} propose tout le necessaire pour un sejour agreable. Le lit ${room.bed_type} et le sol en ${room.flooring_type} creent une ambiance chaleureuse. Parfaite pour ${room.num_person} personne${room.num_person > 1 ? 's' : ''}, elle allie simplicite et confort.`
+    deluxe: `Cette chambre Deluxe offre un espace généreux de ${room.surface_area}m² avec une vue imprenable sur ${room.view}. Le lit ${room.bed_type} vous garantit un sommeil profond, tandis que les matériaux nobles comme le ${room.flooring_type} au sol créent une ambiance chaleureuse et raffinée. Parfaite pour ${room.num_person} personne${room.num_person > 1 ? 's' : ''}, cette chambre allie élégance et fonctionnalité.`,
+    suite: `La Suite Présidentielle est un havre de paix de ${room.surface_area}m² avec vue sur ${room.view}. Dotée d'un lit ${room.bed_type} et d'un sol en ${room.flooring_type}, elle offre un espace luxueux avec des finitions haut de gamme. Idéale pour ${room.num_person} personne${room.num_person > 1 ? 's' : ''}, cette suite incarne l'excellence avec des équipements premium.`,
+    standard: `Cette chambre confortable de ${room.surface_area}m² avec vue sur ${room.view} propose tout le nécessaire pour un séjour agréable. Le lit ${room.bed_type} et le sol en ${room.flooring_type} créent une ambiance chaleureuse. Parfaite pour ${room.num_person} personne${room.num_person > 1 ? 's' : ''}, elle allie simplicité et confort.`
   };
 
   const getDescription = () => {
@@ -152,7 +149,7 @@ const RoomDetail = ({ room, onClose }: RoomDetailProps) => {
   };
 
   return (
-     <AnimatePresence>
+    <AnimatePresence>
       <style jsx global>{`
         @import url('https://fonts.googleapis.com/css2?family=Bashny+Script&display=swap');
         .font-bashny { font-family: 'Bashny Script', cursive; }
@@ -189,8 +186,8 @@ const RoomDetail = ({ room, onClose }: RoomDetailProps) => {
             <Image
               src={allImages[currentImageIndex]}
               alt={room.name}
-              layout="fill"
-              objectFit="cover"
+              fill
+              style={{ objectFit: 'cover' }}
               className="transition-all duration-1000 hover:scale-110"
               priority
             />
@@ -200,7 +197,8 @@ const RoomDetail = ({ room, onClose }: RoomDetailProps) => {
                 background: 'linear-gradient(135deg, rgba(30, 78, 95, 0.1) 0%, transparent 30%, transparent 70%, rgba(0, 0, 0, 0.7) 100%)'
               }}
             />
-           {/* Boutons de navigation */}
+            
+            {/* Boutons de navigation */}
             {allImages.length > 1 && (
               <>
                 <motion.button 
@@ -235,7 +233,7 @@ const RoomDetail = ({ room, onClose }: RoomDetailProps) => {
             )}
             
             {/* Bouton fermer */}
-           <motion.button 
+            <motion.button 
               onClick={onClose}
               className="absolute top-2 sm:top-6 right-2 sm:right-6 bg-white/25 backdrop-blur-lg rounded-xl sm:rounded-2xl p-2 sm:p-4 shadow-2xl hover:bg-white/35 transition-all z-10 border border-white/30"
               whileHover={{ scale: 1.1, rotate: 90 }}
@@ -252,7 +250,7 @@ const RoomDetail = ({ room, onClose }: RoomDetailProps) => {
               <div className="absolute bottom-4 sm:bottom-8 left-0 right-0 flex justify-center space-x-2 sm:space-x-4 z-10">
                 {allImages.map((_, index) => (
                   <motion.button
-                    key={index}
+                    key={`image-indicator-${index}`}
                     onClick={(e) => {
                       e.stopPropagation();
                       selectImage(index);
@@ -269,8 +267,9 @@ const RoomDetail = ({ room, onClose }: RoomDetailProps) => {
                 ))}
               </div>
             )}
+            
             {/* Overlay avec titre */}
-             <div className="absolute bottom-0 left-0 right-0 p-4 sm:p-12">
+            <div className="absolute bottom-0 left-0 right-0 p-4 sm:p-12">
               <motion.div
                 className="flex flex-col gap-4 sm:gap-6"
                 initial={{ y: 30, opacity: 0 }}
@@ -311,10 +310,8 @@ const RoomDetail = ({ room, onClose }: RoomDetailProps) => {
             </div>
           </div>
 
-
-
           {/* Contenu principal */}
-           <div className="p-4 sm:p-8 lg:p-12 pb-32 sm:pb-40">
+          <div className="p-4 sm:p-8 lg:p-12 pb-32 sm:pb-40">
             
             {/* Galerie Photos */}
             {room.room_images && room.room_images.length > 0 && (
@@ -337,10 +334,13 @@ const RoomDetail = ({ room, onClose }: RoomDetailProps) => {
                 <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-3 sm:gap-6">
                   {allImages.map((img, index) => (
                     <motion.div 
-                      key={index} 
+                      key={`gallery-${room.id}-${index}`}
                       className={`relative h-24 sm:h-32 lg:h-40 rounded-2xl sm:rounded-3xl overflow-hidden shadow-xl hover:shadow-2xl transition-all cursor-pointer group ${
-                        currentImageIndex === index ? 'ring-2 sm:ring-4 ring-offset-2 sm:ring-offset-4 scale-105 ring-gold' : ''
+                        currentImageIndex === index ? 'ring-2 sm:ring-4 ring-offset-2 sm:ring-offset-4 scale-105' : ''
                       }`}
+                      style={{ 
+                        '--tw-ring-color': currentImageIndex === index ? colors.gold : 'transparent'
+                      } as React.CSSProperties}
                       whileHover={{ scale: 1.05, y: -4 }}
                       onClick={() => selectImage(index)}
                       variants={scaleIn}
@@ -351,8 +351,8 @@ const RoomDetail = ({ room, onClose }: RoomDetailProps) => {
                       <Image
                         src={img}
                         alt={`Gallery ${index + 1}`}
-                        layout="fill"
-                        objectFit="cover"
+                        fill
+                        style={{ objectFit: 'cover' }}
                         className="transition-transform duration-700 group-hover:scale-125"
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
@@ -362,9 +362,6 @@ const RoomDetail = ({ room, onClose }: RoomDetailProps) => {
               </motion.div>
             )}
 
-            {/* Description et caractéristiques */}
-           
-            
             {/* Section Description avec design moderne */}
             <motion.div
               className="mb-8 sm:mb-16"
@@ -416,6 +413,7 @@ const RoomDetail = ({ room, onClose }: RoomDetailProps) => {
               </div>
             </motion.div>
 
+            {/* Caractéristiques */}
             <motion.div
               className="mb-8 sm:mb-16"
               variants={slideInUp}
@@ -443,8 +441,8 @@ const RoomDetail = ({ room, onClose }: RoomDetailProps) => {
           { icon: featureIcons.pets, label: 'Animaux', value: room.is_pets_allowed ? 'Autorisés' : 'Non' },
           { icon: featureIcons.smoking, label: 'Fumeur', value: room.is_smoking_allowed ? 'Autorisé' : 'Non' },
         ].map((feature, index) => (
-          <motion.div 
-            key={index}
+  <motion.div 
+    key={`${room.id}-${feature.label.toLowerCase().replace(/[^a-z0-9]/g, '')}`}
             className="bg-white rounded-3xl p-8 shadow-2xl hover:shadow-3xl transition-all border border-slate-100 relative overflow-hidden group"
             whileHover={{ y: -8, scale: 1.02 }}
             variants={scaleIn}

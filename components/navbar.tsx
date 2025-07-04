@@ -1,7 +1,7 @@
 "use client";
 
 import Link from 'next/link';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { Menu, X } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import Image from 'next/image';
@@ -10,15 +10,47 @@ import { Avatar } from '../components/ui/avatar';
 export function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const [isLoggedIn] = useState(true); // Simule un utilisateur connecté
+  const [isLoggedIn] = useState(true);
+ const animationFrameId = useRef<number | null>(null);
+const lastScrollY = useRef<number>(0);
+  // Gestion ultra-optimisée du scroll
+  const handleScroll = useCallback(() => {
+  const currentScrollY = window.scrollY;
+  const isScrollingDown = currentScrollY > lastScrollY.current;
+  lastScrollY.current = currentScrollY;
+
+  if (isScrollingDown) {
+    console.log('User is scrolling down');
+  }
+
+  const newScrolled = currentScrollY > 5;
+
+  setScrolled((prevScrolled) => {
+    if (prevScrolled !== newScrolled) {
+      return newScrolled;
+    }
+    return prevScrolled;
+  });
+}, []); 
 
   useEffect(() => {
-    const handleScroll = () => {
-      setScrolled(window.scrollY > 10);
-    };
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
+  const debounceScroll = () => {
+    if (animationFrameId.current) {
+      cancelAnimationFrame(animationFrameId.current);
+    }
+    animationFrameId.current = requestAnimationFrame(handleScroll);
+  };
+
+  window.addEventListener('scroll', debounceScroll, { passive: true });
+
+  return () => {
+    if (animationFrameId.current) {
+      cancelAnimationFrame(animationFrameId.current);
+    }
+    window.removeEventListener('scroll', debounceScroll);
+  };
+}, [handleScroll]);
+
 
   const navItems = [
     { label: 'ACCUEIL', href: '/' },
@@ -33,20 +65,21 @@ export function Navbar() {
       <div className="max-w-screen-xl mx-auto px-6 lg:px-8">
         <div className="flex justify-between items-center h-20 gap-8">
           
-          {/* Logo avec espacement amélioré */}
-          <Link href="/" className="flex-shrink-0 mr-12">
+          {/* Logo */}
+          <Link href="/" className="flex-shrink-0 mr-12" aria-label="Accueil">
             <div className="relative h-50 w-50 transition-transform duration-300 hover:scale-105">
               <Image
                 src="/ogo.png"
                 alt="Bain du Lac"
-                fill
+                width={150}
+                height={40}
                 className="object-contain object-left"
                 priority
               />
             </div>
           </Link>
 
-          {/* Menu desktop - Espacement optimal */}
+          {/* Menu desktop */}
           <div className="hidden lg:flex items-center justify-between flex-1">
             <div className="flex gap-10">
               {navItems.map((item) => (
@@ -54,6 +87,7 @@ export function Navbar() {
                   key={item.href}
                   href={item.href}
                   className="relative group"
+                  aria-label={item.label}
                 >
                   <span className={`font-bold text-lg uppercase tracking-wider transition-colors duration-200 group-hover:text-amber-600 ${scrolled ? 'text-slate-800' : 'text-slate-900'}`}>
                     {item.label}
@@ -63,29 +97,24 @@ export function Navbar() {
               ))}
             </div>
 
-            {/* Zone utilisateur avec espacement */}
+            {/* Zone utilisateur */}
             <div className="ml-10 flex items-center gap-6">
               {isLoggedIn ? (
                 <>
-       <Avatar 
- src="https://i.pravatar.cc/300?img=2"
-
-  name="Sedjro Melodie"
-  size="md"
-  isOnline={true}
-  showName={true}
-  className="border-2 border-amber-600"
-/>
-
-
+                  <Avatar 
+                    src="https://i.pravatar.cc/300?img=2"
+                    name="Sedjro Melodie"
+                    size="md"
+                    isOnline={true}
+                    showName={true}
+                    className="border-2 border-amber-600"
+                  />
                   <Button 
                     variant="ghost" 
                     size="icon"
                     className="text-slate-600 hover:bg-slate-100"
                     aria-label="Profile"
-                  >
-                    
-                  </Button>
+                  />
                 </>
               ) : (
                 <Button 
@@ -98,11 +127,11 @@ export function Navbar() {
             </div>
           </div>
 
-          {/* Menu mobile - Bouton amélioré */}
+          {/* Menu mobile */}
           <div className="lg:hidden flex items-center">
             {isLoggedIn && (
               <Avatar 
-               src="https://i.pravatar.cc/300?img=2"
+                src="https://i.pravatar.cc/300?img=2"
                 name="Sedjro"
                 size="sm"
                 isOnline={true}
@@ -112,7 +141,7 @@ export function Navbar() {
             <button
               onClick={() => setIsOpen(!isOpen)}
               className="p-2 rounded-md hover:bg-slate-100 transition-colors"
-              aria-label="Menu"
+              aria-label={isOpen ? "Fermer le menu" : "Ouvrir le menu"}
             >
               {isOpen ? (
                 <X className="h-7 w-7 text-slate-800" />
@@ -123,9 +152,9 @@ export function Navbar() {
           </div>
         </div>
 
-        {/* Menu mobile - Version épurée */}
+        {/* Menu mobile - Dropdown */}
         {isOpen && (
-          <div className="lg:hidden bg-white shadow-lg mt-2 rounded-lg">
+          <div className="lg:hidden bg-white shadow-lg mt-2 rounded-lg animate-in fade-in">
             <div className="px-4 py-3 space-y-3">
               {navItems.map((item) => (
                 <Link
@@ -133,6 +162,7 @@ export function Navbar() {
                   href={item.href}
                   className="block px-4 py-3 font-medium text-slate-800 hover:bg-amber-50 rounded-md transition-colors"
                   onClick={() => setIsOpen(false)}
+                  aria-label={item.label}
                 >
                   {item.label}
                 </Link>
@@ -159,14 +189,6 @@ export function Navbar() {
           </div>
         )}
       </div>
-
-      {/* Barre de progression visible */}
-      <div 
-        className="absolute bottom-0 left-0 h-1 bg-amber-500 transition-all duration-300"
-        style={{ 
-          width: `${typeof window !== 'undefined' ? (window.scrollY / (document.body.scrollHeight - window.innerHeight)) * 100 : 0}%` 
-        }}
-      />
     </nav>
   );
 }

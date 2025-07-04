@@ -64,7 +64,7 @@ export function Footer() {
                   className="text-2xl font-bold text-white leading-tight"
                   style={{ fontFamily: 'Bahnschrift, sans-serif' }}
                 >
-                  Hôtel Prestige<br />
+                  Hôtel Bain du Lac<br />
                   <span style={{ color: colors.gold }}>Bénin</span>
                 </h3>
               </div>
@@ -123,7 +123,7 @@ export function Footer() {
                 {
                   icon: Mail,
                   title: "Email",
-                  content: ["contact@hotelprestige.bj"],
+                  content: ["contact@hotelbaindulac.bj"],
                   color: colors.cream
                 }
               ].map((contact, index) => (

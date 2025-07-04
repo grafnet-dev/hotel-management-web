@@ -1,97 +1,5 @@
-'use client';
-import { useState } from 'react';
-import CardRoom from '../components/cardroom';
-import BookingForm from '@/app/booking/[roomId]/page';
-import RoomDetail from '../components/RoomDetail';
-
-
-
-interface GuestInfo {
-  fullName: string;
-  email: string;
-  phone: string;
-  specialRequests: string;
-}
-
-
-
-interface BookingData {
-  guestInfo: GuestInfo;
-  checkInDate: string;
-  checkOutDate: string;
-  isDayUse: boolean;
-  paymentMethod: string;
-  paymentOption: string;
-}
-
-interface RoomBookingData {
-  guestName: string;
-  arrivalDate: Date;
-  departureDate: Date;
-}
-
-interface RoomListProps {
-  onBookNow: (room: Room) => void;
-  rooms?: Room[]; 
-}
-
-
-interface Room {
-  id: number;
-  name: string;
-  status: string;
-  room_type: string;
-  num_person: number;
-  is_available: boolean;
-  price_per_night: number;
-  day_use_price: number;
-  hourly_rate: number;
-  floor: string;
-  surface_area: number;
-  view: string | boolean;
-  bed_type: string | boolean;
-  flooring_type: string | boolean;
-  image: string;
-  is_smoking_allowed: boolean;
-  is_pets_allowed: boolean;
-  in_maintenance: boolean;
-  checkin_date?: string;
-  checkout_date?: string;
-  room_images: {
-    image: string;
-  }[];
-  amenities: Array<{
-    id: number;
-    name: string;
-    description: string | boolean;
-    icon: string;
-  }>;
-  reservation_types: Array<{
-    id: number;
-    name: string;
-    code: string;
-    description: string | boolean;
-    is_flexible: boolean;
-    slots: Array<{
-      checkin_time: number;
-      checkout_time: number;
-    }>;
-  }>;
-  pricing: Array<{
-    reservation_type_id: number;
-    reservation_type_name: string;
-    
-    price: number;
-    hourly_price: number;
-    is_hourly_based: boolean;
-    currency: string | null;
-  }>;
-}
-
-
-
-
-const sampleRooms: Room[] = [
+const sampleRooms: Room[] =[
+  // ...
   {
     id: 1,
     name: "Chambre Deluxe Vue Mer",
@@ -484,254 +392,62 @@ const sampleRooms: Room[] = [
         hourly_price: 9000,
         is_hourly_based: false,
         currency: "fCFA"
-      }
-    ]
-  },
- /*
-{
-  id: 7,
-  name: "Chambre Standard",
-  room_type: "single",
-  bed_type: "double",
-  num_person: 1,
-  surface_area: 20,
-  price_per_night: 15000,
-  hourly_rate: 3500,
-  day_use_price: 0,
-  flooring_type: "carrelage",
-  view: "cour intérieure",
-  floor: "1",
-  is_pets_allowed: false,
-  is_smoking_allowed: false,
-  in_maintenance: false,
-  is_available: true,
-  status: "available",
-  image: "https://images.pexels.com/photos/271639/pexels-photo-271639.jpeg",
-  room_images: [
-    { image: "https://images.pexels.com/photos/271639/pexels-photo-271639.jpeg" },
-    { image: "https://images.pexels.com/photos/26139/pexels-photo.jpg" },
-    { image: "https://images.pexels.com/photos/271743/pexels-photo-271743.jpeg" }
-  ],
-  amenities: [
-    { 
-      id: 1, 
-      name: "WiFi", 
-      description: false, 
-      icon: "https://images.pexels.com/photos/1054397/pexels-photo-1054397.jpeg"
-    }
-  ],
-  reservation_types: [
-    {
-      id: 13,
-      name: "Nuitée",
-      code: "classic",
-      description: "Réservation classique, Nuitée",
-      is_flexible: false,
-      slots: [
-        { checkin_time: 14, checkout_time: 11 }
-      ]
-    },
-    {
-      id: 14,
-      name: "Horaires Flexibles",
-      code: "flexible",
-      description: false,
-      is_flexible: true,
-      slots: []
-    }
-  ],
-  pricing: [
-    {
-      reservation_type_id: 13,
-      reservation_type_name: "Nuitée",
-      price: 15000,
-      hourly_price: 3500,
-      is_hourly_based: false,
-      currency: "XOF"
-    },
-    {
-      reservation_type_id: 14,
-      reservation_type_name: "Horaires Flexibles",
-      price: 0,
-      hourly_price: 3500,
-      is_hourly_based: true,
-      currency: "XOF"
-    }
-  ]
-},
-{
-  id: 8,
-  name: "Suite Junior",
-  room_type: "junior_suite",
-  bed_type: "king size",
-  num_person: 2,
-  surface_area: 45,
-  price_per_night: 55000,
-  hourly_rate: 11000,
-  day_use_price: 22000,
-  flooring_type: "parquet",
-  view: "mer",
-  floor: "3",
-  is_pets_allowed: false,
-  is_smoking_allowed: false,
-  in_maintenance: false,
-  is_available: true,
-  status: "available",
-  image: "https://images.pexels.com/photos/258154/pexels-photo-258154.jpeg",
-  room_images: [
-    { image: "https://images.pexels.com/photos/271618/pexels-photo-271618.jpeg" },
-    { image: "https://images.pexels.com/photos/271624/pexels-photo-271624.jpeg" }
-  ],
-  amenities: [
-    { id: 1, name: "WiFi", description: false, icon: "https://cdn-icons-png.flaticon.com/512/93/93158.png" },
-    { id: 2, name: "Climatisation", description: false, icon: "https://cdn-icons-png.flaticon.com/512/2922/2922031.png" },
-    { id: 15, name: "Coin salon", description: false, icon: "https://cdn-icons-png.flaticon.com/512/1865/1865269.png" },
-    { id: 16, name: "Nespresso", description: false, icon: "https://cdn-icons-png.flaticon.com/512/2938/2938055.png" }
-  ],
-  reservation_types: [
-    {
-      id: 15,
-      name: "Nuitée",
-      code: "classic",
-      description: "Réservation classique, Nuitée",
-      is_flexible: false,
-      slots: [
-        { checkin_time: 14, checkout_time: 11 }
-      ]
-    },
-    {
-      id: 16,
-      name: "Day use",
-      code: "day_use",
-      description: "Utilisation en Journée",
-      is_flexible: false,
-      slots: [
-        { checkin_time: 10, checkout_time: 17 },
-        { checkin_time: 10, checkout_time: 14 }
-      ]
-    },
-    {
-      id: 17,
-      name: "Week-end",
-      code: "weekend",
-      description: "Forfait week-end",
-      is_flexible: false,
-      slots: [
-        { checkin_time: 14, checkout_time: 16 }
-      ]
-    }
-  ],
-  pricing: [
-    {
-      reservation_type_id: 15,
-      reservation_type_name: "Nuitée",
-      price: 55000,
-      hourly_price: 11000,
-      is_hourly_based: false,
-      currency: "XOF"
-    },
-    {
-      reservation_type_id: 16,
-      reservation_type_name: "Day use",
-      price: 22000,
-      hourly_price: 11000,
-      is_hourly_based: false,
-      currency: "XOF"
-    },
-    {
-      reservation_type_id: 17,
-      reservation_type_name: "Week-end",
-      price: 55000,
-      hourly_price: 11000,
-      is_hourly_based: false,
-      currency: "XOF"
-    }
-  ]
-}
-*/
+     }
+]
+
+  
+  }
 ];
+export default sampleRooms;
 
-const RoomList = ({ onBookNow }: RoomListProps) => {
-  
-  const [selectedRoom, setSelectedRoom] = useState<Room | null>(null);
-  const [isBookingOpen, setIsBookingOpen] = useState(false);
-  
-
- const handleBookingSubmit = async (bookingData: BookingData): Promise<boolean> => {
-  const roomBookingData: RoomBookingData = {
-    guestName: bookingData.guestInfo.fullName,
-    arrivalDate: new Date(bookingData.checkInDate),
-    departureDate: new Date(bookingData.checkOutDate),
-  };
-  await handleSubmitBooking(roomBookingData);
-  return true; 
-};
-
-  const handleSubmitBooking = (bookingData: RoomBookingData) => {
-    const bookingFormData: BookingData = {
-      guestInfo: {
-        fullName: bookingData.guestName,
-        email: '',
-        phone: '',
-        specialRequests: ''
-      },
-      checkInDate: bookingData.arrivalDate.toISOString().split('T')[0],
-      checkOutDate: bookingData.departureDate.toISOString().split('T')[0],
-      isDayUse: false,
-      paymentMethod: '',
-      paymentOption: '',
-    };
-
-    console.log('Données de réservation:', bookingFormData);
-    setIsBookingOpen(false);
-  };
-
-  const handleBookNow = (room: Room) => {
-    setSelectedRoom(room);
-    setIsBookingOpen(true);
-    onBookNow(room);
-  };
- const roomGroups = [];
-for (let i = 0; i < sampleRooms.length; i += 3) {
-  roomGroups.push(sampleRooms.slice(i, i + 3));
-}
-
-return (
-  <div
-    className="bg-gradient-to-b from-gray-50 to-white min-h-screen"
-    style={{ fontFamily: 'Bahnschrift, sans-serif' }}
-  >
-    <div className="max-w-7xl mx-auto px-6 py-12 space-y-16">
-      {roomGroups.map((group, index) => (
-        <div
-          key={index}
-          className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8 items-stretch"
-        >
-          {group.map((room) => (
-            <CardRoom
-              key={room.id}
-              room={room}
-              onBookNow={() => handleBookNow(room)}
-              onViewDetails={() => setSelectedRoom(room)}
-            />
-          ))}
-        </div>
-      ))}
-    </div>
-
-    {selectedRoom && (
-      <RoomDetail room={selectedRoom} onClose={() => setSelectedRoom(null)} />
-    )}
-
-    {isBookingOpen && (
-      <BookingForm
-        onSubmit={handleBookNow}
-        onClose={() => setIsBookingOpen(false)}
-      />
-    )}
-  </div>
-);
+export type Room = {
+    id: number;
+  name: string;
+  status: string;
+  room_type: string;
+  num_person: number;
+  is_available: boolean;
+  price_per_night: number;
+  day_use_price: number;
+  hourly_rate: number;
+  floor: string;
+  surface_area: number;
+  view: string ;
+  bed_type: string ;
+  flooring_type: string | boolean;
+  image: string;
+  is_smoking_allowed: boolean;
+  is_pets_allowed: boolean;
+  in_maintenance: boolean;
+  checkin_date?: string;
+  checkout_date?: string;
+  room_images: {
+    image: string;
+  }[];
+  amenities: Array<{
+    id: number;
+    name: string;
+    description: string | boolean;
+    icon: string;
+  }>;
+  reservation_types: Array<{
+    id: number;
+    name: string;
+    code: string;
+   description: string | boolean;
+    is_flexible: boolean;
+    slots: Array<{
+      checkin_time: number;
+      checkout_time: number;
+    }>;
+  }>;
+  pricing: Array<{
+    reservation_type_id: number;
+    reservation_type_name: string;
+    price: number;
+    hourly_price: number;
+    is_hourly_based: boolean;
+    currency: string | null;
+  }>;
 
 };
-
-export default RoomList;
