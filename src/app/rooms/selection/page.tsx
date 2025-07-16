@@ -1,6 +1,6 @@
 'use client';
 import { useSearchParams, useRouter } from 'next/navigation';
-import { useState, Suspense } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '../../../../components/ui/button';
 import { Card } from '../../../../components/ui/card';
@@ -8,8 +8,8 @@ import { Badge } from '../../../../components/ui/badge';
 import { Input } from '../../../../components/ui/input';
 import { Label } from '../../../../components/ui/label';
 import Image from 'next/image';
-
-import sampleRooms from '../../../../types';
+import { ReservationType } from '../../../../types';
+import sampleRooms from '../../../../types'; 
 import { 
   CalendarDays, 
   Users, 
@@ -18,6 +18,8 @@ import {
   BedDouble,
   Maximize2,
   CheckCircle,
+  Plus,
+  Minus,
 } from 'lucide-react';
 
 // Couleurs définies pour le thème
@@ -31,7 +33,33 @@ const colors = {
   white: '#FFFFFF'
 };
 
+// Constantes pour les enfants
+const MIN_CHILD_AGE = 0;
+const MAX_CHILD_AGE = 17;
+const MAX_CHILDREN_PER_ROOM = 3;
 
+// Interface pour les enfants
+interface Child {
+  id: number;
+  age: number;
+}
+
+// Interface pour Room (ajoutée)
+interface Room {
+  id: number;
+  name: string;
+  image: string;
+  bed_type: string;
+  num_person: number;
+  surface_area: number;
+  view: string;
+  floor: number;
+  price_per_night: number;
+  day_use_price?: number;
+  hourly_rate?: number;
+  amenities: Array<{ id: number; name: string }>;
+  reservation_types: ReservationType[];
+}
 
 interface SelectedRoom {
   roomId: number;
@@ -42,7 +70,21 @@ interface SelectedRoom {
   checkOutTime?: string;
   hours?: number;
   adults: number;
-  children: number;
+  children: Child[];
+}
+
+// Fonction utilitaire pour afficher le type de réservation
+function getReservationTypeDisplay(code: string): string {
+  switch (code) {
+    case 'classic':
+      return 'Séjour Classique';
+    case 'day_use':
+      return 'Day Use';
+    case 'flexible':
+      return 'Horaires Flexibles';
+    default:
+      return code;
+  }
 }
 
 export default function RoomSelectionPage() {
@@ -53,19 +95,49 @@ export default function RoomSelectionPage() {
 
   const checkIn = searchParams.get('checkIn');
   const checkOut = searchParams.get('checkOut');
+  const reservationType = searchParams.get('reservationType') || 'classic';
+  const startTime = searchParams.get('startTime');
+  const endTime = searchParams.get('endTime');
   const adults = parseInt(searchParams.get('adults') || '2');
   const children = parseInt(searchParams.get('children') || '0');
   const roomsCount = parseInt(searchParams.get('roomsCount') || '1');
-  const roomsData = searchParams.get('roomsData') ? JSON.parse(searchParams.get('roomsData')!) : [];
+  const roomsData = searchParams.get('roomsData') 
+  ? JSON.parse(searchParams.get('roomsData')!).map((room: any) => {
+      return {
+        adults: room.adults,
+        children: room.children
+          .filter((age: number) => typeof age === 'number' && !isNaN(age))
+          .map((age: number, index: number) => ({
+            id: index,
+            age: age
+          }))
+      };
+    })
+  : [];
 
   const checkInDate = checkIn ? new Date(checkIn) : null;
   const checkOutDate = checkOut ? new Date(checkOut) : null;
-  const nights = checkInDate && checkOutDate ? 
-    Math.ceil((checkOutDate.getTime() - checkInDate.getTime()) / (1000 * 60 * 60 * 24)) : 1;
+  
+  const getDuration = () => {
+    if (reservationType === 'classic' && checkInDate && checkOutDate) {
+      const nights = Math.max(1, Math.ceil((checkOutDate.getTime() - checkInDate.getTime()) / (1000 * 60 * 60 * 24)));
+      return { type: 'nights', value: nights, label: `${nights} nuit${nights > 1 ? 's' : ''}` };
+    } else if (reservationType === 'day_use') {
+      return { type: 'day', value: 1, label: '1 journée' };
+    } else if (reservationType === 'flexible' && startTime && endTime) {
+      const start = new Date(`2000-01-01T${startTime}`);
+      const end = new Date(`2000-01-01T${endTime}`);
+      const hours = Math.max(1, (end.getTime() - start.getTime()) / (1000 * 60 * 60));
+      return { type: 'hours', value: hours, label: `${hours}h` };
+    }
+    return { type: 'nights', value: 1, label: '1 nuit' };
+  };
+
+  const duration = getDuration();
 
   const canSelectMore = selectedRooms.length < roomsCount;
 
-  const addRoomSelection = (room: any, reservationType: string, roomConfig: any) => {
+  const addRoomSelection = (room: Room, reservationType: string, roomConfig: any) => {
     if (!canSelectMore) return;
 
     const newSelection: SelectedRoom = {
@@ -93,19 +165,17 @@ export default function RoomSelectionPage() {
       const room = sampleRooms.find(r => r.id === selection.roomId);
       if (!room) return total;
 
-      const pricing = room.pricing.find(p => 
-        room.reservation_types.find(rt => rt.id === p.reservation_type_id)?.code === selection.reservationType
-      );
-
-      if (!pricing) return total;
-
       let roomPrice = 0;
       if (selection.reservationType === 'classic') {
-        roomPrice = pricing.price * nights;
-      } else if (selection.reservationType.includes('day_use')) {
-        roomPrice = room.day_use_price || pricing.price;
+        const checkIn = new Date(selection.checkInDate);
+        const checkOut = new Date(selection.checkOutDate);
+        const nights = Math.max(1, Math.ceil((checkOut.getTime() - checkIn.getTime()) / (1000 * 60 * 60 * 24)));
+        roomPrice = room.price_per_night * nights;
+      } else if (selection.reservationType === 'day_use') {
+        roomPrice = room.day_use_price || Math.round(room.price_per_night * 0.7);
       } else if (selection.reservationType === 'flexible') {
-        roomPrice = pricing.hourly_price * (selection.hours || 1);
+        const hourlyRate = room.hourly_rate || Math.round(room.price_per_night / 24);
+        roomPrice = hourlyRate * (selection.hours || 1);
       }
 
       return total + roomPrice;
@@ -114,25 +184,24 @@ export default function RoomSelectionPage() {
 
   const proceedToBooking = () => {
     const bookingData = {
-      selectedRooms,
-      searchParams: {
-        checkIn,
-        checkOut,
-        adults,
-        children,
-        roomsCount
-      },
-      totalPrice: getTotalPrice()
-    };
+  selectedRooms,
+  checkIn,
+  checkOut,
+  adults,
+  children,
+  roomsCount,
+  totalPrice: getTotalPrice()
+};
+
     
     sessionStorage.setItem('bookingData', JSON.stringify(bookingData));
     router.push('/booking/multiple');
   };
 
   return (
-    <div className="min-h-screen pt-16" style={{ backgroundColor: colors.lightTeal }}>
+    <div className="min-h-screen pt-32 bg-gray-50 ">
       <div className="max-w-7xl mx-auto px-4 py-8">
-        {/* En-tête avec informations de recherche */}
+        {/* Header avec informations de recherche */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -141,49 +210,56 @@ export default function RoomSelectionPage() {
           <Button
             variant="ghost"
             onClick={() => router.push('/')}
-            className="mb-4 hover:bg-white/50"
-            style={{ color: colors.darkTeal }}
+            className="mb-4 text-gray-600 hover:text-gray-900"
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
             Modifier la recherche
           </Button>
 
-          <Card className="p-6" style={{ backgroundColor: colors.white, border: `1px solid ${colors.teal}` }}>
+          <Card className="p-6 bg-white">
             <div className="flex flex-wrap items-center gap-6">
-              <div className="flex items-center" style={{ color: colors.darkTeal }}>
+              <div className="flex items-center text-gray-600">
                 <CalendarDays className="h-5 w-5 mr-2" />
                 <span>
-                  {checkInDate?.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })} - 
-                  {checkOutDate?.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })}
-                  {nights > 0 && (
-                    <span className="ml-2 font-medium" style={{ color: colors.teal }}>
-                      ({nights} nuit{nights > 1 ? 's' : ''})
-                    </span>
+                  {reservationType === 'classic' ? (
+                    <>
+                      {checkInDate?.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })} - 
+                      {checkOutDate?.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })}
+                      <span className="ml-2 text-blue-600">({duration.label})</span>
+                    </>
+                  ) : (
+                    <>
+                      {checkInDate?.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })}
+                      <span className="ml-2 text-blue-600">({duration.label})</span>
+                      {reservationType === 'flexible' && startTime && endTime && (
+                        <span className="ml-2 text-gray-500">({startTime} - {endTime})</span>
+                      )}
+                    </>
                   )}
                 </span>
               </div>
-              <div className="flex items-center" style={{ color: colors.darkTeal }}>
+              <div className="flex items-center text-gray-600">
                 <Users className="h-5 w-5 mr-2" />
                 <span>{adults} adulte{adults > 1 ? 's' : ''}, {children} enfant{children > 1 ? 's' : ''}</span>
               </div>
-              <div className="flex items-center" style={{ color: colors.darkTeal }}>
+              <div className="flex items-center text-gray-600">
                 <span>{roomsCount} chambre{roomsCount > 1 ? 's' : ''} recherchée{roomsCount > 1 ? 's' : ''}</span>
+              </div>
+              <div className="flex items-center text-gray-600">
+                <span className="capitalize font-medium text-blue-600">
+                  {getReservationTypeDisplay(reservationType)}
+                </span>
               </div>
             </div>
           </Card>
         </motion.div>
 
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-          {/* Barre latérale avec sélection */}
+          {/* Sidebar avec sélection */}
           <div className="lg:col-span-1">
-            <Card 
-              className="p-6 sticky top-24" 
-              style={{ backgroundColor: colors.white, border: `2px solid ${colors.teal}` }}
-            >
-              <h3 className="text-lg font-semibold mb-4" style={{ color: colors.darkTeal }}>
-                Votre sélection
-              </h3>
-              <div className="text-sm mb-4" style={{ color: colors.darkTeal }}>
+            <Card className="p-6 sticky top-24">
+              <h3 className="text-lg font-semibold mb-4">Votre sélection</h3>
+              <div className="text-sm text-gray-600 mb-4">
                 {selectedRooms.length} / {roomsCount} chambre{roomsCount > 1 ? 's' : ''} sélectionnée{selectedRooms.length > 1 ? 's' : ''}
               </div>
 
@@ -192,31 +268,29 @@ export default function RoomSelectionPage() {
                   {selectedRooms.map((selection, index) => {
                     const room = sampleRooms.find(r => r.id === selection.roomId);
                     return room ? (
-                      <div 
-                        key={index} 
-                        className="p-3 rounded-lg" 
-                        style={{ backgroundColor: colors.lightTeal }}
-                      >
+                      <div key={index} className="p-3 bg-blue-50 rounded-lg">
                         <div className="flex justify-between items-start mb-2">
-                          <h4 className="font-medium text-sm" style={{ color: colors.darkTeal }}>
-                            {room.name}
-                          </h4>
+                          <h4 className="font-medium text-sm">{room.name}</h4>
                           <Button
                             variant="ghost"
                             size="sm"
                             onClick={() => removeRoomSelection(index)}
-                            className="h-6 w-6 p-0 hover:bg-red-100"
-                            style={{ color: colors.maroon }}
+                            className="text-red-600 hover:text-red-700 h-6 w-6 p-0"
                           >
                             ×
                           </Button>
                         </div>
-                        <div className="text-xs" style={{ color: colors.darkTeal }}>
-                          <div className="font-medium">{selection.reservationType}</div>
-                          <div>
-                            {selection.adults} adulte{selection.adults > 1 ? 's' : ''}, 
-                            {selection.children} enfant{selection.children > 1 ? 's' : ''}
-                          </div>
+                        <div className="text-xs text-gray-600">
+                          <div>{getReservationTypeDisplay(selection.reservationType)}</div>
+                         <div>
+  {selection.adults} adulte{selection.adults > 1 ? 's' : ''}, {selection.children.length} enfant{selection.children.length > 1 ? 's' : ''}
+  {selection.children.length > 0 && (
+    <span className="ml-1 text-gray-500">
+      ({selection.children.map((c) => `${c.age} ans`).join(', ')})
+    </span>
+  )}
+</div>
+
                         </div>
                       </div>
                     ) : null;
@@ -225,17 +299,14 @@ export default function RoomSelectionPage() {
               )}
 
               {selectedRooms.length > 0 && (
-                <div className="border-t pt-4" style={{ borderColor: colors.teal }}>
-                  <div className="flex justify-between font-semibold mb-4" style={{ color: colors.darkTeal }}>
-                    <span>Total :</span>
-                    <span style={{ color: colors.teal }}>
-                      {getTotalPrice().toLocaleString()} FCFA
-                    </span>
+                <div className="border-t pt-4">
+                  <div className="flex justify-between font-semibold mb-4">
+                    <span>Total:</span>
+                    <span>{getTotalPrice().toLocaleString()} FCFA</span>
                   </div>
                   <Button 
                     onClick={proceedToBooking}
-                    className="w-full text-white hover:opacity-90"
-                    style={{ backgroundColor: colors.teal }}
+                    className="w-full bg-blue-600 hover:bg-blue-700"
                     disabled={selectedRooms.length !== roomsCount}
                   >
                     Continuer ({selectedRooms.length}/{roomsCount})
@@ -244,14 +315,9 @@ export default function RoomSelectionPage() {
               )}
 
               {!canSelectMore && (
-                <div 
-                  className="text-center p-4 rounded-lg" 
-                  style={{ backgroundColor: colors.lightTeal }}
-                >
-                  <CheckCircle className="h-8 w-8 mx-auto mb-2" style={{ color: colors.teal }} />
-                  <p className="text-sm font-medium" style={{ color: colors.darkTeal }}>
-                    Sélection complète !
-                  </p>
+                <div className="text-center p-4 bg-green-50 rounded-lg">
+                  <CheckCircle className="h-8 w-8 text-green-500 mx-auto mb-2" />
+                  <p className="text-sm text-green-700">Sélection complète !</p>
                 </div>
               )}
             </Card>
@@ -267,14 +333,7 @@ export default function RoomSelectionPage() {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: index * 0.1 }}
                 >
-                  <Card 
-                    className="overflow-hidden hover:shadow-lg transition-all duration-300"
-                    style={{ 
-                      backgroundColor: colors.white, 
-                      border: `1px solid ${colors.teal}`,
-                      boxShadow: `0 4px 6px rgba(0, 128, 128, 0.1)`
-                    }}
-                  >
+                  <Card className="overflow-hidden hover:shadow-lg transition-shadow">
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6 p-6">
                       {/* Image */}
                       <div className="relative h-48 md:h-full">
@@ -284,63 +343,38 @@ export default function RoomSelectionPage() {
                           fill
                           className="object-cover rounded-lg"
                         />
-                        <div 
-                          className="absolute top-2 right-2 px-2 py-1 rounded-full text-xs font-medium"
-                          style={{ backgroundColor: colors.gold, color: colors.darkTeal }}
-                        >
-                          Disponible
-                        </div>
                       </div>
 
                       {/* Détails */}
                       <div className="md:col-span-1">
-                        <h3 className="text-xl font-semibold mb-2" style={{ color: colors.darkTeal }}>
-                          {room.name}
-                        </h3>
-                        <div className="space-y-2 text-sm mb-4" style={{ color: colors.darkTeal }}>
+                        <h3 className="text-xl font-semibold mb-2">{room.name}</h3>
+                        <div className="space-y-2 text-sm text-gray-600 mb-4">
                           <div className="flex items-center">
-                            <BedDouble className="h-4 w-4 mr-2" style={{ color: colors.teal }} />
+                            <BedDouble className="h-4 w-4 mr-2" />
                             <span>{room.bed_type}</span>
                           </div>
                           <div className="flex items-center">
-                            <Users className="h-4 w-4 mr-2" style={{ color: colors.teal }} />
+                            <Users className="h-4 w-4 mr-2" />
                             <span>{room.num_person} personne{room.num_person > 1 ? 's' : ''}</span>
                           </div>
                           <div className="flex items-center">
-                            <Maximize2 className="h-4 w-4 mr-2" style={{ color: colors.teal }} />
+                            <Maximize2 className="h-4 w-4 mr-2" />
                             <span>{room.surface_area}m²</span>
                           </div>
                           <div className="flex items-center">
-                            <MapPin className="h-4 w-4 mr-2" style={{ color: colors.teal }} />
+                            <MapPin className="h-4 w-4 mr-2" />
                             <span>Vue {room.view} • Étage {room.floor}</span>
                           </div>
                         </div>
 
                         <div className="flex flex-wrap gap-2">
                           {room.amenities.slice(0, 3).map((amenity) => (
-                            <Badge 
-                              key={amenity.id} 
-                              variant="outline" 
-                              className="text-xs"
-                              style={{ 
-                                borderColor: colors.teal, 
-                                color: colors.darkTeal,
-                                backgroundColor: colors.lightTeal 
-                              }}
-                            >
+                            <Badge key={amenity.id} variant="outline" className="text-xs">
                               {amenity.name}
                             </Badge>
                           ))}
                           {room.amenities.length > 3 && (
-                            <Badge 
-                              variant="outline" 
-                              className="text-xs"
-                              style={{ 
-                                borderColor: colors.orange, 
-                                color: colors.darkTeal,
-                                backgroundColor: `${colors.orange}20` 
-                              }}
-                            >
+                            <Badge variant="outline" className="text-xs">
                               +{room.amenities.length - 3} autres
                             </Badge>
                           )}
@@ -350,40 +384,30 @@ export default function RoomSelectionPage() {
                       {/* Actions */}
                       <div className="flex flex-col justify-between">
                         <div className="text-right mb-4">
-                          <div className="text-2xl font-bold" style={{ color: colors.teal }}>
+                          <div className="text-2xl font-bold text-blue-600">
                             À partir de {room.price_per_night.toLocaleString()} FCFA
                           </div>
-                          <div className="text-sm" style={{ color: colors.darkTeal }}>
-                            par nuit
-                          </div>
+                          <div className="text-sm text-gray-600">par nuit</div>
                         </div>
 
                         <div className="space-y-2">
                           {canSelectMore ? (
                             <Button
                               onClick={() => setExpandedRoom(expandedRoom === room.id ? null : room.id)}
-                              className="w-full text-white hover:opacity-90 transition-opacity"
-                              style={{ backgroundColor: colors.teal }}
+                              className="w-full bg-blue-600 hover:bg-blue-700"
                             >
                               {expandedRoom === room.id ? 'Fermer' : 'Sélectionner'}
                             </Button>
                           ) : (
                             <Button
                               disabled
-                              className="w-full bg-gray-300 text-gray-500 cursor-not-allowed"
+                              className="w-full"
                             >
                               Sélection complète
                             </Button>
                           )}
                           
-                          <Button
-                            variant="outline"
-                            className="w-full hover:bg-gray-50"
-                            style={{ borderColor: colors.teal, color: colors.teal }}
-                            onClick={() => router.push(`/rooms/${room.id}`)}
-                          >
-                            Voir les détails
-                          </Button>
+                         
                         </div>
                       </div>
                     </div>
@@ -395,18 +419,15 @@ export default function RoomSelectionPage() {
                           initial={{ opacity: 0, height: 0 }}
                           animate={{ opacity: 1, height: 'auto' }}
                           exit={{ opacity: 0, height: 0 }}
-                          className="border-t"
-                          style={{ 
-                            backgroundColor: colors.lightTeal,
-                            borderColor: colors.teal 
-                          }}
+                          className="border-t bg-gray-50"
                         >
                           <RoomConfiguration
                             room={room}
                             defaultCheckIn={checkIn || ''}
                             defaultCheckOut={checkOut || ''}
                             defaultAdults={roomsData[selectedRooms.length]?.adults || 2}
-                            defaultChildren={roomsData[selectedRooms.length]?.children || 0}
+                            defaultChildren={roomsData[selectedRooms.length]?.children || []}
+                            searchReservationType={reservationType}
                             onConfirm={(reservationType, config) => addRoomSelection(room, reservationType, config)}
                             onCancel={() => setExpandedRoom(null)}
                           />
@@ -431,58 +452,103 @@ function RoomConfiguration({
   defaultCheckOut, 
   defaultAdults, 
   defaultChildren,
+  searchReservationType,
   onConfirm, 
   onCancel 
 }: {
-  room: any;
+  room: Room;
   defaultCheckIn: string;
   defaultCheckOut: string;
   defaultAdults: number;
-  defaultChildren: number;
+  defaultChildren: number[];
+  searchReservationType: string;
   onConfirm: (reservationType: string, config: any) => void;
   onCancel: () => void;
 }) {
-  const [reservationType, setReservationType] = useState('classic');
+  const [reservationType, setReservationType] = useState(searchReservationType || 'classic');
   const [checkInDate, setCheckInDate] = useState(defaultCheckIn.split('T')[0]);
   const [checkOutDate, setCheckOutDate] = useState(defaultCheckOut.split('T')[0]);
   const [checkInTime, setCheckInTime] = useState('14:00');
   const [checkOutTime, setCheckOutTime] = useState('12:00');
   const [hours, setHours] = useState(4);
   const [adults, setAdults] = useState(defaultAdults);
-  const [children, setChildren] = useState(defaultChildren);
+  const [children, setChildren] = useState<Child[]>([]);
 
-  const selectedReservationType = room.reservation_types.find(rt => rt.code === reservationType);
-  const pricing = room.pricing.find(p => p.reservation_type_id === selectedReservationType?.id);
+  // Initialiser les enfants avec des IDs uniques
+useEffect(() => {
+  if (defaultChildren.length > 0) {
+  
+    const initialChildren: Child[] = defaultChildren.map((item: any, i: number) => ({
+      id: Date.now() + i,
+      age: typeof item === 'number' ? item : item.age
+    }));
+    setChildren(initialChildren);
+  }
+}, []);
 
-  const calculatePrice = () => {
-    if (!pricing) return 0;
 
-    if (reservationType === 'classic') {
-      const checkIn = new Date(checkInDate);
-      const checkOut = new Date(checkOutDate);
-      const nights = Math.ceil((checkOut.getTime() - checkIn.getTime()) / (1000 * 60 * 60 * 24));
-      return pricing.price * Math.max(1, nights);
-    } else if (reservationType.includes('day_use')) {
-      return room.day_use_price || pricing.price;
-    } else if (reservationType === 'flexible') {
-      return pricing.hourly_price * hours;
+
+
+  const addChild = () => {
+    if (children.length < MAX_CHILDREN_PER_ROOM) {
+      setChildren(prev => [...prev, { id: Date.now(), age: 5 }]);
     }
-
-    return pricing.price;
   };
 
-  const handleConfirm = () => {
-    const config = {
-      checkInDate,
-      checkOutDate,
-      checkInTime: reservationType === 'flexible' ? checkInTime : undefined,
-      checkOutTime: reservationType === 'flexible' ? checkOutTime : undefined,
-      hours: reservationType === 'flexible' ? hours : undefined,
-      adults,
-      children
-    };
-    onConfirm(reservationType, config);
+  const removeChild = (childId: number) => {
+    setChildren(prev => prev.filter(child => child.id !== childId));
   };
+
+  const updateChildAge = (childId: number, age: number) => {
+    setChildren(prev => 
+      prev.map(child => 
+        child.id === childId ? { ...child, age } : child
+      )
+    );
+  };
+
+const calculatePrice = () => {
+  if (reservationType === 'classic') {
+    const checkIn = new Date(checkInDate);
+    const checkOut = new Date(checkOutDate);
+    const nights = Math.max(1, Math.ceil((checkOut.getTime() - checkIn.getTime()) / (1000 * 60 * 60 * 24)));
+    return room.price_per_night * nights;
+  } else if (reservationType === 'day_use') {
+    return room.day_use_price ?? Math.round(room.price_per_night * 0.7);
+  } else if (reservationType === 'flexible') {
+    const hourlyRate = room.hourly_rate ?? Math.round(room.price_per_night / 24);
+    return hourlyRate * hours;
+  }
+  return room.price_per_night;
+};
+
+
+const handleConfirm = () => {
+ 
+  let finalCheckOutTime = checkOutTime;
+
+  if (reservationType === 'flexible') {
+    const [hour, minute] = checkInTime.split(':').map(Number);
+    const checkInDateObj = new Date(2000, 0, 1, hour, minute);
+    const checkOutDateObj = new Date(checkInDateObj.getTime() + hours * 60 * 60 * 1000);
+    
+    const pad = (n: number) => (n < 10 ? '0' + n : n);
+    finalCheckOutTime = `${pad(checkOutDateObj.getHours())}:${pad(checkOutDateObj.getMinutes())}`;
+  }
+
+  const config = {
+    checkInDate,
+    checkOutDate,
+    checkInTime: reservationType === 'flexible' ? checkInTime : undefined,
+    checkOutTime: reservationType === 'flexible' ? finalCheckOutTime : undefined,
+    hours: reservationType === 'flexible' ? hours : undefined,
+    adults,
+    children
+  };
+
+  onConfirm(reservationType, config);
+};
+
 
   return (
     <div className="p-6">
@@ -496,7 +562,7 @@ function RoomConfiguration({
           Type de réservation
         </Label>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-          {room.reservation_types.map((type) => (
+          {room.reservation_types.map((type: ReservationType) => (
             <Card
               key={type.id}
               className={`p-3 cursor-pointer border-2 transition-all duration-200 hover:shadow-md ${
@@ -510,7 +576,7 @@ function RoomConfiguration({
             >
               <div className="text-center">
                 <h5 className="font-medium text-sm" style={{ color: colors.darkTeal }}>
-                  {type.name}
+                  {getReservationTypeDisplay(type.code)}
                 </h5>
                 <p className="text-xs mt-1" style={{ color: colors.darkTeal + 'CC' }}>
                   {type.description}
@@ -553,7 +619,7 @@ function RoomConfiguration({
         </div>
       )}
 
-      {reservationType.includes('day_use') && (
+      {reservationType === 'day_use' && (
         <div className="mb-6">
           <Label style={{ color: colors.darkTeal }}>Date de visite</Label>
           <Input
@@ -604,31 +670,76 @@ function RoomConfiguration({
       )}
 
       {/* Occupants */}
-      <div className="grid grid-cols-2 gap-4 mb-6">
-        <div>
-          <Label style={{ color: colors.darkTeal }}>Adultes</Label>
-          <Input
-            type="number"
-            min="1"
-            max={room.num_person}
-            value={adults}
-            onChange={(e) => setAdults(parseInt(e.target.value))}
-            className="mt-1"
-            style={{ borderColor: colors.teal }}
-          />
+      <div className="mb-6">
+        <div className="grid grid-cols-2 gap-4 mb-4">
+          <div>
+            <Label style={{ color: colors.darkTeal }}>Adultes</Label>
+            <Input
+              type="number"
+              min="1"
+              max={room.num_person}
+              value={adults}
+              onChange={(e) => setAdults(parseInt(e.target.value))}
+              className="mt-1"
+              style={{ borderColor: colors.teal }}
+            />
+          </div>
+          <div>
+            <Label style={{ color: colors.darkTeal }}>Enfants</Label>
+            <div className="flex items-center gap-2 mt-1">
+              <span className="text-sm font-medium" style={{ color: colors.darkTeal }}>
+                {children.length} enfant{children.length > 1 ? 's' : ''}
+              </span>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={addChild}
+                disabled={children.length >= MAX_CHILDREN_PER_ROOM}
+                className="h-8 w-8 p-0"
+                style={{ borderColor: colors.teal, color: colors.teal }}
+              >
+                <Plus className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
         </div>
-        <div>
-          <Label style={{ color: colors.darkTeal }}>Enfants</Label>
-          <Input
-            type="number"
-            min="0"
-            max="3"
-            value={children}
-            onChange={(e) => setChildren(parseInt(e.target.value))}
-            className="mt-1"
-            style={{ borderColor: colors.teal }}
-          />
-        </div>
+
+        {/* Liste des enfants avec leurs âges */}
+        {children.length > 0 && (
+          <div className="space-y-2">
+            <Label className="text-sm font-medium" style={{ color: colors.darkTeal }}>
+              Âges des enfants
+            </Label>
+            {children.map((child, index) => (
+              <div key={child.id} className="flex items-center gap-2">
+                <span className="text-sm" style={{ color: colors.darkTeal }}>
+                  Enfant {index + 1}:
+                </span>
+                <Input
+                  type="number"
+                  min={MIN_CHILD_AGE}
+                  max={MAX_CHILD_AGE}
+                  value={child.age}
+                  onChange={(e) => updateChildAge(child.id, parseInt(e.target.value))}
+                  className="w-20"
+                  style={{ borderColor: colors.teal }}
+                />
+                <span className="text-sm" style={{ color: colors.darkTeal }}>ans</span>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => removeChild(child.id)}
+                  className="h-8 w-8 p-0"
+                  style={{ borderColor: colors.maroon, color: colors.maroon }}
+                >
+                  <Minus className="h-4 w-4" />
+                </Button>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Prix */}
@@ -644,10 +755,18 @@ function RoomConfiguration({
           <span className="font-medium" style={{ color: colors.darkTeal }}>
             Prix pour cette configuration :
           </span>
-          <span className="text-xl font-bold" style={{ color: colors.teal }}>
-            {calculatePrice().toLocaleString()} FCFA
-          </span>
+         <span className="text-xl font-bold" style={{ color: colors.teal }}>
+  {calculatePrice().toLocaleString()} FCFA
+</span>
+<p className="text-sm text-gray-600">Type sélectionné : {reservationType}</p>
+
         </div>
+        {children.length > 0 && (
+          <div className="text-sm mt-2" style={{ color: colors.darkTeal }}>
+            Inclus: {children.length} enfant{children.length > 1 ? 's' : ''} 
+            ({children.map(c => `${c.age} ans`).join(', ')})
+          </div>
+        )}
       </div>
 
       {/* Actions */}

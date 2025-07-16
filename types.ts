@@ -118,7 +118,7 @@ const sampleRooms: Room[] =[
   {
   reservation_type_id: 3,
   reservation_type_name: "Flexible horaire",
-  price: 0, 
+  price: 8000, 
   hourly_price: 8000,
   is_hourly_based: true,
   currency: "FCFA"
@@ -280,7 +280,7 @@ const sampleRooms: Room[] =[
       },
       {
         id: 8,
-        name: "Journée Famille",
+        name: "DAY-USE",
         code: "day_use",
         description: "De 10h à 18h",
         is_flexible: false,
@@ -346,7 +346,7 @@ const sampleRooms: Room[] =[
       },
       {
         id: 10,
-        name: "Journée",
+        name: "DAY-USE",
         code: "day_use",
         description: "De 8h à 20h",
         is_flexible: false,
@@ -404,15 +404,15 @@ const sampleRooms: Room[] =[
     reservation_types: [
       {
         id: 11,
-        name: "Nuitée Romantique",
-        code: "romantic",
+        name: "Nuitée",
+        code: "Classic",
         description: "Arrivée 16h - Départ 12h",
         is_flexible: false,
         slots: [{ checkin_time: 16, checkout_time: 12 }]
       },
       {
         id: 12,
-        name: "Journée Romantique",
+        name: "DAY-USE",
         code: "day_use",
         description: "De 12h à 22h",
         is_flexible: false,

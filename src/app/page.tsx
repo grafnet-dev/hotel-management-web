@@ -1,14 +1,15 @@
 "use client";
 import Link from 'next/link';
 import Image from 'next/image';
-import React, { useState, useRef,useMemo } from 'react';
-import { motion } from 'framer-motion';
+import React, { useState, useRef, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '../../components/ui/button';
 import  sampleRooms  from '../../types';
 import RoomList from '../../components/roomlist';
+import { WhatsAppButton } from '../../components/WhatsAppButton';
 import {
-  Space as  Utensils, Dumbbell, Hotel, ArrowRight, ChevronDown, Wifi,ParkingCircle,Tv2,Baby, Briefcase, Umbrella,
-  PhoneCall,Bell,Bath,Waves,Bus,Glasses,
+  Space as  Utensils, Dumbbell, Hotel, ArrowRight, ChevronLeft , Wifi,ParkingCircle,Tv2,Baby, Briefcase, Umbrella,
+  PhoneCall,Bell,Bath,Waves,Bus,Glasses,ChevronRight,MapPin,Play, Pause,Eye,X, Camera, Star, Heart, Share2
 } from 'lucide-react';
 
 import { Swiper, SwiperSlide } from 'swiper/react';
@@ -16,7 +17,7 @@ import { Autoplay } from 'swiper/modules';
 import 'swiper/css';
 import 'swiper/css/pagination';
 import 'swiper/css/navigation';
-
+import { useRouter } from 'next/navigation';
 import "react-day-picker/style.css";
 
 import BookingSection from '../../components/bookingsection';
@@ -36,6 +37,19 @@ const colors = {
 };
 
 
+
+interface SelectedImage {
+  image: Image;
+  categoryIndex: number;
+  imageIndex: number;
+}
+
+interface Image {
+  title: string;
+  description: string;
+  url: string;
+}
+
 type RoomSelection = {
   id: number;       
   adults: number;   
@@ -47,37 +61,93 @@ type DateRange = {
   to?: Date;
 };
 
+
+
 export default function Home() {
-    const galleryImages = [
+   const router = useRouter();
+     const galleryImages = [
     {
       category: "Chambres",
+      icon: "🛏️",
+      description: "Confort et élégance dans chaque détail",
       images: [
-        "https://images.pexels.com/photos/164595/pexels-photo-164595.jpeg",
-        "https://images.pexels.com/photos/271624/pexels-photo-271624.jpeg",
-        "https://images.pexels.com/photos/1457842/pexels-photo-1457842.jpeg",
-        "https://images.pexels.com/photos/189296/pexels-photo-189296.jpeg"
+        {
+          url: "/images/chambre1.jpg",
+          title: "Suite Présidentielle",
+          description: "Vue panoramique sur le lac"
+        },
+        {
+          url: "https://images.pexels.com/photos/271624/pexels-photo-271624.jpeg",
+          title: "Chambre Deluxe",
+          description: "Luxe et modernité"
+        },
+        {
+          url: "https://images.pexels.com/photos/1457842/pexels-photo-1457842.jpeg",
+          title: "Chambre Standard Plus",
+          description: "Confort authentique"
+        },
+        {
+          url: "https://images.pexels.com/photos/189296/pexels-photo-189296.jpeg",
+          title: "Suite Familiale",
+          description: "Espace généreux"
+        }
+      ]
+    },
+    {
+      category: "Spa & Bien-être",
+      icon: "🧘‍♀️",
+      description: "Détente et régénération absolue",
+      images: [
+        {
+          url: "https://images.unsplash.com/photo-1544161515-4ab6ce6db874?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80",
+          title: "Salon de Massage",
+          description: "Sérénité et bien-être"
+        },
+        {
+          url: "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80",
+          title: "Espace Relaxation",
+          description: "Moments de paix"
+        },
+        {
+          url: "https://images.unsplash.com/photo-1540555700478-4be289fbecef?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80",
+          title: "Cabine de Soins",
+          description: "Traitements personnalisés"
+        },
+        {
+          url: "https://images.unsplash.com/photo-1596178065887-1198b6148b2b?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80",
+          title: "Hammam",
+          description: "Expérience thermale"
+        }
       ]
     },
     {
       category: "Restaurant",
+      icon: "🍽️",
+      description: "Saveurs authentiques et raffinées",
       images: [
-        "https://images.pexels.com/photos/67468/pexels-photo-67468.jpeg",
-        "https://images.pexels.com/photos/299347/pexels-photo-299347.jpeg",
-        "https://images.pexels.com/photos/958545/pexels-photo-958545.jpeg",
-        "https://images.pexels.com/photos/1267320/pexels-photo-1267320.jpeg"
+        {
+          url: "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80",
+          title: "Restaurant Principal",
+          description: "Ambiance chaleureuse"
+        },
+        {
+          url: "https://images.unsplash.com/photo-1552566374-47d02080f4bf?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80",
+          title: "Bar Lounge",
+          description: "Cocktails signature"
+        },
+        {
+          url: "https://images.unsplash.com/photo-1559339352-11d035aa65de?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80",
+          title: "Terrasse",
+          description: "Dîner sous les étoiles"
+        },
+        {
+          url: "https://images.unsplash.com/photo-1578474846511-04ba529f0b88?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80",
+          title: "Cuisine Ouverte",
+          description: "Art culinaire en direct"
+        }
       ]
-    },
-    {
-  category: "Spa & Bien-être",
-  images: [
-    "https://images.unsplash.com/photo-1544161515-4ab6ce6db874?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80", // Spa stones et bambou
-    "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80", // Massage table
-    "https://images.unsplash.com/photo-1540555700478-4be289fbecef?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80", // Spa treatment room
-    "https://images.unsplash.com/photo-1596178065887-1198b6148b2b?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80"  // Relaxation spa
-  ]
-}
+    }
   ];
-
   
 const resultsRef = useRef<HTMLDivElement>(null);
 
@@ -101,27 +171,123 @@ console.log(params);
   
   scrollToResults();
 };
+  const [activeCategory, setActiveCategory] = useState(0);
+  const [isAutoPlay, setIsAutoPlay] = useState(false);
+  const [selectedImage, setSelectedImage] = useState<SelectedImage | null>(null);
+ const [imageLoadStates, setImageLoadStates] = useState<{ [key: string]: 'loaded' | 'error' }>({});
+  const [favorites, setFavorites] = useState(new Set());
+  const [lightboxImageLoading, setLightboxImageLoading] = useState(false);
+const [lightboxImageError, setLightboxImageError] = useState(false);
+  
 
-const stars = useMemo(() => 
-    Array.from({ length: 20 }).map((_, i) => {
-      // Seed basée sur l'index pour une génération cohérente
-      const seed = (i * 9301 + 49297) % 233280;
-      return {
-        left: 5 + (seed % 90), // Entre 5% et 95%
-        top: 10 + ((seed * 2) % 80), // Entre 10% et 90%
-        delay: (seed % 2000) / 1000 // Retard entre 0 et 2s
-      };
-    }),
-  []);
+const openLightbox = (imageUrl: string, categoryIndex: number, imageIndex: number) => {
+  console.log('Ouverture lightbox:', { imageUrl, categoryIndex, imageIndex });
+  
+  // Reset des states de chargement
+  setLightboxImageLoading(true);
+  setLightboxImageError(false);
+  
+  // Pré-charger l'image avant d'ouvrir le lightbox
+  const img = new globalThis.Image();
+img.src = imageUrl;
+img.onload = () => {
+  console.log('Image pré-chargée avec succès');
+  setLightboxImageLoading(false);
+  setSelectedImage({
+    image: galleryImages[categoryIndex].images[imageIndex],
+    categoryIndex,
+    imageIndex
+  });
+};
+img.onerror = () => {
+  console.error('Erreur de chargement de l\'image:', imageUrl);
+  setLightboxImageLoading(false);
+  setLightboxImageError(true);
+};
+  img.src = imageUrl;
+  
+  // Empêcher le scroll du body
+  document.body.style.overflow = 'hidden';
+};
+
+  const closeLightbox = () => {
+  console.log('Fermeture lightbox');
+  setSelectedImage(null);
+  setLightboxImageLoading(false);
+  setLightboxImageError(false);
+  
+  
+  document.body.style.overflow = 'auto';
+};
+
+ const navigateImage = (direction: number) => {
+  if (!selectedImage) return;
+  
+  const currentCategory = galleryImages[selectedImage.categoryIndex];
+ let newIndex = selectedImage.imageIndex + direction;
+  
+  if (newIndex < 0) {
+    newIndex = currentCategory.images.length - 1;
+  } else if (newIndex >= currentCategory.images.length) {
+    newIndex = 0;
+  }
+  
+  setSelectedImage({
+    ...selectedImage,
+    imageIndex: newIndex,
+    image: currentCategory.images[newIndex]
+  });
+};
+
+const toggleFavorite = (categoryIndex: number, imageIndex: number) => {
+    const key = `${categoryIndex}-${imageIndex}`;
+    setFavorites(prev => {
+      const newFavorites = new Set(prev);
+      if (newFavorites.has(key)) {
+        newFavorites.delete(key);
+      } else {
+        newFavorites.add(key);
+      }
+      return newFavorites;
+    });
+  };
+
+const handleImageLoad = (categoryIndex: number, imageIndex: number) => {
+  setImageLoadStates(prev => ({
+    ...prev,
+    [`${categoryIndex}-${imageIndex}`]: 'loaded'
+  }));
+};
+
+const handleImageError = (categoryIndex: number, imageIndex: number) => {
+  setImageLoadStates(prev => ({
+    ...prev,
+    [`${categoryIndex}-${imageIndex}`]: 'error'
+  }));
+};
+
+// Auto-play effect
+useEffect(() => {
+  if (isAutoPlay) {
+    const interval = setInterval(() => {
+      setActiveCategory((prev) => (prev + 1) % galleryImages.length);
+    }, 4000);
+    return () => clearInterval(interval);
+  }
+}, [isAutoPlay, galleryImages.length]);
+
+
+  
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const swiperRef = useRef(null);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const randomValues = useRef({
     left: Math.random() * 100,
     top: Math.random() * 100,
     delay: Math.random() * 3,
   });
   const randomLeft = randomValues.current.left;
-console.log(randomLeft); // Output: a random value between 0 and 100
+console.log(randomLeft); 
 
 const services = [
   {
@@ -200,207 +366,149 @@ const services = [
     icon: <PhoneCall size={32} />,
   },
 ];
+const carouselImages = [
+  {
+    url: "https://images.pexels.com/photos/1134176/pexels-photo-1134176.jpeg",
+    title: "Bain du Lac - Cotonou",
+    subtitle: "Vue panoramique sur le lac"
+  },
+  {
+    url: "https://images.pexels.com/photos/258154/pexels-photo-258154.jpeg",
+    title: "Région Sud du Bénin",
+    subtitle: "Proche de Cotonou, la capitale économique"
+  },
+  {
+    url: "https://images.pexels.com/photos/271624/pexels-photo-271624.jpeg",
+    title: "Bain du Lac - Ouidah",
+    subtitle: "Suites de luxe avec terrasse"
+  },
+  {
+    url: "https://images.pexels.com/photos/164595/pexels-photo-164595.jpeg",
+    title: "Chambres Premium",
+    subtitle: "Confort et raffinement"
+  },
+  {
+    url: "https://images.pexels.com/photos/189296/pexels-photo-189296.jpeg",
+    title: "Espaces Communs",
+    subtitle: "Détente et convivialité"
+  }
+];
+  const nextImage = () => {
+    setCurrentImageIndex((prev) => (prev + 1) % carouselImages.length);
+  };
 
+  const prevImage = () => {
+    setCurrentImageIndex((prev) => (prev - 1 + carouselImages.length) % carouselImages.length);
+  };
 
+  const goToImage = (index: number) => {
+    setCurrentImageIndex(index);
+  };
+
+  // Auto-play du carousel
+  useState(() => {
+    const interval = setInterval(nextImage, 5000);
+    return () => clearInterval(interval);
+  });
 
   return (
      <div className="min-h-screen" style={{ fontFamily: 'Bahnschrift, sans-serif' }}>
-  {/* Hero Section - Version améliorée */}
-  <motion.section
-    initial="hidden"
-    animate="visible"
-    className="relative h-screen overflow-hidden"
-  >
-    {/* Background Image with Enhanced Overlay */}
-    <motion.div
-      className="absolute inset-0"
-      initial={{ scale: 1.1 }}
-      animate={{ scale: 1 }}
-      transition={{ duration: 2, ease: [0.25, 0.1, 0.25, 1] }}
-    >
-
- 
-      <Image
-        src="https://images.pexels.com/photos/1134176/pexels-photo-1134176.jpeg"
-        alt="Bain de Lac Hotel"
-        layout="fill"
-        objectFit="cover"
-        priority
-        className="opacity-90"
-      />
-   
-          <motion.div
-            className="absolute inset-0 pointer-events-none"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: [0, 1, 0] }}
-            transition={{ duration: 3, repeat: Infinity, delay: 2 }}
-          >
-           {stars.map((star, i) => (
+      {/* Hero Section */}
+      <motion.section
+        initial="hidden"
+        animate="visible"
+        className="relative h-screen overflow-hidden"
+      >
+        {/* Background Image with Carousel */}
         <motion.div
-          key={i}
-          className="absolute w-1 h-1 bg-yellow-200 rounded-full"
-          initial={false} // Désactive l'animation initiale
-          style={{
-            left: `${star.left}%`,
-            top: `${star.top}%`,
-            boxShadow: "0 0 6px rgba(255, 215, 0, 0.8)"
-          }}
-          animate={{
-            scale: [0, 1, 0],
-            opacity: [0, 1, 0]
-          }}
-          transition={{
-            duration: 2,
-            repeat: Infinity,
-            delay: star.delay
-          }}
-        />
-      ))}
-          </motion.div>
-        </motion.div>
-
-        {/* Hero Content */}
-        <div className="relative h-full flex items-center justify-center text-center text-white px-4 z-10">
-          <motion.div
-            initial={{ opacity: 0, y: 60 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 1.2, delay: 0.8, ease: [0.25, 0.1, 0.25, 1] }}
-            className="max-w-5xl"
-          >
-            {/* Decorative Line Above Title */}
-            <motion.div
-              className="w-32 h-0.5 mx-auto mb-8"
-              style={{ backgroundColor: colors.gold }}
-              initial={{ width: 0 }}
-              animate={{ width: 128 }}
-              transition={{ duration: 1, delay: 1.2 }}
-            />
-
-            <motion.h1
-              className="text-5xl md:text-7xl font-bold mb-6 tracking-wide leading-tight"
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ 
-                duration: 1, 
-                delay: 1.0,
-                type: "spring",
-                stiffness: 100,
-                damping: 10
-              }}
-              style={{
-                background: `linear-gradient(135deg, ${colors.gold} 0%, #FFF8DC 50%, ${colors.gold} 100%)`,
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
-                textShadow: '0 4px 8px rgba(0,0,0,0.3)',
-                filter: 'drop-shadow(2px 2px 4px rgba(0,0,0,0.5))'
-              }}
-            >
-              Bienvenue au Bain de Lac
-            </motion.h1>
-
-           <motion.p
-              className="text-2xl md:text-3xl mb-12 font-light leading-relaxed"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.8, delay: 1.4 }}
-              style={{ 
-                color: colors.white,
-                textShadow: '1px 1px 3px rgba(0,0,0,0.7)'
-              }}
-            >
-              Une expérience unique au bord du lac
-              <br />
-              <span className="text-xl opacity-90">Où le luxe rencontre la sérénité</span>
-            </motion.p>
-
-             <motion.div
-          className="flex flex-col sm:flex-row gap-4 justify-center items-center"
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 1.6 }}
+          className="absolute inset-0"
+          initial={{ scale: 1.1 }}
+          animate={{ scale: 1 }}
+          transition={{ duration: 2, ease: [0.25, 0.1, 0.25, 1] }}
         >
-          <motion.div
-            whileHover={{ scale: 1.03 }}
-            whileTap={{ scale: 0.98 }}
-            className="relative"
-          >
-            <div 
-              className="absolute inset-0 rounded-lg blur-md opacity-0 group-hover:opacity-80 transition-opacity duration-300"
-              style={{ 
-                backgroundColor: colors.gold,
-                zIndex: 0
-              }}
-            />
-            <Button
-              size="lg"
-              className="relative z-10 transition-all duration-300"
-              style={{
-                background: `linear-gradient(135deg, ${colors.teal} 0%, ${colors.darkTeal} 100%)`,
-                border: `1px solid ${colors.gold}`,
-                color: colors.white,
-                boxShadow: `0 4px 20px ${colors.teal}40`
-              }}
-            >
-                  <span className="relative z-10">Découvrir nos Chambres</span>
-                  <motion.div
-                    className="absolute inset-0 bg-gradient-to-r from-transparent via-white to-transparent opacity-20"
-                    initial={{ x: '-100%' }}
-                    whileHover={{ x: '100%' }}
-                    transition={{ duration: 0.6 }}
-                  />
-                </Button>
-              </motion.div>
-          
-          <motion.div
-                whileHover={{ 
-                  scale: 1.05,
-                  boxShadow: "0 20px 40px rgba(255, 215, 0, 0.2)"
-                }}
-                whileTap={{ scale: 0.98 }}
+          <div className="absolute inset-0">
+            {carouselImages.map((image, index) => (
+              <div
+                key={index}
+                className={`absolute inset-0 transition-opacity duration-1000 ${
+                  index === currentImageIndex ? 'opacity-100' : 'opacity-0'
+                }`}
               >
-                <Button
-                  size="lg"
-                  className="relative overflow-hidden border-2 group"
-                  style={{
-                    backgroundColor: 'transparent',
-                    borderColor: colors.gold,
-                    color: colors.maroon,
-                    backdropFilter: 'blur(10px)',
-                    background: 'rgba(255, 255, 255, 0.1)'
-                  }}
-                >
-                  <span className="relative z-10">Réserver Maintenant</span>
-                  <motion.div
-                    className="absolute inset-0"
-                    style={{ backgroundColor: colors.gold }}
-                    initial={{ scale: 0, opacity: 0 }}
-                    whileHover={{ scale: 1, opacity: 0.1 }}
-                    transition={{ duration: 0.3 }}
-                  />
-                </Button>
-              </motion.div>
-          </motion.div>
-          
-            
-</motion.div>
-
-        </div>
-
-        {/* Floating Arrow */}
-        <motion.div
-          className="absolute bottom-10 left-1/2 -translate-x-1/2"
-          animate={{ y: [0, -15, 0] }}
-          transition={{
-            duration: 4,
-            repeat: Infinity,
-            ease: "easeInOut"
-          }}
-        >
-          <ChevronDown
-            className="h-8 w-8"
-            style={{ color: colors.gold }}
-          />
+                <Image
+                  src={image.url}
+                  alt={image.title}
+                  fill
+                  className="object-cover"
+                  priority={index === 0}
+                />
+                <div className="absolute inset-0 bg-black/40" />
+              </div>
+            ))}
+          </div>
         </motion.div>
+
+        {/* Navigation buttons */}
+        <button
+          onClick={prevImage}
+          className="absolute left-6 top-1/2 -translate-y-1/2 z-20 bg-white/20 backdrop-blur-sm hover:bg-white/30 rounded-full p-3 transition-all duration-300"
+        >
+          <ChevronLeft className="h-6 w-6 text-white" />
+        </button>
+        <button
+          onClick={nextImage}
+          className="absolute right-6 top-1/2 -translate-y-1/2 z-20 bg-white/20 backdrop-blur-sm hover:bg-white/30 rounded-full p-3 transition-all duration-300"
+        >
+          <ChevronRight className="h-6 w-6 text-white" />
+        </button>
+
+        {/* Carousel indicators */}
+        <div className="absolute bottom-32 left-1/2 -translate-x-1/2 z-20 flex space-x-3">
+          {carouselImages.map((_, index) => (
+            <button
+              key={index}
+              onClick={() => goToImage(index)}
+              className={`w-3 h-3 rounded-full transition-all duration-300 ${
+                index === currentImageIndex 
+                  ? 'bg-white w-8' 
+                  : 'bg-white/50 hover:bg-white/80'
+              }`}
+            />
+          ))}
+        </div>
+        
+        {/* Hero Content */}
+        <div className="relative h-full flex flex-col items-center justify-center text-center text-white px-4 z-10">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8 }}
+            className="mb-12"
+          >
+            <h1 className="text-7xl md:text-7xl font-bold mb-6 bg-gradient-to-r from-white to-yellow-200 bg-clip-text text-transparent">
+              Bain du Lac
+            </h1>
+           <p className="text-3xl md:text-4xl mb-4 font-light">
+              {carouselImages[currentImageIndex].title}
+            </p>
+            <p className="text-xl md:text-2xl opacity-90 mb-2">
+              {carouselImages[currentImageIndex].subtitle}
+            </p>
+            <div className="flex items-center justify-center space-x-8 text-xl">
+              <span className="flex items-center">
+                <MapPin className="h-5 w-5 mr-2" />
+                Cotonou
+              </span>
+              <span className="flex items-center">
+                <MapPin className="h-5 w-5 mr-2" />
+                Porto-Novo
+              </span>
+              <span className="flex items-center">
+                <MapPin className="h-5 w-5 mr-2" />
+                Ouidah
+              </span>
+            </div>
+          </motion.div>
+        </div>
       </motion.section>
 
    
@@ -413,213 +521,7 @@ const services = [
   />
 </div>
 
- {/* Section Galerie */}
-     <section className="py-20 relative overflow-hidden" style={{ backgroundColor: colors.gray }}>
-  {/* Fond décoratif */}
-  <div className="absolute inset-0 opacity-5">
-    <div 
-      className="absolute top-0 left-0 w-96 h-96 rounded-full blur-3xl"
-      style={{ backgroundColor: colors.teal }}
-    />
-    <div 
-      className="absolute bottom-0 right-0 w-96 h-96 rounded-full blur-3xl"
-      style={{ backgroundColor: colors.gold }}
-    />
-  </div>
 
-  <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-    <motion.div
-      initial={{ opacity: 0, y: 30 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true }}
-      transition={{ duration: 0.8 }}
-      className="text-center mb-16"
-    >
-      <div className="inline-block mb-4">
-        <span 
-          className="text-sm font-semibold px-4 py-2 rounded-full tracking-wider uppercase"
-          style={{ 
-            backgroundColor: colors.lightTeal, 
-            color: colors.darkTeal 
-          }}
-        >
-          Notre Galerie
-        </span>
-      </div>
-      <h2 
-        className="text-4xl md:text-5xl font-bold mb-6"
-        style={{ color: colors.darkTeal }}
-      >
-        Découvrez{' '}
-        <span 
-          className="bg-gradient-to-r bg-clip-text text-transparent"
-          style={{ 
-            backgroundImage: `linear-gradient(135deg, ${colors.teal}, ${colors.gold})` 
-          }}
-        >
-          Bain du Lac
-        </span>
-      </h2>
-      <p 
-        className="text-xl max-w-2xl mx-auto leading-relaxed"
-        style={{ color: colors.black }}
-      >
-        Une expérience unique vous attend dans un cadre d'exception où luxe et nature se rencontrent
-      </p>
-    </motion.div>
-
-    {galleryImages.map((category, categoryIndex) => (
-      <motion.div
-        key={category.category}
-        initial={{ opacity: 0, y: 40 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true }}
-        transition={{ delay: categoryIndex * 0.2, duration: 0.8 }}
-        className="mb-20 last:mb-0"
-      >
-        {/* En-tête de catégorie */}
-        <div className="flex items-center mb-8">
-          <div 
-            className="w-12 h-1 rounded-full mr-4"
-            style={{ backgroundColor: colors.gold }}
-          />
-          <h3 
-            className="text-2xl md:text-3xl font-bold"
-            style={{ color: colors.darkTeal }}
-          >
-            {category.category}
-          </h3>
-          <div 
-            className="flex-1 h-px ml-4"
-            style={{ backgroundColor: colors.lightTeal }}
-          />
-        </div>
-
-        {/* Grille d'images adaptative */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {category.images.map((image, index) => (
-            <motion.div
-              key={index}
-              initial={{ opacity: 0, scale: 0.9 }}
-              whileInView={{ opacity: 1, scale: 1 }}
-              viewport={{ once: true }}
-              transition={{ delay: index * 0.1, duration: 0.6 }}
-              whileHover={{ 
-                scale: 1.03,
-                y: -8,
-                transition: { duration: 0.3 }
-              }}
-              className={`
-                relative rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500 group
-                ${index === 0 && category.images.length >= 3 ? 'sm:col-span-2 sm:row-span-2 h-80 sm:h-full' : 'h-64'}
-                ${index === 1 && category.images.length >= 4 ? 'lg:col-span-2' : ''}
-              `}
-              style={{
-                background: `linear-gradient(135deg, ${colors.lightTeal}20, ${colors.gold}10)`
-              }}
-            >
-              <Image
-                src={image}
-                alt={`${category.category} ${index + 1}`}
-                fill
-                className="object-cover transition-transform duration-700 group-hover:scale-110"
-              />
-              
-              {/* Overlay avec gradient */}
-              <div 
-                className="absolute inset-0 opacity-60 group-hover:opacity-30 transition-opacity duration-500"
-                style={{
-                  background: `linear-gradient(135deg, ${colors.darkTeal}40, transparent 50%, ${colors.gold}20)`
-                }}
-              />
-              
-              {/* Effet de brillance au hover */}
-              <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
-                <div 
-                  className="absolute top-0 left-0 w-full h-full"
-                  style={{
-                    background: `linear-gradient(45deg, transparent 30%, ${colors.white}20 50%, transparent 70%)`
-                  }}
-                />
-              </div>
-
-              {/* Badge numéro pour les grandes images */}
-              {index === 0 && (
-                <div 
-                  className="absolute top-4 left-4 w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold shadow-lg"
-                  style={{ 
-                    backgroundColor: colors.gold,
-                    color: colors.white
-                  }}
-                >
-                  {index + 1}
-                </div>
-              )}
-
-              {/* Bordure décorative */}
-              <div 
-                className="absolute inset-0 rounded-2xl border-2 opacity-0 group-hover:opacity-100 transition-opacity duration-500"
-                style={{ borderColor: colors.gold }}
-              />
-            </motion.div>
-          ))}
-        </div>
-
-        {/* Ligne décorative entre les catégories */}
-        {categoryIndex < galleryImages.length - 1 && (
-          <div className="flex items-center justify-center mt-16">
-            <div 
-              className="w-16 h-px"
-              style={{ backgroundColor: colors.teal }}
-            />
-            <div 
-              className="w-3 h-3 rounded-full mx-4"
-              style={{ backgroundColor: colors.gold }}
-            />
-            <div 
-              className="w-16 h-px"
-              style={{ backgroundColor: colors.teal }}
-            />
-          </div>
-        )}
-      </motion.div>
-    ))}
-
-    {/* Call-to-action décoratif */}
-    <motion.div
-      initial={{ opacity: 0, y: 30 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true }}
-      transition={{ delay: 0.5, duration: 0.8 }}
-      className="text-center mt-16"
-    >
-      <div 
-        className="inline-flex items-center px-8 py-4 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer group"
-        style={{ backgroundColor: colors.white }}
-      >
-        <span 
-          className="text-lg font-semibold mr-3"
-          style={{ color: colors.darkTeal }}
-        >
-          Voir plus de photos
-        </span>
-        <div 
-          className="w-8 h-8 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform duration-300"
-          style={{ backgroundColor: colors.gold }}
-        >
-          <svg 
-            className="w-4 h-4" 
-            fill="none" 
-            stroke={colors.white}
-            viewBox="0 0 24 24"
-          >
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-          </svg>
-        </div>
-      </div>
-    </motion.div>
-  </div>
-</section>
 
 
 {/* Rooms Section - Luxury Design */}
@@ -641,12 +543,488 @@ const services = [
     <RoomList onBookNow={() => console.log('Book now clicked!')} />
 
     <div className="mt-20 text-center">
-      <button className="px-10 py-4 border-2 border-teal-600 text-teal-600 hover:bg-teal-50 text-lg font-medium rounded-lg transition-all duration-300 hover:shadow-md">
-        Découvrir toutes nos chambres
-      </button>
+      <Button
+              onClick={() => router.push('/rooms')}
+              className="bg-gradient-to-r from-[#800020] to-[#CE9226] hover:from-[#CE9226] hover:to-[#800020] text-white px-8 py-3"
+            >
+              Voir toutes nos chambres
+              <ArrowRight className="ml-2 h-4 w-4" />
+            </Button>
     </div>
   </div>
 </section>
+
+ {/* Section Galerie */}
+<section className="py-24 relative overflow-hidden bg-gradient-to-br from-gray-50 via-white to-gray-100">
+      {/* Animated Background */}
+      <div className="absolute inset-0 opacity-5">
+        <motion.div 
+          className="absolute top-1/4 left-1/4 w-96 h-96 rounded-full blur-3xl"
+          style={{ backgroundColor: colors.teal }}
+          animate={{
+            scale: [1, 1.3, 1],
+            x: [0, 100, 0],
+            y: [0, -50, 0],
+          }}
+          transition={{
+            duration: 20,
+            repeat: Infinity,
+            ease: "easeInOut"
+          }}
+        />
+        <motion.div 
+          className="absolute bottom-1/4 right-1/4 w-80 h-80 rounded-full blur-3xl"
+          style={{ backgroundColor: colors.gold }}
+          animate={{
+            scale: [1.2, 1, 1.2],
+            x: [0, -80, 0],
+            y: [0, 60, 0],
+          }}
+          transition={{
+            duration: 25,
+            repeat: Infinity,
+            ease: "easeInOut"
+          }}
+        />
+      </div>
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        {/* Header */}
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.8 }}
+          className="text-center mb-16"
+        >
+          <motion.div
+            initial={{ scale: 0 }}
+            whileInView={{ scale: 1 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+            className="inline-flex items-center gap-2 mb-6"
+          >
+            <Camera size={24} style={{ color: colors.gold }} />
+            <span 
+              className="text-sm font-bold px-6 py-3 rounded-full tracking-wider uppercase shadow-lg"
+              style={{ 
+                backgroundColor: colors.lightTeal, 
+                color: colors.darkTeal 
+              }}
+            >
+              Galerie Exclusive
+            </span>
+          </motion.div>
+
+          <h2 className="text-5xl md:text-6xl font-bold mb-6 leading-tight">
+            <span style={{ color: colors.darkTeal }}>Découvrez </span>
+            <span 
+              className="bg-gradient-to-r bg-clip-text text-transparent"
+              style={{ 
+                backgroundImage: `linear-gradient(135deg, ${colors.teal}, ${colors.gold})` 
+              }}
+            >
+              l'Excellence
+            </span>
+          </h2>
+
+          <motion.p 
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.8, delay: 0.4 }}
+            className="text-xl max-w-3xl mx-auto leading-relaxed mb-12"
+            style={{ color: colors.black }}
+          >
+            Plongez dans un univers où chaque détail raconte une histoire de luxe et de raffinement. 
+            Explorez nos espaces d'exception à travers cette galerie immersive.
+          </motion.p>
+
+          {/* Enhanced Navigation Controls */}
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-6 mb-8">
+            <div className="flex bg-white rounded-2xl p-2 shadow-xl backdrop-blur-sm border border-gray-200">
+  {galleryImages.map((category, index) => (
+    <motion.button
+      key={index}
+      onClick={() => setActiveCategory(index)}
+      className={`flex items-center gap-2 px-6 py-3 rounded-xl text-sm font-semibold transition-all duration-500 relative ${
+        activeCategory === index 
+          ? 'text-white shadow-lg transform scale-105' 
+          : 'text-gray-600 hover:text-gray-800 hover:bg-gray-50'
+      }`}
+      whileHover={{ scale: 1.02 }}
+      whileTap={{ scale: 0.98 }}
+    >
+      {activeCategory === index && (
+        <motion.div
+          layoutId="activeTab"
+          className="absolute inset-0 rounded-xl z-0"
+          style={{ backgroundColor: colors.teal }}
+          initial={false}
+        />
+      )}
+      <span className="text-lg relative z-10">{category.icon}</span>
+      <span className="relative z-10">{category.category}</span>
+    </motion.button>
+  ))}
+</div>
+            
+            <div className="flex items-center gap-3">
+              <motion.button
+                onClick={() => setIsAutoPlay(!isAutoPlay)}
+                className="flex items-center gap-2 px-6 py-3 rounded-xl bg-white shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-200"
+                style={{ color: colors.teal }}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                {isAutoPlay ? <Pause size={18} /> : <Play size={18} />}
+                <span className="text-sm font-semibold">
+                  {isAutoPlay ? 'Pause' : 'Auto'}
+                </span>
+              </motion.button>
+            </div>
+          </div>
+        </motion.div>
+
+        {/* Gallery Content */}
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={activeCategory}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            transition={{ duration: 0.6 }}
+            className="mb-20"
+          >
+            {/* Category Header */}
+            <motion.div 
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.8, delay: 0.2 }}
+              className="flex items-center justify-between mb-12"
+            >
+              <div className="flex items-center gap-4">
+                <motion.div 
+                  className="w-16 h-1 rounded-full"
+                  style={{ backgroundColor: colors.gold }}
+                  initial={{ width: 0 }}
+                  animate={{ width: 64 }}
+                  transition={{ duration: 0.8, delay: 0.3 }}
+                />
+                <div>
+                  <h3 
+                    className="text-3xl md:text-4xl font-bold flex items-center gap-3"
+                    style={{ color: colors.darkTeal }}
+                  >
+                    <span className="text-4xl">{galleryImages[activeCategory].icon}</span>
+                    {galleryImages[activeCategory].category}
+                  </h3>
+                  <p className="text-gray-600 text-lg mt-2">
+                    {galleryImages[activeCategory].description}
+                  </p>
+                </div>
+              </div>
+              
+              <motion.div 
+                className="text-right"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.5 }}
+              >
+                <div className="text-sm text-gray-500">
+                  {galleryImages[activeCategory].images.length} images
+                </div>
+              </motion.div>
+            </motion.div>
+
+            {/* Enhanced Grid Layout */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              {galleryImages[activeCategory].images.map((image, index) => {
+                const imageKey = `${activeCategory}-${index}`;
+                const isLoaded = imageLoadStates[imageKey] === 'loaded';
+                const hasError = imageLoadStates[imageKey] === 'error';
+                const isFavorite = favorites.has(imageKey);
+                
+                return (
+                  <motion.div
+                    key={`${activeCategory}-${index}`}
+                    initial={{ opacity: 0, scale: 0.8, y: 30 }}
+                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                    transition={{ 
+                      delay: index * 0.1, 
+                      duration: 0.6,
+                      type: "spring",
+                      bounce: 0.3
+                    }}
+                    className={`
+                      relative rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500 group cursor-pointer
+                      ${index === 0 ? 'md:col-span-2 md:row-span-2' : ''}
+                      ${index === 1 ? 'lg:col-span-2' : ''}
+                      ${index === 2 ? 'xl:row-span-2' : ''}
+                    `}
+                    style={{
+                      height: index === 0 ? '400px' : index === 2 ? '350px' : '280px',
+                      backgroundColor: colors.gray
+                    }}
+                    whileHover={{ 
+                      scale: 1.02,
+                      y: -8,
+                      transition: { duration: 0.3 }
+                    }}
+                   onClick={() => openLightbox(image.url, activeCategory, index)}
+                  >
+                    {/* Loading State */}
+                    {!isLoaded && !hasError && (
+                      <div className="absolute inset-0 flex items-center justify-center bg-gray-200 animate-pulse">
+                        <Camera size={32} className="text-gray-400" />
+                      </div>
+                    )}
+
+                    {/* Error State */}
+                    {hasError && (
+                      <div className="absolute inset-0 flex flex-col items-center justify-center bg-gradient-to-br from-gray-300 to-gray-400">
+                        <Camera size={32} className="text-gray-600 mb-2" />
+                        <p className="text-sm text-gray-600">Image non disponible</p>
+                      </div>
+                    )}
+
+                    {/* Image */}
+                    <img
+                      src={image.url}
+                      alt={image.title}
+                      className={`w-full h-full object-cover transition-all duration-700 group-hover:scale-105 ${
+                        isLoaded ? 'opacity-100' : 'opacity-0'
+                      }`}
+                      onLoad={() => handleImageLoad(activeCategory, index)}
+                      onError={() => handleImageError(activeCategory, index)}
+                    />
+
+                    {/* Gradient Overlay */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-60 group-hover:opacity-40 transition-opacity duration-500" />
+
+                    {/* Action Buttons */}
+                    <div className="absolute top-4 right-4 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                      <motion.button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          toggleFavorite(activeCategory, index);
+                        }}
+                        className={`w-10 h-10 rounded-full backdrop-blur-sm flex items-center justify-center transition-all duration-300 ${
+                          isFavorite ? 'bg-red-500 text-white' : 'bg-white/80 text-gray-700 hover:bg-white'
+                        }`}
+                        whileHover={{ scale: 1.1 }}
+                        whileTap={{ scale: 0.9 }}
+                      >
+                        <Heart size={16} fill={isFavorite ? 'currentColor' : 'none'} />
+                      </motion.button>
+                      <motion.button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          // Share functionality
+                        }}
+                        className="w-10 h-10 rounded-full bg-white/80 backdrop-blur-sm hover:bg-white text-gray-700 flex items-center justify-center transition-all duration-300"
+                        whileHover={{ scale: 1.1 }}
+                        whileTap={{ scale: 0.9 }}
+                      >
+                        <Share2 size={16} />
+                      </motion.button>
+                    </div>
+
+                    {/* View Icon */}
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <motion.div
+                        className="opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                        initial={{ scale: 0.8 }}
+                        whileHover={{ scale: 1.1 }}
+                      >
+                        <div 
+                          className="w-16 h-16 rounded-full flex items-center justify-center shadow-2xl backdrop-blur-sm"
+                          style={{ backgroundColor: `${colors.gold}F0` }}
+                        >
+                          <Eye size={24} color={colors.white} />
+                        </div>
+                      </motion.div>
+                    </div>
+
+                    {/* Image Info */}
+                    <div className="absolute bottom-0 left-0 right-0 p-4 text-white">
+                      <h4 className="text-lg font-bold mb-1">{image.title}</h4>
+                      <p className="text-sm opacity-90">{image.description}</p>
+                    </div>
+
+                    {/* Number Badge */}
+                    <motion.div 
+  className="absolute top-4 left-4 w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold shadow-xl backdrop-blur-sm border-2 border-white/30"
+  style={{ 
+    backgroundColor: colors.gold,
+    color: colors.white
+  }}
+  initial={{ scale: 0, rotate: -180 }}
+  animate={{ scale: 1, rotate: 0 }}
+  transition={{ delay: index * 0.1 + 0.5, type: "spring", bounce: 0.6 }}
+>
+  {index + 1}
+</motion.div>
+                  </motion.div>
+                );
+              })}
+            </div>
+          </motion.div>
+        </AnimatePresence>
+
+        {/* Progress Indicators */}
+        <div className="flex justify-center items-center gap-3 mt-12">
+          {galleryImages.map((category, index) => (
+            <motion.div
+              key={index}
+              className="flex flex-col items-center cursor-pointer group"
+              onClick={() => setActiveCategory(index)}
+              whileHover={{ scale: 1.1 }}
+            >
+              <div
+                className="h-2 rounded-full transition-all duration-500 mb-2"
+                style={{
+                  backgroundColor: index === activeCategory ? colors.gold : colors.lightTeal,
+                  width: index === activeCategory ? '40px' : '12px'
+                }}
+              />
+              <span className={`text-xs font-medium transition-opacity duration-300 ${
+                index === activeCategory ? 'opacity-100' : 'opacity-60 group-hover:opacity-100'
+              }`}>
+                {category.category}
+              </span>
+            </motion.div>
+          ))}
+        </div>
+      </div>
+
+      {/* Enhanced Lightbox */}
+     <AnimatePresence>
+  {(selectedImage || lightboxImageLoading) && (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 bg-black/95 backdrop-blur-sm z-[9999] flex items-center justify-center p-4"
+      onClick={closeLightbox}
+    >
+      {/* Loading State */}
+      {lightboxImageLoading && (
+        <div className="flex flex-col items-center justify-center text-white">
+          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-white mb-4"></div>
+          <p className="text-lg">Chargement de l'image...</p>
+        </div>
+      )}
+
+      {/* Error State */}
+      {lightboxImageError && (
+        <div className="flex flex-col items-center justify-center text-white">
+          <Camera size={48} className="mb-4 text-gray-400" />
+          <p className="text-lg mb-2">Erreur de chargement</p>
+          <p className="text-sm text-gray-400">L'image n'a pas pu être chargée</p>
+          <button
+            onClick={closeLightbox}
+            className="mt-4 px-6 py-2 bg-white/20 rounded-lg hover:bg-white/30 transition-colors"
+          >
+            Fermer
+          </button>
+        </div>
+      )}
+
+      {/* Image Content */}
+      {selectedImage && !lightboxImageLoading && !lightboxImageError && (
+        <>
+          {/* Close Button */}
+          <motion.button
+            onClick={closeLightbox}
+            className="absolute top-6 right-6 w-14 h-14 rounded-full bg-white/80 hover:bg-white backdrop-blur-sm flex items-center justify-center transition-all duration-300 z-[10000] shadow-lg"
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.9 }}
+          >
+            <X size={28} className="text-gray-800" />
+          </motion.button>
+
+          {/* Navigation Buttons */}
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              navigateImage(-1);
+            }}
+            className="absolute left-6 top-1/2 transform -translate-y-1/2 w-14 h-14 rounded-full bg-white/80 hover:bg-white backdrop-blur-sm flex items-center justify-center transition-all duration-300 z-[10000] shadow-lg"
+          >
+            <ChevronLeft size={28} className="text-gray-800" />
+          </button>
+
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              navigateImage(1);
+            }}
+            className="absolute right-6 top-1/2 transform -translate-y-1/2 w-14 h-14 rounded-full bg-white/80 hover:bg-white backdrop-blur-sm flex items-center justify-center transition-all duration-300 z-[10000] shadow-lg"
+          >
+            <ChevronRight size={28} className="text-gray-800" />
+          </button>
+
+          {/* Image Container */}
+          <motion.div
+            initial={{ scale: 0.8, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 0.8, opacity: 0 }}
+            className="relative max-w-6xl max-h-[90vh] w-full flex items-center justify-center"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <img
+              src={selectedImage.image.url}
+              alt={selectedImage.image.title}
+              className="max-w-full max-h-full object-contain rounded-lg shadow-2xl"
+              style={{ 
+                maxHeight: '80vh',
+                display: 'block' // Force l'affichage
+              }}
+              onLoad={() => {
+                console.log('Image du lightbox chargée');
+              }}
+              onError={(e) => {
+                console.error('Erreur lors du chargement dans le lightbox');
+                setLightboxImageError(true);
+              }}
+            />
+            
+            {/* Image Info */}
+            <motion.div
+              initial={{ y: 20, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ delay: 0.2 }}
+              className="absolute bottom-6 left-6 right-6 bg-black/80 backdrop-blur-sm rounded-xl p-6 z-[10000]"
+            >
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-white text-xl font-bold mb-2">
+                    {selectedImage.image.title}
+                  </h3>
+                  <p className="text-white/80 text-sm mb-2">
+                    {selectedImage.image.description}
+                  </p>
+                  <p className="text-white/60 text-xs">
+                    {galleryImages[selectedImage.categoryIndex].category} • 
+                    Image {selectedImage.imageIndex + 1} sur {galleryImages[selectedImage.categoryIndex].images.length}
+                  </p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Star className="text-yellow-400" size={16} />
+                  <span className="text-white text-sm">4.9</span>
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        </>
+      )}
+    </motion.div>
+  )}
+</AnimatePresence>
+
+
+    </section>
 
 
 {/* Services Section - Design Premium Enhanced */}
@@ -1176,6 +1554,9 @@ const services = [
           </div>
         </div>
       </section>
+
+        {/* Bouton WhatsApp flottant */}
+      <WhatsAppButton />
     </div>
   );
 }
