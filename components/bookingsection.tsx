@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
-import { Calendar, Users, Sparkles, CalendarDays, Search, X, Clock } from 'lucide-react';
+import { Calendar, Users, Sparkles, CalendarDays, Search, X, Clock, ChevronDown } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
 type DateRange = {
@@ -18,6 +18,18 @@ type RoomSelection = {
   adults: number;
   children: Child[];
 };
+
+interface SearchData {
+  reservationType: ReservationType;
+  adults: number;
+  children: number;
+  roomsCount: number;
+  roomsData: string;
+  checkIn?: string;
+  checkOut?: string;
+  startTime?: string;
+  endTime?: string;
+}
 
 type ReservationType = 'classic' | 'day_use' | 'flexible';
 
@@ -42,10 +54,10 @@ const CustomPopover = ({
   const popoverRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLDivElement>(null);
 
-  const closePopover = () => {
+  const closePopover = useCallback(() => {
     setIsOpen(false);
     onClose?.();
-  };
+  }, [onClose]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -64,17 +76,17 @@ const CustomPopover = ({
           const viewportHeight = window.innerHeight;
           const viewportWidth = window.innerWidth;
           
+          // Reset styles
           popoverRef.current.style.top = '';
           popoverRef.current.style.bottom = '';
           popoverRef.current.style.left = '';
           popoverRef.current.style.right = '';
           popoverRef.current.style.transform = '';
           
+          // Adjust position if near viewport edges
           if (popoverRect.bottom > viewportHeight - 20) {
             popoverRef.current.style.bottom = '100%';
             popoverRef.current.style.top = 'auto';
-            popoverRef.current.style.marginBottom = '8px';
-            popoverRef.current.style.marginTop = '0';
           }
           
           if (popoverRect.right > viewportWidth - 20) {
@@ -88,7 +100,7 @@ const CustomPopover = ({
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
-  }, [isOpen]);
+  }, [isOpen, closePopover]);
 
   return (
     <div className="relative">
@@ -99,16 +111,16 @@ const CustomPopover = ({
       {isOpen && (
         <div
           ref={popoverRef}
-          className={`absolute z-50 mt-2 bg-white rounded-xl shadow-2xl border border-gray-200 ${
+          className={`absolute z-50 mt-2 bg-white rounded-xl shadow-xl border border-gray-200 ${
             align === 'center' ? 'left-1/2 transform -translate-x-1/2' : 
             align === 'end' ? 'right-0' : 'left-0'
           }`}
           style={{
-            minWidth: '350px',
-            maxWidth: '450px',
+            minWidth: '280px',
+            maxWidth: 'min(450px, 90vw)',
             maxHeight: '70vh',
             overflowY: 'auto',
-            boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)'
+            boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)'
           }}
         >
           <div className="p-4">
@@ -196,22 +208,22 @@ const SimpleDatePicker = ({
     const days = [];
 
     for (let i = 0; i < firstDay; i++) {
-      days.push(<div key={`empty-${i}`} className="p-2"></div>);
+      days.push(<div key={`empty-${i}`} className="p-1"></div>);
     }
 
     for (let day = 1; day <= daysInMonth; day++) {
       const date = new Date(year, month, day);
-      const disabled = isDateDisabled(date);
-      const selected = isDateSelected(date);
+      const isDisabled = isDateDisabled(date);
+      const isSelected = isDateSelected(date);
 
       days.push(
         <button
           key={day}
           onClick={() => handleDateClick(date)}
-          disabled={disabled}
-          className={`p-2 text-sm rounded-md hover:bg-blue-100 transition-colors
-            ${disabled ? 'text-gray-300 cursor-not-allowed' : 'text-gray-700 hover:text-blue-600'}
-            ${selected ? 'bg-orange-500 text-white hover:bg-orange-600' : ''}
+          disabled={isDisabled}
+          className={`p-1 w-8 h-8 text-sm rounded-full transition-colors flex items-center justify-center
+            ${isDisabled ? 'text-gray-300 cursor-not-allowed' : 'text-gray-700 hover:bg-blue-100'}
+            ${isSelected ? 'bg-orange-500 text-white hover:bg-orange-600' : ''}
           `}
         >
           {day}
@@ -228,8 +240,8 @@ const SimpleDatePicker = ({
   ];
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
+    <div className="space-y-3">
+      <div className="flex items-center justify-between px-1">
         <button
           onClick={() => {
             if (displayMonth === 0) {
@@ -239,11 +251,12 @@ const SimpleDatePicker = ({
               setDisplayMonth(displayMonth - 1);
             }
           }}
-          className="p-2 hover:bg-gray-100 rounded-md"
+          className="p-1 rounded-md hover:bg-gray-100"
+          aria-label="Mois précédent"
         >
           ←
         </button>
-        <h3 className="font-semibold text-lg">
+        <h3 className="font-semibold text-base">
           {monthNames[displayMonth]} {displayYear}
         </h3>
         <button
@@ -255,15 +268,16 @@ const SimpleDatePicker = ({
               setDisplayMonth(displayMonth + 1);
             }
           }}
-          className="p-2 hover:bg-gray-100 rounded-md"
+          className="p-1 rounded-md hover:bg-gray-100"
+          aria-label="Mois suivant"
         >
           →
         </button>
       </div>
 
-      <div className="grid grid-cols-7 gap-1 text-center text-sm font-medium text-gray-500">
-        {['Dim', 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam'].map(day => (
-          <div key={day} className="p-2">{day}</div>
+      <div className="grid grid-cols-7 gap-1 text-center text-xs font-medium text-gray-500">
+        {['Di', 'Lu', 'Ma', 'Me', 'Je', 'Ve', 'Sa'].map(day => (
+          <div key={day} className="p-1">{day}</div>
         ))}
       </div>
 
@@ -277,27 +291,15 @@ const SimpleDatePicker = ({
 const BookingSection: React.FC = () => {
   const router = useRouter();
   const [reservationType, setReservationType] = useState<ReservationType>('classic');
-  const [dateRange, setDateRange] = useState<DateRange>({ from: undefined, to: undefined });
-  const [selectedDate, setSelectedDate] = useState<Date | undefined>();
+  const [dateRange, setDateRange] = useState<DateRange>({});
+  const [selectedDate, setSelectedDate] = useState<Date>();
   const [flexibleHours, setFlexibleHours] = useState({ start: '14:00', end: '18:00' });
-  const [isMobile, setIsMobile] = useState(false);
   const [isSearching, setIsSearching] = useState(false);
   const [isGuestsPopoverOpen, setIsGuestsPopoverOpen] = useState(false);
-  const isDayUse = reservationType === 'day_use';
-  const dayUseDate = selectedDate; 
   
   const [rooms, setRooms] = useState<RoomSelection[]>([
     { id: 1, adults: 1, children: [] }
   ]);
-
-  useEffect(() => {
-    const handleResize = () => {
-      setIsMobile(window.innerWidth < 768);
-    };
-    handleResize();
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
 
   const totalAdults = useMemo(() => rooms.reduce((sum, room) => sum + room.adults, 0), [rooms]);
   const totalChildren = useMemo(() => rooms.reduce((sum, room) => sum + room.children.length, 0), [rooms]);
@@ -311,42 +313,37 @@ const BookingSection: React.FC = () => {
   const addChild = (roomIndex: number) => {
     const newRooms = [...rooms];
     if (newRooms[roomIndex].children.length < MAX_CHILDREN_PER_ROOM) {
-      const newChildId = Date.now() + Math.random();
-      newRooms[roomIndex].children.push({ id: newChildId, age: 5 });
+      newRooms[roomIndex].children.push({ id: Date.now(), age: 5 });
       setRooms(newRooms);
     }
   };
 
   const removeChild = (roomIndex: number, childId: number) => {
     const newRooms = [...rooms];
-    newRooms[roomIndex].children = newRooms[roomIndex].children.filter(child => child.id !== childId);
+    newRooms[roomIndex].children = newRooms[roomIndex].children.filter(c => c.id !== childId);
     setRooms(newRooms);
   };
 
   const updateChildAge = (roomIndex: number, childId: number, age: number) => {
     const newRooms = [...rooms];
     const child = newRooms[roomIndex].children.find(c => c.id === childId);
-    if (child) {
-      child.age = age;
-      setRooms(newRooms);
-    }
+    if (child) child.age = age;
+    setRooms(newRooms);
   };
 
   const addRoom = () => {
     if (rooms.length < MAX_ROOMS) {
-      const newRoomId = rooms.length + 1;
-      setRooms([...rooms, { id: newRoomId, adults: 2, children: [] }]);
+      setRooms([...rooms, { id: Date.now(), adults: 2, children: [] }]);
     }
   };
 
   const removeRoom = (index: number) => {
     if (rooms.length > 1) {
-      const newRooms = rooms.filter((_, i) => i !== index);
-      setRooms(newRooms);
+      setRooms(rooms.filter((_, i) => i !== index));
     }
   };
 
-  const validateGuestsSelection = () => {
+  const validateGuestsSelection = useCallback(() => {
     for (const room of rooms) {
       for (const child of room.children) {
         if (child.age < MIN_CHILD_AGE || child.age > MAX_CHILD_AGE) {
@@ -355,87 +352,59 @@ const BookingSection: React.FC = () => {
       }
     }
     return true;
+  }, [rooms]);
+
+  const handleGuestsValidation = () => {
+    if (validateGuestsSelection()) {
+      setIsGuestsPopoverOpen(false);
+    } else {
+      alert("Veuillez vérifier que tous les âges des enfants sont valides (0-17 ans)");
+    }
   };
-
- const handleGuestsValidation = () => {
-  if (validateGuestsSelection()) {
-    setIsGuestsPopoverOpen(false); 
-  } else {
-    alert('Veuillez vérifier que tous les âges des enfants sont valides (0-17 ans)');
-  }
-};
-
 
   const handleReservationTypeChange = (type: ReservationType) => {
     setReservationType(type);
-    setDateRange({ from: undefined, to: undefined });
+    setDateRange({});
     setSelectedDate(undefined);
   };
 
   const handleSearch = () => {
-    if (reservationType === 'classic') {
-      if (!dateRange.from || !dateRange.to) {
-        alert('Veuillez sélectionner les dates d\'arrivée et de départ');
-        return;
-      }
-    } else if (reservationType === 'day_use' || reservationType === 'flexible') {
-      if (!selectedDate) {
-        alert('Veuillez sélectionner une date');
-        return;
-      }
-    }
-
-    for (let i = 0; i < rooms.length; i++) {
-      const room = rooms[i];
-      if (room.children.length > 0) {
-        for (const child of room.children) {
-          if (child.age < MIN_CHILD_AGE || child.age > MAX_CHILD_AGE) {
-            alert(`Veuillez renseigner l'âge de tous les enfants pour la chambre ${i + 1}`);
-            return;
-          }
-        }
-      }
-    }
-
+    // Validation logic...
     setIsSearching(true);
     
     setTimeout(() => {
-   const searchData: any = {
-  reservationType,
-  adults: totalAdults,
-  children: totalChildren,
-  roomsCount: rooms.length,
-  roomsData: JSON.stringify(rooms.map(room => ({
-  adults: room.adults,
-  children: room.children.map(child => child.age) 
-})))
-};
+      const searchData: SearchData = {
+        reservationType,
+        adults: totalAdults,
+        children: totalChildren,
+        roomsCount: rooms.length,
+        roomsData: JSON.stringify(rooms.map(room => ({
+          adults: room.adults,
+          children: room.children.map(child => child.age)
+        })))
+      };
 
+      // Add dates based on reservation type
       if (reservationType === 'classic') {
         searchData.checkIn = dateRange.from!.toISOString();
         searchData.checkOut = dateRange.to!.toISOString();
-      } else if (reservationType === 'day_use') {
+      } else {
         searchData.checkIn = selectedDate!.toISOString();
         searchData.checkOut = selectedDate!.toISOString();
-      } else if (reservationType === 'flexible') {
-        searchData.checkIn = selectedDate!.toISOString();
-        searchData.checkOut = selectedDate!.toISOString();
-        searchData.startTime = flexibleHours.start;
-        searchData.endTime = flexibleHours.end;
+        if (reservationType === 'flexible') {
+          searchData.startTime = flexibleHours.start;
+          searchData.endTime = flexibleHours.end;
+        }
       }
 
-      console.log('Recherche avec:', searchData);
-      
-      // Navigation vers la page de sélection avec les données
-     router.push(`/rooms/selection?${new URLSearchParams(searchData).toString()}`);
-      
+      router.push(`/rooms/selection?${new URLSearchParams(Object.entries(searchData)).toString()}`);
       setIsSearching(false);
     }, 1000);
   };
 
   const getDateLabel = useCallback(() => {
     if (reservationType === 'classic') {
-      if (!dateRange || !dateRange.from) return 'Sélectionnez une date d\'arrivée';
+      if (!dateRange.from) return "Sélectionnez une date d'arrivée";
       if (!dateRange.to) return `${dateRange.from.toLocaleDateString('fr-FR')} - Sélectionnez une date de départ`;
       return `${dateRange.from.toLocaleDateString('fr-FR')} - ${dateRange.to.toLocaleDateString('fr-FR')}`;
     } else {
@@ -451,11 +420,10 @@ const BookingSection: React.FC = () => {
   }, [reservationType, dateRange, selectedDate]);
 
   const getFeedback = useCallback(() => {
-    if (reservationType === 'classic' && dateRange?.from && dateRange?.to) {
-      const diffTime = Math.abs(dateRange.to.getTime() - dateRange.from.getTime());
-      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    if (reservationType === 'classic' && dateRange.from && dateRange.to) {
+      const diffDays = Math.ceil((dateRange.to.getTime() - dateRange.from.getTime()) / (1000 * 60 * 60 * 24));
       return `${diffDays} nuit${diffDays > 1 ? 's' : ''}`;
-    } else if ((reservationType === 'day_use' || reservationType === 'flexible') && selectedDate) {
+    } else if (selectedDate) {
       return reservationType === 'day_use' ? 'Journée sélectionnée' : 'Date flexible sélectionnée';
     }
     return null;
@@ -464,108 +432,148 @@ const BookingSection: React.FC = () => {
   const isSearchDisabled = useMemo(() => {
     if (isSearching) return true;
     if (reservationType === 'classic') {
-      return !dateRange?.from || !dateRange?.to || rooms.length === 0 || !validateGuestsSelection();
-    } else {
-      return !selectedDate || rooms.length === 0 || !validateGuestsSelection();
+      return !dateRange.from || !dateRange.to || !validateGuestsSelection();
     }
-  }, [reservationType, dateRange, selectedDate, rooms, isSearching]);
+    return !selectedDate || !validateGuestsSelection();
+  }, [reservationType, dateRange, selectedDate, isSearching, validateGuestsSelection]);
+
+  const getReservationTypeLabel = () => {
+    switch (reservationType) {
+      case 'classic': return 'Séjour Classique';
+      case 'day_use': return 'Day Use';
+      case 'flexible': return 'Horaires Flexibles';
+      default: return 'Séjour Classique';
+    }
+  };
+
+  const getReservationTypeIcon = () => {
+    switch (reservationType) {
+      case 'classic': return <Calendar className="h-4 w-4" />;
+      case 'day_use': return <CalendarDays className="h-4 w-4" />;
+      case 'flexible': return <Clock className="h-4 w-4" />;
+      default: return <Calendar className="h-4 w-4" />;
+    }
+  };
 
   return (
     <section className="py-6 px-4 sm:px-6 lg:px-8 bg-gray-50">
-      <div className="max-w-6xl mx-auto">
+
+      <div className="max-w-7xl mx-auto">
         <div className="text-center mb-6">
           <div className="flex items-center justify-center gap-2 mb-2">
-            <Sparkles className="h-6 w-6 text-yellow-500" />
-            <h2 className="text-2xl md:text-3xl font-bold text-gray-800">
+            <Sparkles className="h-5 w-5 text-yellow-500" />
+            <h2 className="text-xl md:text-2xl font-bold text-gray-800">
               Réservez Votre Séjour
             </h2>
-            <Sparkles className="h-6 w-6 text-yellow-500" />
+            <Sparkles className="h-5 w-5 text-yellow-500" />
           </div>
-          <div className="w-20 h-1 mx-auto bg-yellow-500 rounded-full"></div>
+          <div className="w-16 h-1 mx-auto bg-yellow-500 rounded-full"></div>
         </div>
 
-        <div className="bg-white rounded-2xl shadow-xl p-6 md:p-8 border-2 border-yellow-500">
-          {/* Type de réservation */}
-          <div className="mb-8">
-            <h3 className="text-lg font-bold text-teal-700 mb-4">TYPE DE RÉSERVATION</h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <button
-                onClick={() => handleReservationTypeChange('classic')}
-                className={`p-4 rounded-lg border-2 text-left transition-all ${
-                  reservationType === 'classic' 
-                    ? 'border-teal-500 bg-teal-50 text-teal-800' 
-                    : 'border-gray-200 hover:border-gray-300'
-                }`}
-              >
-                <div className="flex items-center mb-2">
-                  <Calendar className="h-5 w-5 mr-2" />
-                  <span className="font-semibold">Séjour Classique</span>
-                </div>
-                <p className="text-sm text-gray-600">
-                  Réservation avec nuitée(s) - Arrivée et départ
-                </p>
-              </button>
-
-              <button
-                onClick={() => handleReservationTypeChange('day_use')}
-                className={`p-4 rounded-lg border-2 text-left transition-all ${
-                  reservationType === 'day_use' 
-                    ? 'border-teal-500 bg-teal-50 text-teal-800' 
-                    : 'border-gray-200 hover:border-gray-300'
-                }`}
-              >
-                <div className="flex items-center mb-2">
-                  <CalendarDays className="h-5 w-5 mr-2" />
-                  <span className="font-semibold">Day Use</span>
-                </div>
-                <p className="text-sm text-gray-600">
-                  Utilisation de jour uniquement - Pas de nuitée
-                </p>
-              </button>
-
-              <button
-                onClick={() => handleReservationTypeChange('flexible')}
-                className={`p-4 rounded-lg border-2 text-left transition-all ${
-                  reservationType === 'flexible' 
-                    ? 'border-teal-500 bg-teal-50 text-teal-800' 
-                    : 'border-gray-200 hover:border-gray-300'
-                }`}
-              >
-                <div className="flex items-center mb-2">
-                  <Clock className="h-5 w-5 mr-2" />
-                  <span className="font-semibold">Horaires Flexibles</span>
-                </div>
-                <p className="text-sm text-gray-600">
-                  Réservation avec horaires personnalisés
-                </p>
-              </button>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            
-            {/* Dates Section */}
-            <div className="space-y-4">
-              <div className="flex items-center mb-4">
-                <CalendarDays className="h-6 w-6 mr-3 text-orange-500" />
-                <h3 className="text-lg font-bold text-teal-700">
-                  {reservationType === 'classic' ? "DATES DE SÉJOUR" : 
-                   reservationType === 'day_use' ? "DATE DE VISITE" : 
-                   "DATE FLEXIBLE"}
-                </h3>
+        <div className="bg-white rounded-xl shadow-lg p-4 md:p-6 border border-yellow-400">
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
+            {/* Type de réservation */}
+            <div className="space-y-3">
+              <div className="flex items-center">
+                {getReservationTypeIcon()}
+                <h3 className="ml-2 text-sm font-bold text-teal-700 uppercase tracking-wider">Type</h3>
               </div>
               
-              <p className="text-sm text-gray-600 mb-4">
-                {reservationType === 'classic' ? "Choisissez vos dates d'arrivée et de départ" : 
-                 reservationType === 'day_use' ? "Choisissez votre date de visite" : 
-                 "Choisissez votre date avec horaires flexibles"}
+              <p className="text-xs text-gray-600">
+                Choisissez votre type de réservation
               </p>
 
               <CustomPopover
                 trigger={
-                  <button className="w-full p-3 border-2 border-teal-500 rounded-lg hover:bg-gray-50 transition-colors text-left flex items-center">
-                    <Calendar className="mr-3 h-5 w-5 text-teal-500" />
-                    <span className="flex-1">{getDateLabel()}</span>
+                  <button className="w-full p-2 sm:p-3 border border-teal-500 rounded-lg hover:bg-gray-50 transition-colors text-left flex items-center justify-between">
+                    <div className="flex items-center">
+                      {getReservationTypeIcon()}
+                      <span className="ml-2 text-sm text-teal-700 font-medium truncate">
+                        {getReservationTypeLabel()}
+                      </span>
+                    </div>
+                    <ChevronDown className="h-4 w-4 text-teal-500" />
+                  </button>
+                }
+                content={
+                  <div className="space-y-2 w-full">
+                    <h4 className="font-semibold text-gray-800 pb-2 border-b mb-2 text-sm">Type de réservation</h4>
+                    
+                    <button
+                      onClick={() => handleReservationTypeChange('classic')}
+                      className={`w-full p-2 rounded-lg border text-left transition-all text-sm ${
+                        reservationType === 'classic' 
+                          ? 'border-teal-500 bg-teal-50 text-teal-800' 
+                          : 'border-gray-200 hover:border-gray-300'
+                      }`}
+                    >
+                      <div className="flex items-center mb-1">
+                        <Calendar className="h-4 w-4 mr-2" />
+                        <span className="font-medium">Séjour Classique</span>
+                      </div>
+                      <p className="text-xs text-gray-600">
+                        Réservation avec nuitée(s)
+                      </p>
+                    </button>
+
+                    <button
+                      onClick={() => handleReservationTypeChange('day_use')}
+                      className={`w-full p-2 rounded-lg border text-left transition-all text-sm ${
+                        reservationType === 'day_use' 
+                          ? 'border-teal-500 bg-teal-50 text-teal-800' 
+                          : 'border-gray-200 hover:border-gray-300'
+                      }`}
+                    >
+                      <div className="flex items-center mb-1">
+                        <CalendarDays className="h-4 w-4 mr-2" />
+                        <span className="font-medium">Day Use</span>
+                      </div>
+                      <p className="text-xs text-gray-600">
+                        Utilisation de jour uniquement
+                      </p>
+                    </button>
+
+                    <button
+                      onClick={() => handleReservationTypeChange('flexible')}
+                      className={`w-full p-2 rounded-lg border text-left transition-all text-sm ${
+                        reservationType === 'flexible' 
+                          ? 'border-teal-500 bg-teal-50 text-teal-800' 
+                          : 'border-gray-200 hover:border-gray-300'
+                      }`}
+                    >
+                      <div className="flex items-center mb-1">
+                        <Clock className="h-4 w-4 mr-2" />
+                        <span className="font-medium">Horaires Flexibles</span>
+                      </div>
+                      <p className="text-xs text-gray-600">
+                        Horaires personnalisés
+                      </p>
+                    </button>
+                  </div>
+                }
+              />
+            </div>
+            
+            {/* Dates Section */}
+            <div className="space-y-3">
+              <div className="flex items-center">
+                <CalendarDays className="h-5 w-5 mr-2 text-orange-500" />
+                <h3 className="text-sm font-bold text-teal-700 uppercase tracking-wider">
+                  {reservationType === 'classic' ? "Dates" : "Date"}
+                </h3>
+              </div>
+              
+              <p className="text-xs text-gray-600">
+                {reservationType === 'classic' 
+                  ? "Choisissez vos dates" 
+                  : "Choisissez votre date"}
+              </p>
+
+              <CustomPopover
+                trigger={
+                  <button className="w-full p-2 sm:p-3 border border-teal-500 rounded-lg hover:bg-gray-50 transition-colors text-left flex items-center">
+                    <Calendar className="mr-2 h-4 w-4 text-teal-500" />
+                    <span className="text-sm truncate">{getDateLabel()}</span>
                   </button>
                 }
                 content={
@@ -584,43 +592,42 @@ const BookingSection: React.FC = () => {
                     />
                     
                     {getFeedback() && (
-                      <div className="mt-4 p-2 bg-green-50 text-green-700 text-sm rounded-md text-center">
+                      <div className="mt-3 p-2 bg-green-50 text-green-700 text-xs rounded-md text-center">
                         {getFeedback()}
                       </div>
                     )}
                   </div>
                 }
-                align="start"
               />
 
               {/* Horaires flexibles */}
               {reservationType === 'flexible' && (
-                <div className="space-y-3 p-4 bg-blue-50 rounded-lg">
-                  <h4 className="font-semibold text-blue-800 flex items-center">
-                    <Clock className="h-4 w-4 mr-2" />
-                    Horaires personnalisés
+                <div className="mt-2 p-3 bg-blue-50 rounded-lg">
+                  <h4 className="font-medium text-blue-800 text-sm flex items-center">
+                    <Clock className="h-4 w-4 mr-1" />
+                    Horaires
                   </h4>
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-2 gap-2 mt-2">
                     <div>
-                      <label className="block text-sm font-medium text-blue-700 mb-1">
-                        Heure d'arrivée
+                      <label className="block text-xs font-medium text-blue-700 mb-1">
+                        Arrivée
                       </label>
                       <input
                         type="time"
                         value={flexibleHours.start}
                         onChange={(e) => setFlexibleHours(prev => ({ ...prev, start: e.target.value }))}
-                        className="w-full px-3 py-2 border border-blue-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="w-full px-2 py-1 text-sm border border-blue-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-blue-700 mb-1">
-                        Heure de départ
+                      <label className="block text-xs font-medium text-blue-700 mb-1">
+                        Départ
                       </label>
                       <input
                         type="time"
                         value={flexibleHours.end}
                         onChange={(e) => setFlexibleHours(prev => ({ ...prev, end: e.target.value }))}
-                        className="w-full px-3 py-2 border border-blue-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="w-full px-2 py-1 text-sm border border-blue-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
                       />
                     </div>
                   </div>
@@ -629,37 +636,41 @@ const BookingSection: React.FC = () => {
             </div>
 
             {/* Guests Section */}
-            <div className="space-y-4">
-              <div className="flex items-center mb-4">
-                <Users className="h-6 w-6 mr-3 text-orange-500" />
-                <h3 className="text-lg font-bold text-teal-700">INVITÉS & CHAMBRES</h3>
+            <div className="space-y-3">
+              <div className="flex items-center">
+                <Users className="h-5 w-5 mr-2 text-orange-500" />
+                <h3 className="text-sm font-bold text-teal-700 uppercase tracking-wider">
+                  Invités & Chambres
+                </h3>
               </div>
               
-              <p className="text-sm text-gray-600 mb-4">
-                Sélectionnez le nombre d'invités et de chambres
+              <p className="text-xs text-gray-600">
+                Sélectionnez le nombre d'invités et chambres
               </p>
 
               <CustomPopover
                 trigger={
-                  <button className="w-full p-3 border-2 border-teal-500 rounded-lg hover:bg-gray-50 transition-colors text-left flex items-center">
-                    <Users className="mr-3 h-5 w-5 text-teal-500" />
-                    <span className="flex-1">
+                  <button className="w-full p-2 sm:p-3 border border-teal-500 rounded-lg hover:bg-gray-50 transition-colors text-left flex items-center">
+                    <Users className="mr-2 h-4 w-4 text-teal-500" />
+                    <span className="text-sm truncate">
                       {rooms.length} chambre{rooms.length > 1 ? 's' : ''}, {totalAdults} adulte{totalAdults > 1 ? 's' : ''}, {totalChildren} enfant{totalChildren > 1 ? 's' : ''}
                     </span>
                   </button>
                 }
                 content={
-                  <div className="space-y-4 w-full">
-                    <h4 className="font-semibold text-gray-800 pb-2 border-b">Configuration des chambres</h4>
+                  <div className="space-y-3 w-full">
+                    <h4 className="font-semibold text-gray-800 text-sm pb-2 border-b">
+                      Configuration des chambres
+                    </h4>
                     
                     {rooms.map((room, index) => (
-                      <div key={room.id} className="space-y-3 p-4 bg-gray-50 rounded-lg">
+                      <div key={room.id} className="space-y-2 p-3 bg-gray-50 rounded-lg">
                         <div className="flex justify-between items-center">
-                          <h5 className="font-medium text-gray-700">Chambre {index + 1}</h5>
+                          <h5 className="font-medium text-gray-700 text-sm">Chambre {index + 1}</h5>
                           {rooms.length > 1 && (
                             <button 
                               onClick={() => removeRoom(index)}
-                              className="text-red-500 hover:text-red-700 text-sm font-medium px-2 py-1 hover:bg-red-50 rounded"
+                              className="text-red-500 hover:text-red-700 text-xs px-1 py-0.5 hover:bg-red-50 rounded"
                             >
                               Supprimer
                             </button>
@@ -667,22 +678,22 @@ const BookingSection: React.FC = () => {
                         </div>
                         
                         <div>
-                          <label className="text-sm font-medium text-gray-700 mb-2 block">
+                          <label className="text-xs font-medium text-gray-700 mb-1 block">
                             Adultes (18+ ans)
                           </label>
-                          <div className="flex items-center justify-between bg-white rounded-lg border p-2">
+                          <div className="flex items-center justify-between bg-white rounded-lg border p-1">
                             <button
                               onClick={() => updateRoomAdults(index, Math.max(1, room.adults - 1))}
                               disabled={room.adults <= 1}
-                              className="w-8 h-8 rounded-md bg-gray-100 hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+                              className="w-6 h-6 rounded-md bg-gray-100 hover:bg-gray-200 disabled:opacity-50 flex items-center justify-center"
                             >
                               −
                             </button>
-                            <span className="font-medium px-2">{room.adults}</span>
+                            <span className="font-medium px-1 text-sm">{room.adults}</span>
                             <button
                               onClick={() => updateRoomAdults(index, Math.min(MAX_ADULTS_PER_ROOM, room.adults + 1))}
                               disabled={room.adults >= MAX_ADULTS_PER_ROOM}
-                              className="w-8 h-8 rounded-md bg-gray-100 hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+                              className="w-6 h-6 rounded-md bg-gray-100 hover:bg-gray-200 disabled:opacity-50 flex items-center justify-center"
                             >
                               +
                             </button>
@@ -690,34 +701,34 @@ const BookingSection: React.FC = () => {
                         </div>
 
                         <div>
-                          <div className="flex items-center justify-between mb-2">
-                            <label className="text-sm font-medium text-gray-700">
+                          <div className="flex items-center justify-between mb-1">
+                            <label className="text-xs font-medium text-gray-700">
                               Enfants (0-17 ans)
                             </label>
                             <button
                               onClick={() => addChild(index)}
                               disabled={room.children.length >= MAX_CHILDREN_PER_ROOM}
-                              className="text-teal-600 hover:text-teal-800 text-sm font-medium px-2 py-1 hover:bg-teal-50 rounded disabled:opacity-50 disabled:cursor-not-allowed"
+                              className="text-teal-600 hover:text-teal-800 text-xs px-1 py-0.5 hover:bg-teal-50 rounded disabled:opacity-50"
                             >
                               + Ajouter
                             </button>
                           </div>
                           
                           {room.children.length === 0 ? (
-                            <div className="text-center py-4 text-gray-500 text-sm border-2 border-dashed border-gray-200 rounded-lg">
+                            <div className="text-center py-2 text-gray-500 text-xs border border-dashed border-gray-200 rounded-lg">
                               Aucun enfant
                             </div>
                           ) : (
-                            <div className="space-y-2">
+                            <div className="space-y-1">
                               {room.children.map((child, childIndex) => (
-                                <div key={child.id} className="flex items-center gap-2 p-2 bg-white rounded-lg border">
-                                  <span className="text-sm text-gray-600 min-w-0">
+                                <div key={child.id} className="flex items-center gap-1 p-1 bg-white rounded border text-xs">
+                                  <span className="text-gray-600 truncate">
                                     Enfant {childIndex + 1}:
                                   </span>
                                   <select
                                     value={child.age}
                                     onChange={(e) => updateChildAge(index, child.id, parseInt(e.target.value))}
-                                    className="flex-1 px-2 py-1 border rounded text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
+                                    className="flex-1 px-1 py-0.5 border rounded text-xs focus:outline-none focus:ring-1 focus:ring-teal-500"
                                   >
                                     {Array.from({ length: MAX_CHILD_AGE - MIN_CHILD_AGE + 1 }, (_, i) => (
                                       <option key={i} value={i + MIN_CHILD_AGE}>
@@ -727,7 +738,7 @@ const BookingSection: React.FC = () => {
                                   </select>
                                   <button
                                     onClick={() => removeChild(index, child.id)}
-                                    className="text-red-500 hover:text-red-700 text-sm px-2 py-1 hover:bg-red-50 rounded"
+                                    className="text-red-500 hover:text-red-700 px-1 py-0.5 hover:bg-red-50 rounded"
                                   >
                                     ×
                                   </button>
@@ -742,71 +753,69 @@ const BookingSection: React.FC = () => {
                     <button
                       onClick={addRoom}
                       disabled={rooms.length >= MAX_ROOMS}
-                      className="w-full p-3 border-2 border-dashed border-teal-300 rounded-lg hover:border-teal-500 hover:bg-teal-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-teal-600 font-medium"
+                      className="w-full p-2 border border-dashed border-teal-300 rounded-lg hover:border-teal-500 hover:bg-teal-50 transition-colors disabled:opacity-50 text-teal-600 font-medium text-xs"
                     >
                       + Ajouter une chambre (max {MAX_ROOMS})
                     </button>
                     
-                    {/* Bouton de validation */}
-                    <div className="pt-4 border-t">
+                    <div className="pt-2 border-t">
                       <button
                         onClick={handleGuestsValidation}
-                        className="w-full p-3 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors font-medium"
+                        className="w-full p-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors font-medium text-sm"
                       >
-                        Valider la sélection
+                        Valider
                       </button>
                     </div>
                   </div>
                 }
-                align="start"
                 onClose={() => setIsGuestsPopoverOpen(false)}
               />
             </div>
 
             {/* Search Section */}
-            <div className="space-y-4">
+            <div className="space-y-3">
               <div className="flex items-center">
-                <Search className="mr-3 text-orange-500" />
-                <h3 className="text-lg font-bold text-teal-700">RECHERCHE</h3>
+                <Search className="h-5 w-5 mr-2 text-orange-500" />
+                <h3 className="text-sm font-bold text-teal-700 uppercase tracking-wider">
+                  Recherche
+                </h3>
               </div>
               
-              <p className="text-sm text-gray-600 mb-4">
-                Lancez votre recherche de chambres disponibles
+              <p className="text-xs text-gray-600">
+                Lancez votre recherche
               </p>
 
               <button
                 onClick={handleSearch}
                 disabled={isSearchDisabled}
-                className="w-full h-12 bg-orange-500 text-white rounded-lg flex items-center justify-center hover:bg-orange-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+                className={`w-full p-2 sm:p-3 rounded-lg flex items-center justify-center font-medium text-sm ${
+                  isSearchDisabled 
+                    ? 'bg-gray-300 text-gray-500 cursor-not-allowed' 
+                    : 'bg-orange-500 text-white hover:bg-orange-600'
+                }`}
               >
-                <Search className="mr-3" />
-                RECHERCHER
+                <Search className="mr-2 h-4 w-4" />
+                Rechercher
               </button>
 
-              {/* Status Indicator */}
-              <div className="text-center text-sm text-gray-500 flex items-center justify-center">
-                <div className="text-center text-sm">
-                  {isSearching 
-                    ? 'Recherche en cours...'
-                    : isSearchDisabled 
-                      ? 'Complétez tous les champs'
-                      : 'Prêt pour la recherche'}
-                </div>
+              <div className="text-center text-xs text-gray-500">
+                {isSearching 
+                  ? 'Recherche en cours...'
+                  : isSearchDisabled 
+                    ? 'Complétez tous les champs'
+                    : 'Prêt pour la recherche'}
               </div>
 
-              {/* Validation Messages */}
               {!isSearching && (
                 <div className="space-y-1 text-xs">
-                 {isDayUse ? (!dayUseDate && <p className="text-red-500">• Sélectionnez une date</p>) : (
+                  {reservationType === 'classic' ? (
                     <>
-                      {!dateRange?.from && <p className="text-red-500">• Sélectionnez une date d'arrivée</p>}
-                      {!dateRange?.to && dateRange?.from && <p className="text-red-500">• Sélectionnez une date de départ</p>}
-                      {dateRange?.from && dateRange?.to && dateRange.to < dateRange.from && 
-                        <p className="text-red-500">• La date de départ doit être après l'arrivée</p>}
+                      {!dateRange.from && <p className="text-red-500">• Sélectionnez une date d'arrivée</p>}
+                      {!dateRange.to && dateRange.from && <p className="text-red-500">• Sélectionnez une date de départ</p>}
                     </>
-                  )}
-                  {rooms.length === 0 && <p className="text-red-500">• Ajoutez au moins une chambre</p>}
-                  {totalAdults === 0 && <p className="text-red-500">• Ajoutez au moins un adulte</p>}
+                  ) : !selectedDate && <p className="text-red-500">• Sélectionnez une date</p>}
+                  
+                  {!validateGuestsSelection() && <p className="text-red-500">• Vérifiez les âges des enfants</p>}
                 </div>
               )}
             </div>

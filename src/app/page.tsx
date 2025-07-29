@@ -525,9 +525,9 @@ const carouselImages = [
 
 
 {/* Rooms Section - Luxury Design */}
-<section className="py-24 bg-gradient-to-b from-white to-gray-50 font-sans">
+<section className="py-1 bg-gradient-to-b from-white to-gray-50 font-sans">
   <div className="mx-auto px-4 sm:px-6 lg:px-8">
-    <div className="text-center mb-20">
+    <div className="text-center mb-6">
       <span className="inline-block px-5 py-2 text-sm font-semibold tracking-wider text-teal-700 bg-teal-100 rounded-full mb-6 uppercase">
         Hébergement exclusif
       </span>

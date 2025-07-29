@@ -819,7 +819,7 @@ function getDurationFromDates(
                           <Check className="h-4 w-4 mr-2 mt-0.5 text-blue-600" />
                           <span>Vous avez sélectionné {getTotalRoomsCount()} chambre{getTotalRoomsCount() > 1 ? 's' : ''}</span>
                         </li>
-                       <li className="flex flex-col gap-1">
+                       <li className="flex items-start">
   <Check className="h-4 w-4 mr-2 mt-0.5 text-blue-600" />  
   {Array.from(new Set(bookingData.selectedRooms.map(r => r.reservationType))).map(type => (
     <span key={type}>
@@ -831,10 +831,7 @@ function getDurationFromDates(
  
 </li>
 
-                        <li className="flex items-start">
-                          <Check className="h-4 w-4 mr-2 mt-0.5 text-blue-600" />
-                          <span>Capacité totale: {getSelectedRoomsDetails().reduce((sum, room) => sum + (room?.num_person || 0) * (room?.count || 0), 0)} personnes</span>
-                        </li>
+                       
                       </ul>
                     </div>
                     

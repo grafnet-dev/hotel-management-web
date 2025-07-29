@@ -1,21 +1,13 @@
 "use client";
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
+import { MessageCircle, X, Send, Plus, Minus, Bot } from 'lucide-react';
 
-import { 
-  MessageCircle, 
-  X, 
-  Send,
-  Plus,
-  Minus,
-  Bot
-} from 'lucide-react';
-
+// Types
 interface ChatMessage {
   id: string;
   type: 'bot' | 'user';
@@ -25,29 +17,13 @@ interface ChatMessage {
   component?: React.ReactNode;
 }
 
-interface ReservationData {
-  type: 'classique' | 'day-use' | 'flexible' | null;
-  checkInDate: string;
-  checkOutDate: string;
-  checkInTime: string;
-  checkOutTime: string;
-  adults: number;
-  children: Array<{ age: number }>;
-  roomType: string;
-  firstName: string;
-  lastName: string;
-  phone: string;
-  email: string;
-  specialRequests: string;
+interface Child {
+  age: number;
 }
 
 interface Guests {
   adults: number;
-  children: Array<{ age: number }>;
-}
-
-interface Room {
-  roomType: string;
+  children: Child[];
 }
 
 interface DateData {
@@ -57,7 +33,27 @@ interface DateData {
   checkOutTime: string;
 }
 
+interface Room {
+  roomType: keyof typeof ROOM_TYPES;
+}
+
 interface PersonalInfo {
+  firstName: string;
+  lastName: string;
+  phone: string;
+  email: string;
+  specialRequests: string;
+}
+
+interface ReservationData {
+  type: 'classique' | 'day-use' | 'flexible' | null;
+  checkInDate: string;
+  checkOutDate: string;
+  checkInTime: string;
+  checkOutTime: string;
+  adults: number;
+  children: Child[];
+  roomType: keyof typeof ROOM_TYPES;
   firstName: string;
   lastName: string;
   phone: string;
@@ -76,6 +72,7 @@ interface ChatbotWhatsAppProps {
   };
 }
 
+// Constants
 const ROOM_TYPES = {
   'standard': { name: 'Chambre Standard', price: 18000 },
   'deluxe': { name: 'Chambre Deluxe', price: 35000 },
@@ -90,16 +87,22 @@ const TRIGGER_PHRASES = [
   'disponibilité', 'tarif', 'prix'
 ];
 
+const MAX_ADULTS = 4;
+const MAX_CHILDREN = 3;
+const DEFAULT_CHECK_IN_TIME = '14:00';
+const DEFAULT_CHECK_OUT_TIME = '12:00';
+
 export function ChatbotWhatsApp({ isOpen, onClose, userInfo }: ChatbotWhatsAppProps) {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
+ 
   const [inputValue, setInputValue] = useState('');
   const [currentStep, setCurrentStep] = useState('greeting');
   const [reservationData, setReservationData] = useState<ReservationData>({
     type: null,
     checkInDate: '',
     checkOutDate: '',
-    checkInTime: '14:00',
-    checkOutTime: '12:00',
+    checkInTime: DEFAULT_CHECK_IN_TIME,
+    checkOutTime: DEFAULT_CHECK_OUT_TIME,
     adults: 2,
     children: [],
     roomType: 'standard',
@@ -112,146 +115,212 @@ export function ChatbotWhatsApp({ isOpen, onClose, userInfo }: ChatbotWhatsAppPr
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  const scrollToBottom = () => {
+  // Helper functions
+  const scrollToBottom = useCallback(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, []);
+
+  const addBotMessage = useCallback((content: string, options?: string[], component?: React.ReactNode) => {
+  const timestamp = new Date();
+  const newMessage: ChatMessage = {
+    id: `bot-${timestamp.getTime()}-${Math.random().toString(36).substr(2, 9)}`, // ID unique
+    type: 'bot',
+    content,
+    timestamp,
+    options,
+    component
   };
+  setMessages(prev => [...prev, newMessage]);
+  scrollToBottom();
+}, [scrollToBottom]);
 
+const addUserMessage = useCallback((content: string) => {
+  const timestamp = new Date();
+  const newMessage: ChatMessage = {
+    id: `user-${timestamp.getTime()}-${Math.random().toString(36).substr(2, 9)}`, // ID unique
+    type: 'user',
+    content,
+    timestamp
+  };
+  setMessages(prev => [...prev, newMessage]);
+  scrollToBottom();
+}, [scrollToBottom]);
+  // Initialize chat
   useEffect(() => {
-    scrollToBottom();
-  }, [messages]);
+    if (isOpen && messages.length === 0) {
+      addBotMessage(
+        "👋 Bonjour ! Bienvenue à l'hôtel Bain du Lac ! Comment puis-je vous aider aujourd'hui ?",
+        ['Je veux réserver', 'Voir les tarifs', 'Informations hôtel']
+      );
+    }
+  }, [isOpen, messages.length, addBotMessage]);
 
-useEffect(() => {
-  if (isOpen && messages.length === 0) {
+  // Handle user input
+  const handleUserInput = (input: string) => {
+    const trimmedInput = input.trim();
+    if (!trimmedInput) return;
+
+    addUserMessage(trimmedInput);
+    setInputValue('');
+    processUserInput(trimmedInput.toLowerCase());
+  };
+const processUserInput = (input: string) => {
+  const containsTrigger = TRIGGER_PHRASES.some(phrase => input.includes(phrase));
+
+  if (input.includes('tarif') || input.includes('prix')) {
+    showPricing();
+  } 
+  else if (input.includes('information') || input.includes('hôtel') || input.includes('hotel')) {
+    showHotelInfo();
+  }
+  else if (containsTrigger || currentStep === 'greeting') {
+    if (input.includes('réserver') || input.includes('réservation') || input.includes('chambre')) {
+      startReservationProcess();
+    } else {
+      showDefaultOptions();
+    }
+  } else {
     addBotMessage(
-      "👋 Bonjour ! Bienvenue à l'hôtel Bain du Lac ! Comment puis-je vous aider aujourd'hui ?",
-      ['Je veux réserver', 'Voir les tarifs', 'Informations hôtel']
+      "Je ne comprends pas votre demande. Voici ce que je peux faire :",
+      ['Réserver une chambre', 'Voir les tarifs', 'Informations hôtel']
     );
   }
-}, [isOpen, messages.length]);
-
-  const addBotMessage = (content: string, options?: string[], component?: React.ReactNode) => {
-    const newMessage: ChatMessage = {
-      id: Date.now().toString(),
-      type: 'bot',
-      content,
-      timestamp: new Date(),
-      options,
-      component
-    };
-    setMessages(prev => [...prev, newMessage]);
+};
+  const startReservationProcess = () => {
+    setCurrentStep('reservation_type');
+    addBotMessage(
+      "Parfait ! Quel type de réservation souhaitez-vous ?",
+      ['Classique (Nuitée)', 'Day-use (Journée)', 'Flexible (Horaire)']
+    );
   };
 
-  const addUserMessage = (content: string) => {
-    const newMessage: ChatMessage = {
-      id: Date.now().toString(),
-      type: 'user',
-      content,
-      timestamp: new Date()
-    };
-    setMessages(prev => [...prev, newMessage]);
+  const showPricing = () => {
+  addBotMessage(
+    "Voici nos tarifs :\n• Chambre Standard : 18,000 FCFA/nuit\n• Chambre Deluxe : 35,000 FCFA/nuit\n• Suite Présidentielle : 85,000 FCFA/nuit\n• Suite Familiale : 65,000 FCFA/nuit",
+    ['Réserver maintenant', 'Voir les photos', 'Retour au menu']
+  );
+  setCurrentStep('pricing');
+};
+
+const showHotelInfo = () => {
+  addBotMessage(
+    "🏨 *Hôtel Bain du Lac*\n\n" +
+    "⭐ Classement : 4 étoiles\n" +
+    "📍 Localisation : Cotonou, Bénin\n" +
+    "🛏️ Chambres : 120\n" +
+    "🍽️ Restaurant : Oui\n" +
+    "🏊 Piscine : Oui\n" +
+    "🅿️ Parking : Gratuit\n\n" +
+    "Services : WiFi gratuit, Room service 24h/24, Spa, Navette aéroport",
+    ['Réserver maintenant', 'Voir les tarifs', 'Contactez-nous']
+  );
+  setCurrentStep('info');
+};
+  const showDefaultOptions = () => {
+    addBotMessage(
+      "Je peux vous aider avec :\n• Réservations de chambres\n• Informations sur les tarifs\n• Renseignements sur l'hôtel\n\nQue souhaitez-vous faire ?",
+      ['Réserver une chambre', 'Voir les tarifs', 'Informations']
+    );
   };
 
-  const handleUserInput = (input: string) => {
-    addUserMessage(input);
-    setInputValue('');
-    processUserInput(input.toLowerCase());
-  };
+  // Handle option selection
+const handleOptionClick = (option: string) => {
+  addUserMessage(option);
 
-  const processUserInput = (input: string) => {
-    const containsTrigger = TRIGGER_PHRASES.some(phrase => input.includes(phrase));
-
-    if (containsTrigger || currentStep === 'greeting') {
-      if (input.includes('réserver') || input.includes('réservation') || input.includes('chambre')) {
-        setCurrentStep('reservation_type');
-        addBotMessage(
-          "Parfait ! Quel type de réservation souhaitez-vous ?",
-          ['Classique (Nuitée)', 'Day-use (Journée)', 'Flexible (Horaire)']
-        );
-      } else if (input.includes('tarif') || input.includes('prix')) {
-        addBotMessage(
-          "Voici nos tarifs :\n• Chambre Standard : 18,000 FCFA/nuit\n• Chambre Deluxe : 35,000 FCFA/nuit\n• Suite Présidentielle : 85,000 FCFA/nuit\n• Suite Familiale : 65,000 FCFA/nuit\n\nSouhaitez-vous faire une réservation ?",
-          ['Oui, réserver', 'Non, merci']
-        );
-      } else {
-        addBotMessage(
-          "Je peux vous aider avec :\n• Réservations de chambres\n• Informations sur les tarifs\n• Renseignements sur l'hôtel\n\nQue souhaitez-vous faire ?",
-          ['Réserver une chambre', 'Voir les tarifs', 'Informations']
-        );
+  switch (currentStep) {
+    case 'greeting':
+      if (option.includes('réserver') || option.includes('Réserver')) {
+        startReservationProcess();
+      } else if (option.includes('tarif')) {
+        showPricing();
+      } else if (option.includes('Informations')) {
+        showHotelInfo();
       }
-    }
-  };
+      break;
 
-  const handleOptionClick = (option: string) => {
-    addUserMessage(option);
+    case 'reservation_type':
+      handleReservationTypeSelection(option);
+      break;
+      
+    case 'pricing':
+      if (option.includes('Réserver')) {
+        startReservationProcess();
+      } else if (option.includes('photos')) {
+        addBotMessage("Vous pouvez voir nos photos sur notre site web : www.baindulac.com/galerie");
+      } else {
+        showDefaultOptions();
+      }
+      break;
+      
+    case 'info':
+      if (option.includes('Réserver')) {
+        startReservationProcess();
+      } else if (option.includes('tarif')) {
+        showPricing();
+      } else if (option.includes('Contactez')) {
+        addBotMessage("📞 Contactez-nous au +229 XX XX XX XX\n📧 Email : contact@baindulac.com");
+      }
+      break;
 
-    switch (currentStep) {
-      case 'greeting':
-        if (option.includes('réserver')) {
-          setCurrentStep('reservation_type');
-          addBotMessage(
-            "Parfait ! Quel type de réservation souhaitez-vous ?",
-            ['Classique (Nuitée)', 'Day-use (Journée)', 'Flexible (Horaire)']
-          );
-        }
-        break;
+    case 'room_type':
+      proceedToPersonalInfo();
+      break;
 
-      case 'reservation_type':
-        let type: 'classique' | 'day-use' | 'flexible' = 'classique';
-        if (option.includes('Day-use')) type = 'day-use';
-        else if (option.includes('Flexible')) type = 'flexible';
+    default:
+      // Gestion par défaut pour les options du menu principal
+      if (option.includes('réserver') || option.includes('Réserver')) {
+        startReservationProcess();
+      } else if (option.includes('tarif')) {
+        showPricing();
+      } else if (option.includes('Informations')) {
+        showHotelInfo();
+      }
+      break;
+  }
+};
 
-        setReservationData(prev => ({ ...prev, type }));
-        setCurrentStep('dates');
+const handleReservationTypeSelection = (option: string) => {
+  let type: 'classique' | 'day-use' | 'flexible';
+  
+  if (option.includes('Day-use')) {
+    type = 'day-use';
+    setReservationData(prev => ({
+      ...prev,
+      type,
+      checkInTime: '10:00',
+      checkOutTime: '18:00'
+    }));
+  } else if (option.includes('Flexible')) {
+    type = 'flexible';
+    setReservationData(prev => ({
+      ...prev,
+      type,
+      checkInDate: '',
+      checkOutDate: ''
+    }));
+  } else {
+    type = 'classique';
+    setReservationData(prev => ({
+      ...prev,
+      type,
+      checkInTime: DEFAULT_CHECK_IN_TIME,
+      checkOutTime: DEFAULT_CHECK_OUT_TIME
+    }));
+  }
 
-        if (type === 'classique') {
-          addBotMessage(
-            "Excellent choix ! Pour une réservation classique, j'ai besoin des dates d'arrivée et de départ.",
-            [],
-            <DateSelector type="classique" onComplete={handleDatesComplete} />
-          );
-        } else if (type === 'day-use') {
-          addBotMessage(
-            "Parfait pour une journée ! Choisissez votre date de visite.",
-            [],
-            <DateSelector type="day-use" onComplete={handleDatesComplete} />
-          );
-        } else {
-          addBotMessage(
-            "Idéal pour plus de flexibilité ! Choisissez votre date et vos heures.",
-            [],
-            <DateSelector type="flexible" onComplete={handleDatesComplete} />
-          );
-        }
-        break;
+  setCurrentStep('dates');
+  addBotMessage(
+    type === 'classique' 
+      ? "Excellent choix ! Pour une réservation classique, j'ai besoin des dates d'arrivée et de départ."
+      : type === 'day-use' 
+        ? "Parfait pour une journée ! Choisissez votre date de visite."
+        : "Idéal pour plus de flexibilité ! Choisissez votre date et vos heures.",
+    [],
+    <DateSelector type={type} onComplete={handleDatesComplete} />
+  );
+};
 
-      case 'guests':
-        setCurrentStep('room_type');
-        addBotMessage(
-          "Parfait ! Maintenant, quel type de chambre préférez-vous ?",
-          [],
-          <RoomSelector onComplete={handleRoomComplete} />
-        );
-        break;
-
-      case 'room_type':
-        setCurrentStep('personal_info');
-        if (userInfo) {
-          addBotMessage(
-            `Parfait ! Je vais préparer votre réservation. Souhaitez-vous ajouter des demandes spéciales ?`,
-            [],
-            <PersonalInfoForm userInfo={userInfo} onComplete={handlePersonalInfoComplete} />
-          );
-        } else {
-          addBotMessage(
-            "Excellent choix ! J'ai besoin de vos informations personnelles pour finaliser la réservation.",
-            [],
-            <PersonalInfoForm onComplete={handlePersonalInfoComplete} />
-          );
-        }
-        break;
-    }
-  };
-
+  // Step handlers
   const handleDatesComplete = (dates: DateData) => {
     setReservationData(prev => ({ ...prev, ...dates }));
     setCurrentStep('guests');
@@ -274,6 +343,10 @@ useEffect(() => {
 
   const handleRoomComplete = (room: Room) => {
     setReservationData(prev => ({ ...prev, ...room }));
+    proceedToPersonalInfo();
+  };
+
+  const proceedToPersonalInfo = () => {
     setCurrentStep('personal_info');
     if (userInfo) {
       addBotMessage(
@@ -301,50 +374,26 @@ useEffect(() => {
     );
   };
 
-  const generateReservationSummary = (data: ReservationData) => {
-    const roomInfo = ROOM_TYPES[data.roomType as keyof typeof ROOM_TYPES];
-    let price = roomInfo.price;
-    let duration = '';
-
-    if (data.type === 'classique') {
-      const nights = calculateNights(data.checkInDate, data.checkOutDate);
-      price = price * nights;
-      duration = `${nights} nuit${nights > 1 ? 's' : ''}`;
-    } else if (data.type === 'day-use') {
-      price = Math.round(price * 0.7);
-      duration = '1 journée';
-    } else if (data.type === 'flexible') {
-      const hours = calculateHours(data.checkInTime, data.checkOutTime);
-      price = Math.round((price / 24) * hours);
-      duration = `${hours} heure${hours > 1 ? 's' : ''}`;
-    }
-
-    return { ...data, finalPrice: price, duration };
-  };
-
-  const calculateNights = (checkIn: string, checkOut: string) => {
-    const start = new Date(checkIn);
-    const end = new Date(checkOut);
-    return Math.max(1, Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)));
-  };
-
-  const calculateHours = (startTime: string, endTime: string) => {
-    const [startHour] = startTime.split(':').map(Number);
-    const [endHour] = endTime.split(':').map(Number);
-    return Math.max(1, endHour - startHour);
-  };
-
+  // WhatsApp integration
   const handleWhatsAppRedirect = (data: ReservationData) => {
-    const message = generateWhatsAppMessage(data);
-    const whatsappNumber = "+22900000000"; // Remplacez par le vrai numéro
-    const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`;
-    
-    window.open(whatsappUrl, '_blank');
-    onClose();
+    try {
+      const message = generateWhatsAppMessage(data);
+      const whatsappNumber = "+22900000000";
+      const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`;
+      
+      const newWindow = window.open(whatsappUrl, '_blank');
+      if (!newWindow) {
+        throw new Error('Impossible d\'ouvrir WhatsApp');
+      }
+      onClose();
+    } catch (error) {
+      console.error('Erreur:', error);
+      addBotMessage("Désolé, une erreur s'est produite lors de l'ouverture de WhatsApp. Veuillez réessayer.");
+    }
   };
 
   const generateWhatsAppMessage = (data: ReservationData) => {
-    const roomInfo = ROOM_TYPES[data.roomType as keyof typeof ROOM_TYPES];
+    const roomInfo = ROOM_TYPES[data.roomType];
     const summary = generateReservationSummary(data);
 
     let dateInfo = '';
@@ -394,6 +443,40 @@ ${data.specialRequests ? `💬 *Demandes spéciales :*\n${data.specialRequests}\
 Merci de me confirmer la disponibilité et finaliser cette réservation.`;
   };
 
+ const generateReservationSummary = (data: ReservationData) => {
+  const roomInfo = ROOM_TYPES[data.roomType];
+  let price = roomInfo.price;
+  let duration = '';
+
+  if (data.type === 'classique') {
+    const nights = calculateNights(data.checkInDate, data.checkOutDate);
+    price = price * nights;
+    duration = `${nights} nuit${nights > 1 ? 's' : ''}`;
+  } else if (data.type === 'day-use') {
+    // Réduction de 30% pour day-use
+    price = Math.round(price * 0.7);
+    duration = `1 journée (${data.checkInTime} - ${data.checkOutTime})`;
+  } else if (data.type === 'flexible') {
+    const hours = calculateHours(data.checkInTime, data.checkOutTime);
+    // Prix horaire basé sur 1/24 du prix journalier
+    price = Math.round((price / 24) * hours * 1.2); // +20% pour flexibilité
+    duration = `${hours} heure${hours > 1 ? 's' : ''} (${data.checkInTime} - ${data.checkOutTime})`;
+  }
+
+  return { finalPrice: price, duration };
+};
+  const calculateNights = (checkIn: string, checkOut: string) => {
+    const start = new Date(checkIn);
+    const end = new Date(checkOut);
+    return Math.max(1, Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)));
+  };
+
+  const calculateHours = (startTime: string, endTime: string) => {
+    const [startHour] = startTime.split(':').map(Number);
+    const [endHour] = endTime.split(':').map(Number);
+    return Math.max(1, endHour - startHour);
+  };
+
   return (
     <AnimatePresence>
       {isOpen && (
@@ -436,7 +519,7 @@ Merci de me confirmer la disponibilité et finaliser cette réservation.`;
             <div className="flex-1 overflow-y-auto p-4 space-y-4">
               {messages.map((message) => (
                 <div
-                  key={message.id}
+                  key={`${message.id}-${message.timestamp.getTime()}`}
                   className={`flex ${message.type === 'user' ? 'justify-end' : 'justify-start'}`}
                 >
                   <div
@@ -482,11 +565,11 @@ Merci de me confirmer la disponibilité et finaliser cette réservation.`;
                   value={inputValue}
                   onChange={(e) => setInputValue(e.target.value)}
                   placeholder="Tapez votre message..."
-                  onKeyPress={(e) => e.key === 'Enter' && inputValue.trim() && handleUserInput(inputValue)}
+                  onKeyPress={(e) => e.key === 'Enter' && handleUserInput(inputValue)}
                   className="flex-1"
                 />
                 <Button
-                  onClick={() => inputValue.trim() && handleUserInput(inputValue)}
+                  onClick={() => handleUserInput(inputValue)}
                   disabled={!inputValue.trim()}
                   className="bg-green-500 hover:bg-green-600"
                 >
@@ -501,12 +584,12 @@ Merci de me confirmer la disponibilité et finaliser cette réservation.`;
   );
 }
 
-// Composants pour les étapes de réservation
-function DateSelector({ type, onComplete }: { type: string; onComplete: (dates: DateData) => void }) {
+// Component for date selection
+function DateSelector({ type, onComplete }: { type: 'classique' | 'day-use' | 'flexible'; onComplete: (dates: DateData) => void }) {
   const [checkInDate, setCheckInDate] = useState('');
   const [checkOutDate, setCheckOutDate] = useState('');
-  const [checkInTime, setCheckInTime] = useState('14:00');
-  const [checkOutTime, setCheckOutTime] = useState('12:00');
+  const [checkInTime, setCheckInTime] = useState(DEFAULT_CHECK_IN_TIME);
+  const [checkOutTime, setCheckOutTime] = useState(DEFAULT_CHECK_OUT_TIME);
 
   const handleSubmit = () => {
     const dates: DateData = {
@@ -517,6 +600,10 @@ function DateSelector({ type, onComplete }: { type: string; onComplete: (dates: 
     };
     onComplete(dates);
   };
+
+  const isDateValid = type === 'classique' 
+    ? checkInDate && checkOutDate && new Date(checkOutDate) > new Date(checkInDate)
+    : !!checkInDate;
 
   return (
     <div className="space-y-4 p-4 bg-white rounded-lg border">
@@ -569,7 +656,7 @@ function DateSelector({ type, onComplete }: { type: string; onComplete: (dates: 
       
       <Button
         onClick={handleSubmit}
-        disabled={!checkInDate || (type === 'classique' && !checkOutDate)}
+        disabled={!isDateValid}
         className="w-full bg-green-500 hover:bg-green-600"
       >
         Continuer
@@ -578,12 +665,15 @@ function DateSelector({ type, onComplete }: { type: string; onComplete: (dates: 
   );
 }
 
+// Component for guest selection
 function GuestSelector({ onComplete }: { onComplete: (guests: Guests) => void }) {
   const [adults, setAdults] = useState(2);
-  const [children, setChildren] = useState<Array<{ age: number }>>([]);
+  const [children, setChildren] = useState<Child[]>([]);
 
   const addChild = () => {
-    setChildren([...children, { age: 5 }]);
+    if (children.length < MAX_CHILDREN) {
+      setChildren([...children, { age: 5 }]);
+    }
   };
 
   const removeChild = (index: number) => {
@@ -592,7 +682,7 @@ function GuestSelector({ onComplete }: { onComplete: (guests: Guests) => void })
 
   const updateChildAge = (index: number, age: number) => {
     const newChildren = [...children];
-    newChildren[index].age = age;
+    newChildren[index].age = Math.max(0, Math.min(17, age));
     setChildren(newChildren);
   };
 
@@ -617,8 +707,8 @@ function GuestSelector({ onComplete }: { onComplete: (guests: Guests) => void })
           <Button
             variant="outline"
             size="icon"
-            onClick={() => setAdults(Math.min(4, adults + 1))}
-            disabled={adults >= 4}
+            onClick={() => setAdults(Math.min(MAX_ADULTS, adults + 1))}
+            disabled={adults >= MAX_ADULTS}
           >
             <Plus className="h-4 w-4" />
           </Button>
@@ -627,12 +717,12 @@ function GuestSelector({ onComplete }: { onComplete: (guests: Guests) => void })
 
       <div>
         <div className="flex items-center justify-between">
-          <Label>Enfants</Label>
+          <Label>Enfants (0-17 ans)</Label>
           <Button
             variant="outline"
             size="sm"
             onClick={addChild}
-            disabled={children.length >= 3}
+            disabled={children.length >= MAX_CHILDREN}
           >
             <Plus className="h-4 w-4 mr-1" />
             Ajouter
@@ -647,7 +737,7 @@ function GuestSelector({ onComplete }: { onComplete: (guests: Guests) => void })
               min="0"
               max="17"
               value={child.age}
-              onChange={(e) => updateChildAge(index, parseInt(e.target.value))}
+              onChange={(e) => updateChildAge(index, parseInt(e.target.value) || 0)}
               className="w-20"
             />
             <span className="text-sm">ans</span>
@@ -673,8 +763,9 @@ function GuestSelector({ onComplete }: { onComplete: (guests: Guests) => void })
   );
 }
 
+// Component for room selection
 function RoomSelector({ onComplete }: { onComplete: (room: Room) => void }) {
-  const [selectedRoom, setSelectedRoom] = useState('standard');
+  const [selectedRoom, setSelectedRoom] = useState<keyof typeof ROOM_TYPES>('standard');
 
   const handleSubmit = () => {
     onComplete({ roomType: selectedRoom });
@@ -689,7 +780,7 @@ function RoomSelector({ onComplete }: { onComplete: (room: Room) => void }) {
             className={`p-3 border rounded-lg cursor-pointer transition-colors ${
               selectedRoom === key ? 'border-green-500 bg-green-50' : 'border-gray-200'
             }`}
-            onClick={() => setSelectedRoom(key)}
+            onClick={() => setSelectedRoom(key as keyof typeof ROOM_TYPES)}
           >
             <div className="flex justify-between items-center">
               <div>
@@ -714,6 +805,7 @@ function RoomSelector({ onComplete }: { onComplete: (room: Room) => void }) {
   );
 }
 
+// Component for personal information
 function PersonalInfoForm({ 
   userInfo, 
   onComplete 
@@ -731,11 +823,13 @@ function PersonalInfoForm({
     onComplete({ firstName, lastName, phone, email, specialRequests });
   };
 
+  const isFormValid = firstName && lastName && phone;
+
   return (
     <div className="space-y-4 p-4 bg-white rounded-lg border">
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <Label>Prénom</Label>
+          <Label>Prénom *</Label>
           <Input
             value={firstName}
             onChange={(e) => setFirstName(e.target.value)}
@@ -744,7 +838,7 @@ function PersonalInfoForm({
           />
         </div>
         <div>
-          <Label>Nom</Label>
+          <Label>Nom *</Label>
           <Input
             value={lastName}
             onChange={(e) => setLastName(e.target.value)}
@@ -755,7 +849,7 @@ function PersonalInfoForm({
       </div>
       
       <div>
-        <Label>Téléphone</Label>
+        <Label>Téléphone *</Label>
         <Input
           value={phone}
           onChange={(e) => setPhone(e.target.value)}
@@ -766,7 +860,7 @@ function PersonalInfoForm({
       </div>
       
       <div>
-        <Label>Email</Label>
+        <Label>Email *</Label>
         <Input
           type="email"
           value={email}
@@ -789,7 +883,7 @@ function PersonalInfoForm({
 
       <Button
         onClick={handleSubmit}
-        disabled={!firstName || !lastName || !phone}
+        disabled={!isFormValid}
         className="w-full bg-green-500 hover:bg-green-600"
       >
         Finaliser
@@ -798,11 +892,23 @@ function PersonalInfoForm({
   );
 }
 
+// Component for reservation summary
 function ReservationSummary({ data, onConfirm }: { data: ReservationData; onConfirm: () => void }) {
-  const roomInfo = ROOM_TYPES[data.roomType as keyof typeof ROOM_TYPES];
-  const summary = generateSummary(data);
+  const roomInfo = ROOM_TYPES[data.roomType];
+  
+  const calculateNights = (checkIn: string, checkOut: string) => {
+    const start = new Date(checkIn);
+    const end = new Date(checkOut);
+    return Math.max(1, Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)));
+  };
 
-  function generateSummary(data: ReservationData) {
+  const calculateHours = (startTime: string, endTime: string) => {
+    const [startHour] = startTime.split(':').map(Number);
+    const [endHour] = endTime.split(':').map(Number);
+    return Math.max(1, endHour - startHour);
+  };
+
+  const generateSummary = (data: ReservationData) => {
     let price = roomInfo.price;
     let duration = '';
 
@@ -820,19 +926,9 @@ function ReservationSummary({ data, onConfirm }: { data: ReservationData; onConf
     }
 
     return { finalPrice: price, duration };
-  }
+  };
 
-  function calculateNights(checkIn: string, checkOut: string) {
-    const start = new Date(checkIn);
-    const end = new Date(checkOut);
-    return Math.max(1, Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)));
-  }
-
-  function calculateHours(startTime: string, endTime: string) {
-    const [startHour] = startTime.split(':').map(Number);
-    const [endHour] = endTime.split(':').map(Number);
-    return Math.max(1, endHour - startHour);
-  }
+  const summary = generateSummary(data);
 
   return (
     <div className="space-y-4 p-4 bg-white rounded-lg border">

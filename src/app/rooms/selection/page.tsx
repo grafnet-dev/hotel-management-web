@@ -22,7 +22,6 @@ import {
   Minus,
 } from 'lucide-react';
 
-// Couleurs définies pour le thème
 const colors = {
   teal: '#008080',
   lightTeal: '#E6F2F2',
@@ -44,7 +43,7 @@ interface Child {
   age: number;
 }
 
-// Interface pour Room (ajoutée)
+// Interface pour Room (modifiée pour éviter le conflit de types)
 interface Room {
   id: number;
   name: string;
@@ -53,12 +52,37 @@ interface Room {
   num_person: number;
   surface_area: number;
   view: string;
-  floor: number;
+  floor: number | string; // Accepte les deux types pour éviter l'erreur
   price_per_night: number;
   day_use_price?: number;
   hourly_rate?: number;
   amenities: Array<{ id: number; name: string }>;
   reservation_types: ReservationType[];
+}
+
+interface RoomData {
+  adults: number;
+  children: number[];
+}
+
+interface Config {
+  checkInDate: string;
+  checkOutDate: string;
+  checkInTime: string;
+  checkOutTime: string;
+  hours: number;
+  adults: number;
+  children: Child[];
+}
+
+interface RoomConfig {
+  checkInDate: string;
+  checkOutDate: string;
+  checkInTime?: string;
+  checkOutTime?: string;
+  hours?: number;
+  adults: number;
+  children: Child[];
 }
 
 interface SelectedRoom {
@@ -71,6 +95,32 @@ interface SelectedRoom {
   hours?: number;
   adults: number;
   children: Child[];
+}
+
+// Fonction utilitaire pour convertir une date en format YYYY-MM-DD sans décalage de fuseau horaire
+function formatDateForInput(dateString: string): string {
+  if (!dateString) return '';
+  
+  // Si c'est déjà au bon format, le retourner
+  if (dateString.match(/^\d{4}-\d{2}-\d{2}$/)) {
+    return dateString;
+  }
+  
+  try {
+    // Créer la date en assumant qu'elle est en UTC pour éviter les décalages
+    const date = new Date(dateString + 'T00:00:00.000Z');
+    if (isNaN(date.getTime())) return '';
+    
+    // Utiliser les méthodes UTC pour éviter les décalages de fuseau horaire
+    const year = date.getUTCFullYear();
+    const month = String(date.getUTCMonth() + 1).padStart(2, '0');
+    const day = String(date.getUTCDate()).padStart(2, '0');
+    
+    return `${year}-${month}-${day}`;
+  } catch (error) {
+    console.error('Erreur de conversion de date:', error);
+    return '';
+  }
 }
 
 // Fonction utilitaire pour afficher le type de réservation
@@ -92,7 +142,7 @@ export default function RoomSelectionPage() {
   const router = useRouter();
   const [selectedRooms, setSelectedRooms] = useState<SelectedRoom[]>([]);
   const [expandedRoom, setExpandedRoom] = useState<number | null>(null);
-
+  
   const checkIn = searchParams.get('checkIn');
   const checkOut = searchParams.get('checkOut');
   const reservationType = searchParams.get('reservationType') || 'classic';
@@ -101,19 +151,20 @@ export default function RoomSelectionPage() {
   const adults = parseInt(searchParams.get('adults') || '2');
   const children = parseInt(searchParams.get('children') || '0');
   const roomsCount = parseInt(searchParams.get('roomsCount') || '1');
+  
   const roomsData = searchParams.get('roomsData') 
-  ? JSON.parse(searchParams.get('roomsData')!).map((room: any) => {
-      return {
-        adults: room.adults,
-        children: room.children
-          .filter((age: number) => typeof age === 'number' && !isNaN(age))
-          .map((age: number, index: number) => ({
-            id: index,
-            age: age
-          }))
-      };
-    })
-  : [];
+    ? JSON.parse(searchParams.get('roomsData')!).map((room: RoomData) => {
+        return {
+          adults: room.adults,
+          children: room.children
+            .filter((age: number) => typeof age === 'number' && !isNaN(age))
+            .map((age: number, index: number) => ({
+              id: index,
+              age: age
+            }))
+        };
+      })
+    : [];
 
   const checkInDate = checkIn ? new Date(checkIn) : null;
   const checkOutDate = checkOut ? new Date(checkOut) : null;
@@ -134,17 +185,16 @@ export default function RoomSelectionPage() {
   };
 
   const duration = getDuration();
-
   const canSelectMore = selectedRooms.length < roomsCount;
 
-  const addRoomSelection = (room: Room, reservationType: string, roomConfig: any) => {
+  const addRoomSelection = (room: Room, reservationType: string, roomConfig: RoomConfig) => {
     if (!canSelectMore) return;
 
     const newSelection: SelectedRoom = {
       roomId: room.id,
       reservationType,
-      checkInDate: checkIn || '',
-      checkOutDate: checkOut || '',
+      checkInDate: roomConfig.checkInDate,
+      checkOutDate: roomConfig.checkOutDate,
       checkInTime: roomConfig.checkInTime,
       checkOutTime: roomConfig.checkOutTime,
       hours: roomConfig.hours,
@@ -184,15 +234,14 @@ export default function RoomSelectionPage() {
 
   const proceedToBooking = () => {
     const bookingData = {
-  selectedRooms,
-  checkIn,
-  checkOut,
-  adults,
-  children,
-  roomsCount,
-  totalPrice: getTotalPrice()
-};
-
+      selectedRooms,
+      checkIn,
+      checkOut,
+      adults,
+      children,
+      roomsCount,
+      totalPrice: getTotalPrice()
+    };
     
     sessionStorage.setItem('bookingData', JSON.stringify(bookingData));
     router.push('/booking/multiple');
@@ -282,15 +331,14 @@ export default function RoomSelectionPage() {
                         </div>
                         <div className="text-xs text-gray-600">
                           <div>{getReservationTypeDisplay(selection.reservationType)}</div>
-                         <div>
-  {selection.adults} adulte{selection.adults > 1 ? 's' : ''}, {selection.children.length} enfant{selection.children.length > 1 ? 's' : ''}
-  {selection.children.length > 0 && (
-    <span className="ml-1 text-gray-500">
-      ({selection.children.map((c) => `${c.age} ans`).join(', ')})
-    </span>
-  )}
-</div>
-
+                          <div>
+                            {selection.adults} adulte{selection.adults > 1 ? 's' : ''}, {selection.children.length} enfant{selection.children.length > 1 ? 's' : ''}
+                            {selection.children.length > 0 && (
+                              <span className="ml-1 text-gray-500">
+                                ({selection.children.map((c) => `${c.age} ans`).join(', ')})
+                              </span>
+                            )}
+                          </div>
                         </div>
                       </div>
                     ) : null;
@@ -384,10 +432,30 @@ export default function RoomSelectionPage() {
                       {/* Actions */}
                       <div className="flex flex-col justify-between">
                         <div className="text-right mb-4">
-                          <div className="text-2xl font-bold text-blue-600">
-                            À partir de {room.price_per_night.toLocaleString()} FCFA
-                          </div>
-                          <div className="text-sm text-gray-600">par nuit</div>
+                          {reservationType === 'classic' && (
+                            <>
+                              <div className="text-2xl font-bold text-blue-600">
+                                À partir de {room.price_per_night.toLocaleString()} FCFA
+                              </div>
+                              <div className="text-sm text-gray-600">par nuit</div>
+                            </>
+                          )}
+                          {reservationType === 'day_use' && (
+                            <>
+                              <div className="text-2xl font-bold text-blue-600">
+                                À partir de {(room.day_use_price || Math.round(room.price_per_night * 0.7)).toLocaleString()} FCFA
+                              </div>
+                              <div className="text-sm text-gray-600">par jour (Day Use)</div>
+                            </>
+                          )}
+                          {reservationType === 'flexible' && (
+                            <>
+                              <div className="text-2xl font-bold text-blue-600">
+                                À partir de {(room.hourly_rate || Math.round(room.price_per_night / 24)).toLocaleString()} FCFA
+                              </div>
+                              <div className="text-sm text-gray-600">par heure</div>
+                            </>
+                          )}
                         </div>
 
                         <div className="space-y-2">
@@ -406,8 +474,6 @@ export default function RoomSelectionPage() {
                               Sélection complète
                             </Button>
                           )}
-                          
-                         
                         </div>
                       </div>
                     </div>
@@ -421,16 +487,19 @@ export default function RoomSelectionPage() {
                           exit={{ opacity: 0, height: 0 }}
                           className="border-t bg-gray-50"
                         >
-                          <RoomConfiguration
-                            room={room}
-                            defaultCheckIn={checkIn || ''}
-                            defaultCheckOut={checkOut || ''}
-                            defaultAdults={roomsData[selectedRooms.length]?.adults || 2}
-                            defaultChildren={roomsData[selectedRooms.length]?.children || []}
-                            searchReservationType={reservationType}
-                            onConfirm={(reservationType, config) => addRoomSelection(room, reservationType, config)}
-                            onCancel={() => setExpandedRoom(null)}
-                          />
+                        <RoomConfiguration
+  room={room}
+  defaultCheckIn={checkIn || ''}
+  defaultCheckOut={checkOut || ''}
+  defaultAdults={roomsData[selectedRooms.length]?.adults || 2}
+  defaultChildren={roomsData[selectedRooms.length]?.children || []}
+  searchReservationType={reservationType}
+ 
+  defaultStartTime={startTime || '14:00'}
+  defaultEndTime={endTime || '12:00'}
+  onConfirm={(reservationType, config) => addRoomSelection(room, reservationType, config)}
+  onCancel={() => setExpandedRoom(null)}
+/>
                         </motion.div>
                       )}
                     </AnimatePresence>
@@ -445,6 +514,8 @@ export default function RoomSelectionPage() {
   );
 }
 
+
+
 // Composant de configuration de chambre
 function RoomConfiguration({ 
   room, 
@@ -453,6 +524,9 @@ function RoomConfiguration({
   defaultAdults, 
   defaultChildren,
   searchReservationType,
+  // ✅ AJOUTER CES PARAMÈTRES :
+  defaultStartTime,
+  defaultEndTime,
   onConfirm, 
   onCancel 
 }: {
@@ -462,32 +536,43 @@ function RoomConfiguration({
   defaultAdults: number;
   defaultChildren: number[];
   searchReservationType: string;
-  onConfirm: (reservationType: string, config: any) => void;
+  // ✅ AJOUTER CES TYPES :
+  defaultStartTime: string;
+  defaultEndTime: string;
+  onConfirm: (reservationType: string, config: Config) => void;
   onCancel: () => void;
 }) {
-  const [reservationType, setReservationType] = useState(searchReservationType || 'classic');
-  const [checkInDate, setCheckInDate] = useState(defaultCheckIn.split('T')[0]);
-  const [checkOutDate, setCheckOutDate] = useState(defaultCheckOut.split('T')[0]);
-  const [checkInTime, setCheckInTime] = useState('14:00');
-  const [checkOutTime, setCheckOutTime] = useState('12:00');
+  const [reservationType, setReservationType] = useState(searchReservationType);
+  
+  // Utilisation de la fonction de formatage corrigée pour éviter le décalage de dates
+  const [checkInDate, setCheckInDate] = useState(() => formatDateForInput(defaultCheckIn));
+  const [checkOutDate, setCheckOutDate] = useState(() => formatDateForInput(defaultCheckOut));
+  
+    const [checkInTime, setCheckInTime] = useState(defaultStartTime); // ✅ Utilise la recherche
+  const [checkOutTime, setCheckOutTime] = useState(defaultEndTime);
   const [hours, setHours] = useState(4);
   const [adults, setAdults] = useState(defaultAdults);
   const [children, setChildren] = useState<Child[]>([]);
 
   // Initialiser les enfants avec des IDs uniques
-useEffect(() => {
-  if (defaultChildren.length > 0) {
-  
-    const initialChildren: Child[] = defaultChildren.map((item: any, i: number) => ({
-      id: Date.now() + i,
-      age: typeof item === 'number' ? item : item.age
-    }));
-    setChildren(initialChildren);
+  useEffect(() => {
+    if (defaultChildren.length > 0) {
+      const initialChildren: Child[] = defaultChildren.map((item: number | { age: number }, i: number) => ({
+        id: Date.now() + i,
+        age: typeof item === 'number' ? item : item.age
+      }));
+      setChildren(initialChildren);
+    }
+  }, [defaultChildren]);
+  useEffect(() => {
+  if (reservationType === 'flexible' && defaultStartTime && defaultEndTime) {
+    // Calculer automatiquement les heures basées sur la recherche
+    const start = new Date(`2000-01-01T${defaultStartTime}`);
+    const end = new Date(`2000-01-01T${defaultEndTime}`);
+    const calculatedHours = Math.max(1, (end.getTime() - start.getTime()) / (1000 * 60 * 60));
+    setHours(calculatedHours);
   }
-}, []);
-
-
-
+}, [reservationType, defaultStartTime, defaultEndTime]);
 
   const addChild = () => {
     if (children.length < MAX_CHILDREN_PER_ROOM) {
@@ -507,48 +592,45 @@ useEffect(() => {
     );
   };
 
-const calculatePrice = () => {
-  if (reservationType === 'classic') {
-    const checkIn = new Date(checkInDate);
-    const checkOut = new Date(checkOutDate);
-    const nights = Math.max(1, Math.ceil((checkOut.getTime() - checkIn.getTime()) / (1000 * 60 * 60 * 24)));
-    return room.price_per_night * nights;
-  } else if (reservationType === 'day_use') {
-    return room.day_use_price ?? Math.round(room.price_per_night * 0.7);
-  } else if (reservationType === 'flexible') {
-    const hourlyRate = room.hourly_rate ?? Math.round(room.price_per_night / 24);
-    return hourlyRate * hours;
-  }
-  return room.price_per_night;
-};
-
-
-const handleConfirm = () => {
- 
-  let finalCheckOutTime = checkOutTime;
-
-  if (reservationType === 'flexible') {
-    const [hour, minute] = checkInTime.split(':').map(Number);
-    const checkInDateObj = new Date(2000, 0, 1, hour, minute);
-    const checkOutDateObj = new Date(checkInDateObj.getTime() + hours * 60 * 60 * 1000);
-    
-    const pad = (n: number) => (n < 10 ? '0' + n : n);
-    finalCheckOutTime = `${pad(checkOutDateObj.getHours())}:${pad(checkOutDateObj.getMinutes())}`;
-  }
-
-  const config = {
-    checkInDate,
-    checkOutDate,
-    checkInTime: reservationType === 'flexible' ? checkInTime : undefined,
-    checkOutTime: reservationType === 'flexible' ? finalCheckOutTime : undefined,
-    hours: reservationType === 'flexible' ? hours : undefined,
-    adults,
-    children
+  const calculatePrice = () => {
+    if (reservationType === 'classic') {
+      const checkIn = new Date(checkInDate);
+      const checkOut = new Date(checkOutDate);
+      const nights = Math.max(1, Math.ceil((checkOut.getTime() - checkIn.getTime()) / (1000 * 60 * 60 * 24)));
+      return room.price_per_night * nights;
+    } else if (reservationType === 'day_use') {
+      return room.day_use_price ?? Math.round(room.price_per_night * 0.7);
+    } else if (reservationType === 'flexible') {
+      const hourlyRate = room.hourly_rate ?? Math.round(room.price_per_night / 24);
+      return hourlyRate * hours;
+    }
+    return room.price_per_night;
   };
 
-  onConfirm(reservationType, config);
-};
+  const handleConfirm = () => {
+    let finalCheckOutTime = checkOutTime;
 
+    if (reservationType === 'flexible') {
+      const [hour, minute] = checkInTime.split(':').map(Number);
+      const checkInDateObj = new Date(`2000-01-01T${hour}:${minute}:00`);
+      const checkOutDateObj = new Date(checkInDateObj.getTime() + hours * 60 * 60 * 1000);
+      
+      const pad = (n: number) => (n < 10 ? '0' + n : n);
+      finalCheckOutTime = `${pad(checkOutDateObj.getHours())}:${pad(checkOutDateObj.getMinutes())}`;
+    }
+
+    const config: Config = {
+      checkInDate: checkInDate || defaultCheckIn,
+      checkOutDate: checkOutDate || defaultCheckOut,
+      checkInTime: reservationType === 'flexible' ? checkInTime : '',
+      checkOutTime: reservationType === 'flexible' ? finalCheckOutTime : '',
+      hours: reservationType === 'flexible' ? hours : 0, 
+      adults,
+      children
+    };
+
+    onConfirm(reservationType, config);
+  };
 
   return (
     <div className="p-6">
@@ -586,6 +668,13 @@ const handleConfirm = () => {
                     {type.slots[0].checkin_time}h - {type.slots[0].checkout_time}h
                   </div>
                 )}
+                
+                {/* Affichage du prix pour ce type */}
+                <div className="text-xs mt-2 font-medium" style={{ color: colors.gold }}>
+                  {type.code === 'classic' && `${room.price_per_night.toLocaleString()} FCFA/nuit`}
+                  {type.code === 'day_use' && `${(room.day_use_price || Math.round(room.price_per_night * 0.7)).toLocaleString()} FCFA/jour`}
+                  {type.code === 'flexible' && `${(room.hourly_rate || Math.round(room.price_per_night / 24)).toLocaleString()} FCFA/h`}
+                </div>
               </div>
             </Card>
           ))}
@@ -604,6 +693,9 @@ const handleConfirm = () => {
               className="mt-1"
               style={{ borderColor: colors.teal }}
             />
+            <div className="text-xs text-gray-500 mt-1">
+              Valeur reçue: {defaultCheckIn}
+            </div>
           </div>
           <div>
             <Label style={{ color: colors.darkTeal }}>Date de départ</Label>
@@ -615,6 +707,9 @@ const handleConfirm = () => {
               className="mt-1"
               style={{ borderColor: colors.teal }}
             />
+            <div className="text-xs text-gray-500 mt-1">
+              Valeur reçue: {defaultCheckOut}
+            </div>
           </div>
         </div>
       )}
@@ -655,13 +750,11 @@ const handleConfirm = () => {
             />
           </div>
           <div>
-            <Label style={{ color: colors.darkTeal }}>Nombre d'heures</Label>
+            <Label style={{ color: colors.darkTeal }}>Heure de départ</Label>
             <Input
-              type="number"
-              min="1"
-              max="12"
-              value={hours}
-              onChange={(e) => setHours(parseInt(e.target.value))}
+              type="time"
+              value={checkOutTime}
+              onChange={(e) => setCheckOutTime(e.target.value)}
               className="mt-1"
               style={{ borderColor: colors.teal }}
             />
