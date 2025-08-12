@@ -595,7 +595,7 @@ const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
               <span style={{ color: colors.gold }}>Notre</span> Galerie
             </h2>
             <p className="text-xl max-w-2xl mx-auto" style={{ color: colors.teal }}>
-             Explorez la cuisine raffinée du restaurant de l hôtel Bain Du Lac à Cotonou
+             Explorez la cuisine raffinée du restaurant de l hôtel Relacs Zone à Cotonou
             </p>
           </motion.div>
           

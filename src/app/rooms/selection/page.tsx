@@ -1,6 +1,6 @@
 'use client';
 import { useSearchParams, useRouter } from 'next/navigation';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '../../../../components/ui/button';
 import { Card } from '../../../../components/ui/card';
@@ -132,7 +132,8 @@ function getReservationTypeDisplay(code: string): string {
   }
 }
 
-export default function RoomSelectionPage() {
+// Component that uses useSearchParams - wrapped in Suspense
+function RoomSelectionContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const [selectedRooms, setSelectedRooms] = useState<SelectedRoom[]>([]);
@@ -510,6 +511,19 @@ export default function RoomSelectionPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+// Main component with Suspense wrapper
+export default function RoomSelectionPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen pt-32 bg-gray-50 flex items-center justify-center">
+        <div>Chargement des paramètres de recherche...</div>
+      </div>
+    }>
+      <RoomSelectionContent />
+    </Suspense>
   );
 }
 

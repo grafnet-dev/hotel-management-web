@@ -203,7 +203,7 @@ export default function About() {
               
               <div className="space-y-6 text-lg leading-relaxed">
                 <p style={{ color: colors.darkTeal }}>
-                  Depuis plus de 35 ans, <strong style={{ color: colors.maroon }}>Le Bain de Lac</strong> représente 
+                  Depuis plus de 35 ans, <strong style={{ color: colors.maroon }}> Relacs Zone</strong> représente 
                   le summum de la qualité hôtelière en Afrique de la Ouest. Notre établissement 
                   situé au cœur de Cotonou combine harmonieusement le patrimoine béninois 
                   avec les standards internationaux de luxe.

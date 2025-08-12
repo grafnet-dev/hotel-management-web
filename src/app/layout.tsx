@@ -12,7 +12,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: 'Bain de Lac - Hôtel de Luxe',
+  title: 'Relacs Zone - Hôtel de Luxe',
   description: 'Découvrez notre hôtel de charme au bord du lac, offrant des services haut de gamme pour un séjour inoubliable.',
   
 };

@@ -369,7 +369,7 @@ const services = [
 const carouselImages = [
   {
     url: "https://images.pexels.com/photos/1134176/pexels-photo-1134176.jpeg",
-    title: "Bain du Lac - Cotonou",
+    title: "Relacs Zone - Cotonou",
     subtitle: "Vue panoramique sur le lac"
   },
   {
