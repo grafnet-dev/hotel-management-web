@@ -35,7 +35,7 @@ export default function HotelRegister() {
   setFormData(prev => ({ ...prev, [field]: value }));
 };
 
-const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+const handleSubmit = async (e: React.MouseEvent<HTMLButtonElement>) => {
   if (e) e.preventDefault();
   setIsLoading(true);
   setTimeout(() => {
@@ -77,7 +77,7 @@ const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
           </p>
           <div className="flex items-center justify-center space-x-2 text-lg">
             <Crown className="h-6 w-6" style={{ color: colors.gold }} />
-            <span className="ml-2" style={{ color: colors.teal }}>Devenez membre privilégié dès aujourd'hui</span>
+            <span className="ml-2" style={{ color: colors.teal }}>Devenez membre privilégié dès aujourd&rsquo;hui</span>
           </div>
         </div>
 
@@ -93,11 +93,11 @@ const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
               style={{ background: `linear-gradient(135deg, ${colors.cream}, #ffffff)` }}
             >
               <h2 className="text-3xl font-bold mb-6" style={{ color: colors.maroon }}>
-                Bienvenue dans l'Excellence
+                Bienvenue dans l&rsquo;Excellence
               </h2>
               <p className="text-lg mb-8" style={{ color: colors.teal }}>
                 En devenant membre de Bain de Lac, vous accédez à un univers de privilèges exclusifs 
-                et d'expériences inoubliables au cœur de notre resort 5 étoiles.
+                et d&rsquo;expériences inoubliables au cœur de notre resort 5 étoiles.
               </p>
               <div className="grid grid-cols-2 gap-6">
                 <div 
@@ -505,9 +505,9 @@ const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
                           required
                         />
                         <span className="text-sm" style={{ color: colors.teal }}>
-                          J'accepte les{' '}
+                          J&rsquo;accepte les{' '}
                           <button className="font-bold hover:underline" style={{ color: colors.orange }}>
-                            conditions d'utilisation
+                            conditions d&rsquo;utilisation
                           </button>
                           {' '}et la{' '}
                           <button className="font-bold hover:underline" style={{ color: colors.orange }}>

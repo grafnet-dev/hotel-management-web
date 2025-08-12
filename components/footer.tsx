@@ -1,20 +1,22 @@
-
 import { Mail, Phone, MapPin, Facebook, Instagram, Twitter, Send, Heart, Star, Clock, Shield, Award } from 'lucide-react';
 import Link from 'next/link';
 
 const colors = {
-  teal: "#005D7C",
-  gold: "#CE9226",     
+  teal: "#014d71",       // Nouvelle couleur principale
+  gold: "#f0b800",       // Nouvelle couleur secondaire     
   orange: '#FF8C42',     
   maroon: '#800020',     
   lightTeal: '#E6F2F2',  
-  darkTeal: '#006666',   
+  darkTeal: '#013953',   // Nuance plus foncée de #014d71
   cream: '#F5F5DC',     
 };
 
 export function Footer() {
   return (
-    <footer className="relative overflow-hidden" style={{ background: `linear-gradient(135deg, ${colors.teal} 0%, ${colors.darkTeal} 50%, ${colors.maroon} 100%)` }}>
+    <footer className="relative overflow-hidden" style={{ 
+      background: `linear-gradient(135deg, ${colors.teal} 0%, ${colors.darkTeal} 50%, ${colors.maroon} 100%)`,
+      fontFamily: "'Poppins', 'Times New Roman', sans-serif"
+    }}>
       {/* Decorative Elements */}
       <div className="absolute inset-0 opacity-10">
         <div className="absolute top-10 left-20 w-32 h-32 rounded-full" style={{ backgroundColor: colors.gold }}></div>
@@ -29,19 +31,19 @@ export function Footer() {
           <div className="flex flex-wrap justify-center items-center gap-8 text-center">
             <div className="flex items-center gap-2 text-white">
               <Award className="w-5 h-5" style={{ color: colors.gold }} />
-              <span className="text-sm font-medium" style={{ fontFamily: 'Bahnschrift, sans-serif' }}>
+              <span className="text-sm font-medium">
                 Hôtel 5 étoiles certifié
               </span>
             </div>
             <div className="flex items-center gap-2 text-white">
               <Shield className="w-5 h-5" style={{ color: colors.gold }} />
-              <span className="text-sm font-medium" style={{ fontFamily: 'Bahnschrift, sans-serif' }}>
+              <span className="text-sm font-medium">
                 Service sécurisé 24h/24
               </span>
             </div>
             <div className="flex items-center gap-2 text-white">
               <Star className="w-5 h-5" style={{ color: colors.gold }} />
-              <span className="text-sm font-medium" style={{ fontFamily: 'Bahnschrift, sans-serif' }}>
+              <span className="text-sm font-medium">
                 Excellence béninoise
               </span>
             </div>
@@ -62,15 +64,14 @@ export function Footer() {
                 </div>
                 <h3 
                   className="text-2xl font-bold text-white leading-tight"
-                  style={{ fontFamily: 'Bahnschrift, sans-serif' }}
                 >
-                  Hôtel Bain du Lac<br />
+                  Relacs Zone<br />
                   <span style={{ color: colors.gold }}>Bénin</span>
                 </h3>
               </div>
               
-              <p className="text-white/80 leading-relaxed" style={{ fontFamily: 'Bahnschrift, sans-serif' }}>
-             Séjournez à Bain du Lac  et vivez une expérience unique mêlant confort, élégance et chaleur béninoise.
+              <p className="text-white/80 leading-relaxed">
+                Séjournez à Relacs Zone et vivez une expérience unique mêlant confort, élégance et chaleur béninoise.
               </p>
             </div>
 
@@ -83,10 +84,10 @@ export function Footer() {
                   <Phone className="h-6 w-6 text-white" />
                 </div>
                 <div>
-                  <p className="text-xs font-medium mb-1" style={{ color: colors.cream, fontFamily: 'Bahnschrift, sans-serif' }}>
+                  <p className="text-xs font-medium mb-1" style={{ color: colors.cream }}>
                     Service disponible 24h/24
                   </p>
-                  <p className="font-bold text-lg text-white" style={{ fontFamily: 'Bahnschrift, sans-serif' }}>
+                  <p className="font-bold text-lg text-white">
                     +229 21 30 40 50
                   </p>
                 </div>
@@ -98,10 +99,7 @@ export function Footer() {
           <div className="space-y-6">
             <div className="flex items-center gap-3 mb-6">
               <div className="w-8 h-1 rounded-full" style={{ backgroundColor: colors.gold }}></div>
-              <h3 
-                className="text-xl font-bold text-white"
-                style={{ fontFamily: 'Bahnschrift, sans-serif' }}
-              >
+              <h3 className="text-xl font-bold text-white">
                 Contact
               </h3>
             </div>
@@ -123,7 +121,7 @@ export function Footer() {
                 {
                   icon: Mail,
                   title: "Email",
-                  content: ["contact@hotelbaindulac.bj"],
+                  content: ["contact@relacszone.bj"],
                   color: colors.cream
                 }
               ].map((contact, index) => (
@@ -133,11 +131,11 @@ export function Footer() {
                     <contact.icon className="h-5 w-5" style={{ color: contact.color }} />
                   </div>
                   <div className="flex-1">
-                    <h4 className="font-semibold text-sm mb-1" style={{ color: contact.color, fontFamily: 'Bahnschrift, sans-serif' }}>
+                    <h4 className="font-semibold text-sm mb-1" style={{ color: contact.color }}>
                       {contact.title}
                     </h4>
                     {contact.content.map((line, i) => (
-                      <p key={i} className="text-white/90 text-sm leading-relaxed" style={{ fontFamily: 'Bahnschrift, sans-serif' }}>
+                      <p key={i} className="text-white/90 text-sm leading-relaxed">
                         {line}
                       </p>
                     ))}
@@ -151,10 +149,7 @@ export function Footer() {
           <div className="space-y-6">
             <div className="flex items-center gap-3 mb-6">
               <div className="w-8 h-1 rounded-full" style={{ backgroundColor: colors.gold }}></div>
-              <h3 
-                className="text-xl font-bold text-white"
-                style={{ fontFamily: 'Bahnschrift, sans-serif' }}
-              >
+              <h3 className="text-xl font-bold text-white">
                 Nos Services
               </h3>
             </div>
@@ -177,7 +172,7 @@ export function Footer() {
                          style={{ backgroundColor: `${colors.gold}22` }}>
                       {item.icon}
                     </div>
-                    <span style={{ fontFamily: 'Bahnschrift, sans-serif' }} className="group-hover:font-medium">
+                    <span className="group-hover:font-medium">
                       {item.label}
                     </span>
                     <div className="w-0 h-0.5 group-hover:w-4 transition-all duration-300" 
@@ -192,15 +187,12 @@ export function Footer() {
           <div className="space-y-8">
             <div className="flex items-center gap-3 mb-6">
               <div className="w-8 h-1 rounded-full" style={{ backgroundColor: colors.gold }}></div>
-              <h3 
-                className="text-xl font-bold text-white"
-                style={{ fontFamily: 'Bahnschrift, sans-serif' }}
-              >
+              <h3 className="text-xl font-bold text-white">
                 Suivez-nous
               </h3>
             </div>
             
-            <p className="text-white/80 leading-relaxed" style={{ fontFamily: 'Bahnschrift, sans-serif' }}>
+            <p className="text-white/80 leading-relaxed">
               Découvrez nos actualités, offres spéciales et la beauté du Bénin à travers nos réseaux sociaux.
             </p>
             
@@ -233,30 +225,28 @@ export function Footer() {
                  style={{ background: `linear-gradient(135deg, ${colors.darkTeal}88, ${colors.teal}44)` }}>
               <div className="flex items-center gap-2 mb-3">
                 <Mail className="w-5 h-5" style={{ color: colors.gold }} />
-                <h4 className="font-bold text-white" style={{ fontFamily: 'Bahnschrift, sans-serif' }}>
+                <h4 className="font-bold text-white">
                   Newsletter
                 </h4>
               </div>
-              <p className="text-white/80 text-sm mb-4" style={{ fontFamily: 'Bahnschrift, sans-serif' }}>
+              <p className="text-white/80 text-sm mb-4">
                 Recevez nos offres exclusives
               </p>
               <div className="flex gap-2">
                 <input 
-  type="email" 
-  placeholder="Votre email" 
-  className="flex-1 px-4 py-3 text-sm rounded-xl border-0 focus:outline-none focus:ring-2 transition-all duration-300"
-  style={{ 
-    backgroundColor: colors.cream,
-    color: colors.darkTeal,
-    fontFamily: 'Bahnschrift, sans-serif',
-    boxShadow: `0 0 0 2px ${colors.gold}`, 
-  }}
-/>
+                  type="email" 
+                  placeholder="Votre email" 
+                  className="flex-1 px-4 py-3 text-sm rounded-xl border-0 focus:outline-none focus:ring-2 transition-all duration-300"
+                  style={{ 
+                    backgroundColor: colors.cream,
+                    color: colors.darkTeal,
+                    boxShadow: `0 0 0 2px ${colors.gold}`, 
+                  }}
+                />
                 <button 
                   className="px-4 py-3 rounded-xl text-white font-bold transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-xl"
                   style={{ 
-                    background: `linear-gradient(45deg, ${colors.gold}, ${colors.orange})`,
-                    fontFamily: 'Bahnschrift, sans-serif'
+                    background: `linear-gradient(45deg, ${colors.gold}, ${colors.orange})`
                   }}
                 >
                   <Send className="w-4 h-4" />
@@ -268,10 +258,10 @@ export function Footer() {
             <div className="flex items-center gap-3 p-4 rounded-xl border border-white/20">
               <Clock className="w-5 h-5" style={{ color: colors.gold }} />
               <div>
-                <p className="text-white font-medium text-sm" style={{ fontFamily: 'Bahnschrift, sans-serif' }}>
+                <p className="text-white font-medium text-sm">
                   Réception 24h/24
                 </p>
-                <p className="text-white/70 text-xs" style={{ fontFamily: 'Bahnschrift, sans-serif' }}>
+                <p className="text-white/70 text-xs">
                   Toujours à votre service
                 </p>
               </div>
@@ -283,11 +273,11 @@ export function Footer() {
         <div className="mt-16 pt-8 border-t border-white/20">
           <div className="flex flex-col lg:flex-row justify-between items-center gap-6">
             <div className="text-center lg:text-left">
-              <p className="text-white/90 font-medium" style={{ fontFamily: 'Bahnschrift, sans-serif' }}>
-                &copy; {new Date().getFullYear()} Hôtel Prestige Bénin. Tous droits réservés.
+              <p className="text-white/90 font-medium">
+                &copy; {new Date().getFullYear()} Relacs Zone. Tous droits réservés.
               </p>
-              <p className="text-white/60 text-sm mt-1" style={{ fontFamily: 'Bahnschrift, sans-serif' }}>
-                Conçu avec <Heart className="inline w-4 h-4 mx-1" style={{ color: colors.gold }} /> pour valoriser l hospitalité béninoise
+              <p className="text-white/60 text-sm mt-1">
+                Conçu avec <Heart className="inline w-4 h-4 mx-1" style={{ color: colors.gold }} /> pour valoriser l&rsquo;hospitalité béninoise
               </p>
             </div>
             
@@ -295,21 +285,18 @@ export function Footer() {
               <Link 
                 href="/privacy" 
                 className="text-white/80 hover:text-white transition-colors hover:underline"
-                style={{ fontFamily: 'Bahnschrift, sans-serif' }}
               >
                 Politique de confidentialité
               </Link>
               <Link 
                 href="/terms" 
                 className="text-white/80 hover:text-white transition-colors hover:underline"
-                style={{ fontFamily: 'Bahnschrift, sans-serif' }}
               >
-               Conditions générales
+                Conditions générales
               </Link>
               <Link 
                 href="/cookies" 
                 className="text-white/80 hover:text-white transition-colors hover:underline"
-                style={{ fontFamily: 'Bahnschrift, sans-serif' }}
               >
                 Politique des cookies
               </Link>

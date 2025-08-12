@@ -6,6 +6,7 @@ import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
 import { MessageCircle, X, Send, Plus, Minus, Bot } from 'lucide-react';
+import sampleRooms from '../types'; 
 
 // Types
 interface ChatMessage {
@@ -33,16 +34,61 @@ interface DateData {
   checkOutTime: string;
 }
 
-interface Room {
-  roomType: keyof typeof ROOM_TYPES;
-}
-
 interface PersonalInfo {
   firstName: string;
   lastName: string;
   phone: string;
   email: string;
   specialRequests: string;
+}
+
+interface Room {
+  id: number;
+  name: string;
+  status: string;
+  room_type: string;
+  num_person: number;
+  is_available: boolean;
+  price_per_night: number;
+  day_use_price: number;
+  hourly_rate: number;
+  floor: string;
+  surface_area: number;
+  view: string;
+  bed_type: string;
+  flooring_type: string | boolean;
+  image: string;
+  is_smoking_allowed: boolean;
+  is_pets_allowed: boolean;
+  in_maintenance: boolean;
+  room_images: {
+    image: string;
+  }[];
+  amenities: Array<{
+    id: number;
+    name: string;
+    description: string | boolean;
+    icon: string;
+  }>;
+  reservation_types: Array<{
+    id: number;
+    name: string;
+    code: string;
+    description: string | boolean;
+    is_flexible: boolean;
+    slots: Array<{
+      checkin_time: number;
+      checkout_time: number;
+    }>;
+  }>;
+  pricing: Array<{
+    reservation_type_id: number;
+    reservation_type_name: string;
+    price: number;
+    hourly_price: number;
+    is_hourly_based: boolean;
+    currency: string | null;
+  }>;
 }
 
 interface ReservationData {
@@ -53,7 +99,7 @@ interface ReservationData {
   checkOutTime: string;
   adults: number;
   children: Child[];
-  roomType: keyof typeof ROOM_TYPES;
+  selectedRoom: Room | null;
   firstName: string;
   lastName: string;
   phone: string;
@@ -73,13 +119,6 @@ interface ChatbotWhatsAppProps {
 }
 
 // Constants
-const ROOM_TYPES = {
-  'standard': { name: 'Chambre Standard', price: 18000 },
-  'deluxe': { name: 'Chambre Deluxe', price: 35000 },
-  'suite': { name: 'Suite Présidentielle', price: 85000 },
-  'family': { name: 'Suite Familiale', price: 65000 }
-};
-
 const TRIGGER_PHRASES = [
   'bonjour', 'bonsoir', 'salut', 'hello', 'hi',
   'je veux réserver', 'réservation', 'réserver',
@@ -92,9 +131,44 @@ const MAX_CHILDREN = 3;
 const DEFAULT_CHECK_IN_TIME = '14:00';
 const DEFAULT_CHECK_OUT_TIME = '12:00';
 
+// Utility functions (moved to top level)
+const calculateNights = (checkIn: string, checkOut: string) => {
+  const start = new Date(checkIn);
+  const end = new Date(checkOut);
+  return Math.max(1, Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)));
+};
+
+const calculateHours = (startTime: string, endTime: string) => {
+  const [startHour, startMinute] = startTime.split(':').map(Number);
+  const [endHour, endMinute] = endTime.split(':').map(Number);
+  return Math.max(1, endHour - startHour + (endMinute - startMinute) / 60);
+};
+
+const generateReservationSummary = (data: ReservationData) => {
+  if (!data.selectedRoom) return { finalPrice: 0, duration: '' };
+
+  const room = data.selectedRoom;
+  let price = 0;
+  let duration = '';
+
+  if (data.type === 'classique') {
+    const nights = calculateNights(data.checkInDate, data.checkOutDate);
+    price = room.price_per_night * nights;
+    duration = `${nights} nuit${nights > 1 ? 's' : ''}`;
+  } else if (data.type === 'day-use') {
+    price = room.day_use_price;
+    duration = `1 journée (${data.checkInTime} - ${data.checkOutTime})`;
+  } else if (data.type === 'flexible') {
+    const hours = calculateHours(data.checkInTime, data.checkOutTime);
+    price = room.hourly_rate * hours;
+    duration = `${hours} heure${hours > 1 ? 's' : ''} (${data.checkInTime} - ${data.checkOutTime})`;
+  }
+
+  return { finalPrice: price, duration };
+};
+
 export function ChatbotWhatsApp({ isOpen, onClose, userInfo }: ChatbotWhatsAppProps) {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
- 
   const [inputValue, setInputValue] = useState('');
   const [currentStep, setCurrentStep] = useState('greeting');
   const [reservationData, setReservationData] = useState<ReservationData>({
@@ -105,7 +179,7 @@ export function ChatbotWhatsApp({ isOpen, onClose, userInfo }: ChatbotWhatsAppPr
     checkOutTime: DEFAULT_CHECK_OUT_TIME,
     adults: 2,
     children: [],
-    roomType: 'standard',
+    selectedRoom: null,
     firstName: userInfo?.firstName || '',
     lastName: userInfo?.lastName || '',
     phone: userInfo?.phone || '',
@@ -121,30 +195,31 @@ export function ChatbotWhatsApp({ isOpen, onClose, userInfo }: ChatbotWhatsAppPr
   }, []);
 
   const addBotMessage = useCallback((content: string, options?: string[], component?: React.ReactNode) => {
-  const timestamp = new Date();
-  const newMessage: ChatMessage = {
-    id: `bot-${timestamp.getTime()}-${Math.random().toString(36).substr(2, 9)}`, // ID unique
-    type: 'bot',
-    content,
-    timestamp,
-    options,
-    component
-  };
-  setMessages(prev => [...prev, newMessage]);
-  scrollToBottom();
-}, [scrollToBottom]);
+    const timestamp = new Date();
+    const newMessage: ChatMessage = {
+      id: `bot-${timestamp.getTime()}-${Math.random().toString(36).substr(2, 9)}`,
+      type: 'bot',
+      content,
+      timestamp,
+      options,
+      component
+    };
+    setMessages(prev => [...prev, newMessage]);
+    scrollToBottom();
+  }, [scrollToBottom]);
 
-const addUserMessage = useCallback((content: string) => {
-  const timestamp = new Date();
-  const newMessage: ChatMessage = {
-    id: `user-${timestamp.getTime()}-${Math.random().toString(36).substr(2, 9)}`, // ID unique
-    type: 'user',
-    content,
-    timestamp
-  };
-  setMessages(prev => [...prev, newMessage]);
-  scrollToBottom();
-}, [scrollToBottom]);
+  const addUserMessage = useCallback((content: string) => {
+    const timestamp = new Date();
+    const newMessage: ChatMessage = {
+      id: `user-${timestamp.getTime()}-${Math.random().toString(36).substr(2, 9)}`,
+      type: 'user',
+      content,
+      timestamp
+    };
+    setMessages(prev => [...prev, newMessage]);
+    scrollToBottom();
+  }, [scrollToBottom]);
+
   // Initialize chat
   useEffect(() => {
     if (isOpen && messages.length === 0) {
@@ -164,28 +239,30 @@ const addUserMessage = useCallback((content: string) => {
     setInputValue('');
     processUserInput(trimmedInput.toLowerCase());
   };
-const processUserInput = (input: string) => {
-  const containsTrigger = TRIGGER_PHRASES.some(phrase => input.includes(phrase));
 
-  if (input.includes('tarif') || input.includes('prix')) {
-    showPricing();
-  } 
-  else if (input.includes('information') || input.includes('hôtel') || input.includes('hotel')) {
-    showHotelInfo();
-  }
-  else if (containsTrigger || currentStep === 'greeting') {
-    if (input.includes('réserver') || input.includes('réservation') || input.includes('chambre')) {
-      startReservationProcess();
-    } else {
-      showDefaultOptions();
+  const processUserInput = (input: string) => {
+    const containsTrigger = TRIGGER_PHRASES.some(phrase => input.includes(phrase));
+
+    if (input.includes('tarif') || input.includes('prix')) {
+      showPricing();
+    } 
+    else if (input.includes('information') || input.includes('hôtel') || input.includes('hotel')) {
+      showHotelInfo();
     }
-  } else {
-    addBotMessage(
-      "Je ne comprends pas votre demande. Voici ce que je peux faire :",
-      ['Réserver une chambre', 'Voir les tarifs', 'Informations hôtel']
-    );
-  }
-};
+    else if (containsTrigger || currentStep === 'greeting') {
+      if (input.includes('réserver') || input.includes('réservation') || input.includes('chambre')) {
+        startReservationProcess();
+      } else {
+        showDefaultOptions();
+      }
+    } else {
+      addBotMessage(
+        "Je ne comprends pas votre demande. Voici ce que je peux faire :",
+        ['Réserver une chambre', 'Voir les tarifs', 'Informations hôtel']
+      );
+    }
+  };
+
   const startReservationProcess = () => {
     setCurrentStep('reservation_type');
     addBotMessage(
@@ -195,27 +272,31 @@ const processUserInput = (input: string) => {
   };
 
   const showPricing = () => {
-  addBotMessage(
-    "Voici nos tarifs :\n• Chambre Standard : 18,000 FCFA/nuit\n• Chambre Deluxe : 35,000 FCFA/nuit\n• Suite Présidentielle : 85,000 FCFA/nuit\n• Suite Familiale : 65,000 FCFA/nuit",
-    ['Réserver maintenant', 'Voir les photos', 'Retour au menu']
-  );
-  setCurrentStep('pricing');
-};
+    addBotMessage(
+      "Voici nos tarifs :\n" + 
+      sampleRooms.map(room => 
+        `• ${room.name}: ${room.price_per_night.toLocaleString()} FCFA/nuit (Day-use: ${room.day_use_price.toLocaleString()} FCFA, Flexible: ${room.hourly_rate.toLocaleString()} FCFA/h)`
+      ).join('\n'),
+      ['Réserver maintenant', 'Voir les photos', 'Retour au menu']
+    );
+    setCurrentStep('pricing');
+  };
 
-const showHotelInfo = () => {
-  addBotMessage(
-    "🏨 *Hôtel Bain du Lac*\n\n" +
-    "⭐ Classement : 4 étoiles\n" +
-    "📍 Localisation : Cotonou, Bénin\n" +
-    "🛏️ Chambres : 120\n" +
-    "🍽️ Restaurant : Oui\n" +
-    "🏊 Piscine : Oui\n" +
-    "🅿️ Parking : Gratuit\n\n" +
-    "Services : WiFi gratuit, Room service 24h/24, Spa, Navette aéroport",
-    ['Réserver maintenant', 'Voir les tarifs', 'Contactez-nous']
-  );
-  setCurrentStep('info');
-};
+  const showHotelInfo = () => {
+    addBotMessage(
+      "🏨 *Hôtel Bain du Lac*\n\n" +
+      "⭐ Classement : 4 étoiles\n" +
+      "📍 Localisation : Cotonou, Bénin\n" +
+      "🛏️ Chambres : 120\n" +
+      "🍽️ Restaurant : Oui\n" +
+      "🏊 Piscine : Oui\n" +
+      "🅿️ Parking : Gratuit\n\n" +
+      "Services : WiFi gratuit, Room service 24h/24, Spa, Navette aéroport",
+      ['Réserver maintenant', 'Voir les tarifs', 'Contactez-nous']
+    );
+    setCurrentStep('info');
+  };
+
   const showDefaultOptions = () => {
     addBotMessage(
       "Je peux vous aider avec :\n• Réservations de chambres\n• Informations sur les tarifs\n• Renseignements sur l'hôtel\n\nQue souhaitez-vous faire ?",
@@ -224,101 +305,93 @@ const showHotelInfo = () => {
   };
 
   // Handle option selection
-const handleOptionClick = (option: string) => {
-  addUserMessage(option);
+  const handleOptionClick = (option: string) => {
+    addUserMessage(option);
 
-  switch (currentStep) {
-    case 'greeting':
-      if (option.includes('réserver') || option.includes('Réserver')) {
-        startReservationProcess();
-      } else if (option.includes('tarif')) {
-        showPricing();
-      } else if (option.includes('Informations')) {
-        showHotelInfo();
-      }
-      break;
+    switch (currentStep) {
+      case 'greeting':
+        if (option.includes('réserver') || option.includes('Réserver')) {
+          startReservationProcess();
+        } else if (option.includes('tarif')) {
+          showPricing();
+        } else if (option.includes('Informations')) {
+          showHotelInfo();
+        }
+        break;
 
-    case 'reservation_type':
-      handleReservationTypeSelection(option);
-      break;
-      
-    case 'pricing':
-      if (option.includes('Réserver')) {
-        startReservationProcess();
-      } else if (option.includes('photos')) {
-        addBotMessage("Vous pouvez voir nos photos sur notre site web : www.baindulac.com/galerie");
-      } else {
-        showDefaultOptions();
-      }
-      break;
-      
-    case 'info':
-      if (option.includes('Réserver')) {
-        startReservationProcess();
-      } else if (option.includes('tarif')) {
-        showPricing();
-      } else if (option.includes('Contactez')) {
-        addBotMessage("📞 Contactez-nous au +229 XX XX XX XX\n📧 Email : contact@baindulac.com");
-      }
-      break;
+      case 'reservation_type':
+        handleReservationTypeSelection(option);
+        break;
+        
+      case 'pricing':
+        if (option.includes('Réserver')) {
+          startReservationProcess();
+        } else if (option.includes('photos')) {
+          addBotMessage("Vous pouvez voir nos photos sur notre site web : www.baindulac.com/galerie");
+        } else {
+          showDefaultOptions();
+        }
+        break;
+        
+      case 'info':
+        if (option.includes('Réserver')) {
+          startReservationProcess();
+        } else if (option.includes('tarif')) {
+          showPricing();
+        } else if (option.includes('Contactez')) {
+          addBotMessage("📞 Contactez-nous au +229 XX XX XX XX\n📧 Email : contact@baindulac.com");
+        }
+        break;
 
-    case 'room_type':
-      proceedToPersonalInfo();
-      break;
+      case 'room_type':
+        proceedToPersonalInfo();
+        break;
 
-    default:
-      // Gestion par défaut pour les options du menu principal
-      if (option.includes('réserver') || option.includes('Réserver')) {
-        startReservationProcess();
-      } else if (option.includes('tarif')) {
-        showPricing();
-      } else if (option.includes('Informations')) {
-        showHotelInfo();
-      }
-      break;
-  }
-};
+      default:
+        if (option.includes('réserver') || option.includes('Réserver')) {
+          startReservationProcess();
+        } else if (option.includes('tarif')) {
+          showPricing();
+        } else if (option.includes('Informations')) {
+          showHotelInfo();
+        }
+        break;
+    }
+  };
 
-const handleReservationTypeSelection = (option: string) => {
-  let type: 'classique' | 'day-use' | 'flexible';
-  
-  if (option.includes('Day-use')) {
-    type = 'day-use';
+  const handleReservationTypeSelection = (option: string) => {
+    let type: 'classique' | 'day-use' | 'flexible';
+    let checkInTime = DEFAULT_CHECK_IN_TIME;
+    let checkOutTime = DEFAULT_CHECK_OUT_TIME;
+    
+    if (option.includes('Day-use')) {
+      type = 'day-use';
+      checkInTime = '10:00';
+      checkOutTime = '18:00';
+    } else if (option.includes('Flexible')) {
+      type = 'flexible';
+    } else {
+      type = 'classique';
+    }
+
     setReservationData(prev => ({
       ...prev,
       type,
-      checkInTime: '10:00',
-      checkOutTime: '18:00'
+      checkInTime,
+      checkOutTime
     }));
-  } else if (option.includes('Flexible')) {
-    type = 'flexible';
-    setReservationData(prev => ({
-      ...prev,
-      type,
-      checkInDate: '',
-      checkOutDate: ''
-    }));
-  } else {
-    type = 'classique';
-    setReservationData(prev => ({
-      ...prev,
-      type,
-      checkInTime: DEFAULT_CHECK_IN_TIME,
-      checkOutTime: DEFAULT_CHECK_OUT_TIME
-    }));
-  }
 
-  setCurrentStep('dates');
-  addBotMessage(
-    type === 'classique' 
-      ? "Excellent choix ! Pour une réservation classique, j'ai besoin des dates d'arrivée et de départ."
-      : type === 'day-use' 
-        ? "Parfait pour une journée ! Choisissez votre date de visite."
-        : "Idéal pour plus de flexibilité ! Choisissez votre date et vos heures.",
-    [],
-    <DateSelector type={type} onComplete={handleDatesComplete} />
-  );
-};
+    setCurrentStep('dates');
+    addBotMessage(
+      type === 'classique' 
+        ? "Excellent choix ! Pour une réservation classique, j'ai besoin des dates d'arrivée et de départ."
+        : type === 'day-use' 
+          ? "Parfait pour une journée ! Choisissez votre date de visite."
+          : "Idéal pour plus de flexibilité ! Choisissez votre date et vos heures.",
+      [],
+      <DateSelector type={type} onComplete={handleDatesComplete} />
+    );
+  };
 
   // Step handlers
   const handleDatesComplete = (dates: DateData) => {
@@ -337,14 +410,20 @@ const handleReservationTypeSelection = (option: string) => {
     addBotMessage(
       "Parfait ! Maintenant, quel type de chambre préférez-vous ?",
       [],
-      <RoomSelector onComplete={handleRoomComplete} />
+      <RoomSelector rooms={sampleRooms} onComplete={handleRoomComplete} />
     );
   };
 
   const handleRoomComplete = (room: Room) => {
-    setReservationData(prev => ({ ...prev, ...room }));
-    proceedToPersonalInfo();
-  };
+  if (!room) {
+    console.warn("Aucune chambre reçue");
+    return;
+  }
+
+  setReservationData(prev => ({ ...prev, selectedRoom: room }));
+  proceedToPersonalInfo();
+};
+
 
   const proceedToPersonalInfo = () => {
     setCurrentStep('personal_info');
@@ -363,16 +442,35 @@ const handleReservationTypeSelection = (option: string) => {
     }
   };
 
-  const handlePersonalInfoComplete = (info: PersonalInfo) => {
-    const finalData = { ...reservationData, ...info };
-    setReservationData(finalData);
-    
-    addBotMessage(
-      "🎉 Parfait ! Voici le résumé de votre réservation :",
-      [],
-      <ReservationSummary data={finalData} onConfirm={() => handleWhatsAppRedirect(finalData)} />
-    );
+const handlePersonalInfoComplete = (info: PersonalInfo) => {
+  const finalData = {
+    ...reservationData,
+    ...info
   };
+
+  if (!finalData.selectedRoom) {
+    console.warn("❌ Chambre non sélectionnée !");
+    addBotMessage("⚠️ Aucune chambre sélectionnée. Veuillez reprendre la réservation.");
+    return;
+  }
+
+  if (!finalData.type) {
+    console.warn("❌ Type de réservation manquant !");
+    addBotMessage("⚠️ Type de réservation inconnu. Veuillez réessayer.");
+    return;
+  }
+
+  console.log("✅ Données complètes avant résumé:", finalData);
+
+  setReservationData(finalData);
+
+  addBotMessage(
+    "🎉 Parfait ! Voici le résumé de votre réservation :",
+    [],
+    <ReservationSummary data={finalData} onConfirm={() => handleWhatsAppRedirect(finalData)} />
+  );
+};
+
 
   // WhatsApp integration
   const handleWhatsAppRedirect = (data: ReservationData) => {
@@ -393,7 +491,9 @@ const handleReservationTypeSelection = (option: string) => {
   };
 
   const generateWhatsAppMessage = (data: ReservationData) => {
-    const roomInfo = ROOM_TYPES[data.roomType];
+    if (!data.selectedRoom) return '';
+    
+    const room = data.selectedRoom;
     const summary = generateReservationSummary(data);
 
     let dateInfo = '';
@@ -433,48 +533,16 @@ ${dateInfo}
 ${childrenInfo}
 
 🏠 *Hébergement :*
-• Type : ${roomInfo.name}
-• Prix unitaire : ${roomInfo.price.toLocaleString()} FCFA
+• Type : ${room.name} (${room.room_type})
+• Capacité : ${room.num_person} personne${room.num_person > 1 ? 's' : ''}
+• Surface : ${room.surface_area}m²
+• Prix unitaire : ${summary.finalPrice.toLocaleString()} FCFA
 
 💰 *Tarification :*
 • Total : ${summary.finalPrice.toLocaleString()} FCFA
 
 ${data.specialRequests ? `💬 *Demandes spéciales :*\n${data.specialRequests}\n\n` : ''}📍 *Hôtel Bain du Lac - Bénin*
 Merci de me confirmer la disponibilité et finaliser cette réservation.`;
-  };
-
- const generateReservationSummary = (data: ReservationData) => {
-  const roomInfo = ROOM_TYPES[data.roomType];
-  let price = roomInfo.price;
-  let duration = '';
-
-  if (data.type === 'classique') {
-    const nights = calculateNights(data.checkInDate, data.checkOutDate);
-    price = price * nights;
-    duration = `${nights} nuit${nights > 1 ? 's' : ''}`;
-  } else if (data.type === 'day-use') {
-    // Réduction de 30% pour day-use
-    price = Math.round(price * 0.7);
-    duration = `1 journée (${data.checkInTime} - ${data.checkOutTime})`;
-  } else if (data.type === 'flexible') {
-    const hours = calculateHours(data.checkInTime, data.checkOutTime);
-    // Prix horaire basé sur 1/24 du prix journalier
-    price = Math.round((price / 24) * hours * 1.2); // +20% pour flexibilité
-    duration = `${hours} heure${hours > 1 ? 's' : ''} (${data.checkInTime} - ${data.checkOutTime})`;
-  }
-
-  return { finalPrice: price, duration };
-};
-  const calculateNights = (checkIn: string, checkOut: string) => {
-    const start = new Date(checkIn);
-    const end = new Date(checkOut);
-    return Math.max(1, Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)));
-  };
-
-  const calculateHours = (startTime: string, endTime: string) => {
-    const [startHour] = startTime.split(':').map(Number);
-    const [endHour] = endTime.split(':').map(Number);
-    return Math.max(1, endHour - startHour);
   };
 
   return (
@@ -764,32 +832,56 @@ function GuestSelector({ onComplete }: { onComplete: (guests: Guests) => void })
 }
 
 // Component for room selection
-function RoomSelector({ onComplete }: { onComplete: (room: Room) => void }) {
-  const [selectedRoom, setSelectedRoom] = useState<keyof typeof ROOM_TYPES>('standard');
+function RoomSelector({ rooms, onComplete }: { rooms: Room[]; onComplete: (room: Room) => void }) {
+  const [selectedRoom, setSelectedRoom] = useState<Room | null>(null);
 
   const handleSubmit = () => {
-    onComplete({ roomType: selectedRoom });
+    if (selectedRoom) {
+      onComplete(selectedRoom);
+    }
   };
 
   return (
     <div className="space-y-4 p-4 bg-white rounded-lg border">
       <div className="space-y-3">
-        {Object.entries(ROOM_TYPES).map(([key, room]) => (
+        {rooms.map((room) => (
           <div
-            key={key}
+            key={room.id}
             className={`p-3 border rounded-lg cursor-pointer transition-colors ${
-              selectedRoom === key ? 'border-green-500 bg-green-50' : 'border-gray-200'
+              selectedRoom?.id === room.id ? 'border-green-500 bg-green-50' : 'border-gray-200'
             }`}
-            onClick={() => setSelectedRoom(key as keyof typeof ROOM_TYPES)}
+            onClick={() => setSelectedRoom(room)}
           >
-            <div className="flex justify-between items-center">
+            <div className="flex justify-between items-start">
               <div>
                 <h4 className="font-medium">{room.name}</h4>
-                <p className="text-sm text-gray-600">{room.price.toLocaleString()} FCFA/nuit</p>
+                <p className="text-sm text-gray-600">
+                  {room.room_type} • {room.num_person} pers. • {room.surface_area}m²
+                </p>
+                <div className="mt-2">
+                  <p className="text-sm">
+                    <span className="font-semibold">Nuitée:</span> {room.price_per_night.toLocaleString()} FCFA
+                  </p>
+                  {room.day_use_price > 0 && (
+                    <p className="text-sm">
+                      <span className="font-semibold">Day-use:</span> {room.day_use_price.toLocaleString()} FCFA
+                    </p>
+                  )}
+                  <p className="text-sm">
+                    <span className="font-semibold">Horaire flexible:</span> {room.hourly_rate.toLocaleString()} FCFA/h
+                  </p>
+                </div>
               </div>
-              <div className={`w-4 h-4 rounded-full border-2 ${
-                selectedRoom === key ? 'bg-green-500 border-green-500' : 'border-gray-300'
+              <div className={`w-4 h-4 rounded-full border-2 mt-1 ${
+                selectedRoom?.id === room.id ? 'bg-green-500 border-green-500' : 'border-gray-300'
               }`} />
+            </div>
+            <div className="mt-2 flex flex-wrap gap-1">
+              {room.amenities.slice(0, 3).map((amenity) => (
+                <span key={amenity.id} className="text-xs bg-gray-100 px-2 py-1 rounded">
+                  {amenity.name}
+                </span>
+              ))}
             </div>
           </div>
         ))}
@@ -797,6 +889,7 @@ function RoomSelector({ onComplete }: { onComplete: (room: Room) => void }) {
 
       <Button
         onClick={handleSubmit}
+        disabled={!selectedRoom}
         className="w-full bg-green-500 hover:bg-green-600"
       >
         Continuer
@@ -894,75 +987,155 @@ function PersonalInfoForm({
 
 // Component for reservation summary
 function ReservationSummary({ data, onConfirm }: { data: ReservationData; onConfirm: () => void }) {
-  const roomInfo = ROOM_TYPES[data.roomType];
-  
-  const calculateNights = (checkIn: string, checkOut: string) => {
-    const start = new Date(checkIn);
-    const end = new Date(checkOut);
-    return Math.max(1, Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)));
+  // Debug: Afficher les données reçues
+  console.log("Données reçues dans ReservationSummary:", {
+    room: data.selectedRoom,
+    type: data.type,
+    dates: {
+      checkIn: data.checkInDate,
+      checkOut: data.checkOutDate,
+      checkInTime: data.checkInTime,
+      checkOutTime: data.checkOutTime
+    },
+    guests: {
+      adults: data.adults,
+      children: data.children
+    }
+  });
+
+  // Vérifications initiales
+  if (!data.selectedRoom) {
+    return (
+      <div className="p-4 bg-yellow-50 text-yellow-800 rounded-lg border border-yellow-200">
+        ⚠️ Aucune chambre sélectionnée
+      </div>
+    );
+  }
+
+  if (!data.type) {
+    return (
+      <div className="p-4 bg-yellow-50 text-yellow-800 rounded-lg border border-yellow-200">
+        ⚠️ Type de réservation non spécifié
+      </div>
+    );
+  }
+
+  // Fonctions de calcul
+  const calculateNights = (checkIn: string, checkOut: string): number => {
+    if (!checkIn || !checkOut) return 1;
+    try {
+      const start = new Date(checkIn);
+      const end = new Date(checkOut);
+      const diffTime = Math.max(0, end.getTime() - start.getTime());
+      return Math.max(1, Math.ceil(diffTime / (1000 * 60 * 60 * 24)));
+    } catch {
+      return 1;
+    }
   };
 
-  const calculateHours = (startTime: string, endTime: string) => {
-    const [startHour] = startTime.split(':').map(Number);
-    const [endHour] = endTime.split(':').map(Number);
-    return Math.max(1, endHour - startHour);
+  const calculateHours = (startTime: string, endTime: string): number => {
+    if (!startTime || !endTime) return 1;
+    try {
+      const [startHour, startMin] = startTime.split(':').map(Number);
+      const [endHour, endMin] = endTime.split(':').map(Number);
+      return Math.max(1, (endHour * 60 + endMin - (startHour * 60 + startMin)) / 60);
+    } catch {
+      return 1;
+    }
   };
 
-  const generateSummary = (data: ReservationData) => {
-    let price = roomInfo.price;
+  // Calcul du résumé
+  const calculateSummary = () => {
+    const room = data.selectedRoom;
+     if (!room) return null;
+    let price = 0;
     let duration = '';
 
-    if (data.type === 'classique') {
-      const nights = calculateNights(data.checkInDate, data.checkOutDate);
-      price = price * nights;
-      duration = `${nights} nuit${nights > 1 ? 's' : ''}`;
-    } else if (data.type === 'day-use') {
-      price = Math.round(price * 0.7);
-      duration = '1 journée';
-    } else if (data.type === 'flexible') {
-      const hours = calculateHours(data.checkInTime, data.checkOutTime);
-      price = Math.round((price / 24) * hours);
-      duration = `${hours} heure${hours > 1 ? 's' : ''}`;
+    switch (data.type) {
+      case 'classique':
+        const nights = calculateNights(data.checkInDate, data.checkOutDate);
+        price = room.price_per_night * nights;
+        duration = `${nights} nuit${nights !== 1 ? 's' : ''}`;
+        break;
+
+      case 'day-use':
+        price = room.day_use_price;
+        duration = `Day-use (${data.checkInTime} - ${data.checkOutTime})`;
+        break;
+
+      case 'flexible':
+        const hours = calculateHours(data.checkInTime, data.checkOutTime);
+        price = room.hourly_rate * hours;
+        duration = `${hours.toFixed(1)} heure${hours !== 1 ? 's' : ''}`;
+        break;
+
+      default:
+        return null;
     }
 
-    return { finalPrice: price, duration };
+    return {
+      finalPrice: Math.round(price), // Arrondir le prix
+      duration
+    };
   };
 
-  const summary = generateSummary(data);
+  const summary = calculateSummary();
+
+  if (!summary) {
+    return (
+      <div className="p-4 bg-red-50 text-red-600 rounded-lg border border-red-200">
+        ❌ Impossible de calculer le résumé
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-4 p-4 bg-white rounded-lg border">
-      <div className="space-y-3">
+      <h3 className="font-bold text-lg">🎉 Résumé de votre réservation</h3>
+      
+      <div className="grid gap-2">
         <div className="flex justify-between">
           <span className="font-medium">Type:</span>
-          <span className="capitalize">{data.type}</span>
+          <span className="font-semibold">
+            {data.type === 'classique' ? 'Nuitée' : 
+             data.type === 'day-use' ? 'Day-use' : 'Flexible'}
+          </span>
         </div>
+        
         <div className="flex justify-between">
           <span className="font-medium">Chambre:</span>
-          <span>{roomInfo.name}</span>
+          <span className="font-semibold">{data.selectedRoom.name}</span>
         </div>
+        
         <div className="flex justify-between">
           <span className="font-medium">Durée:</span>
-          <span>{summary.duration}</span>
+          <span className="font-semibold">{summary.duration}</span>
         </div>
+        
         <div className="flex justify-between">
           <span className="font-medium">Invités:</span>
-          <span>{data.adults} adulte{data.adults > 1 ? 's' : ''}{data.children.length > 0 ? `, ${data.children.length} enfant${data.children.length > 1 ? 's' : ''}` : ''}</span>
+          <span className="font-semibold">
+            {data.adults} adulte{data.adults !== 1 ? 's' : ''}
+            {data.children.length > 0 ? `, ${data.children.length} enfant${data.children.length !== 1 ? 's' : ''}` : ''}
+          </span>
         </div>
-        <div className="border-t pt-3">
-          <div className="flex justify-between text-lg font-bold">
-            <span>Total:</span>
-            <span className="text-green-600">{summary.finalPrice.toLocaleString()} FCFA</span>
-          </div>
+      </div>
+
+      <div className="border-t pt-3 mt-2">
+        <div className="flex justify-between text-lg font-bold">
+          <span>Total:</span>
+          <span className="text-green-600">
+            {summary.finalPrice.toLocaleString('fr-FR')} FCFA
+          </span>
         </div>
       </div>
 
       <Button
         onClick={onConfirm}
-        className="w-full bg-green-500 hover:bg-green-600"
+        className="w-full bg-green-600 hover:bg-green-700 mt-4"
       >
         <MessageCircle className="h-4 w-4 mr-2" />
-        Envoyer sur WhatsApp
+        Confirmer et envoyer sur WhatsApp
       </Button>
     </div>
   );

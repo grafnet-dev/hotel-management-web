@@ -3,6 +3,7 @@ import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react'
 import { Calendar, Users, Sparkles, CalendarDays, Search, X, Clock, ChevronDown } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
+
 type DateRange = {
   from?: Date;
   to?: Date;
@@ -18,6 +19,8 @@ type RoomSelection = {
   adults: number;
   children: Child[];
 };
+
+
 
 interface SearchData {
   reservationType: ReservationType;

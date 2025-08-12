@@ -40,10 +40,10 @@ import confetti from 'canvas-confetti';
 
 // Color scheme - Updated
 const colors = {
-  teal: '#008080',
+  teal: '#014d71',
   lightTeal: '#E6F2F2',
   darkTeal: '#006666',
-  gold: '#FFD700',
+  gold: '#f0b800',
   orange: '#FFA500',
   maroon: '#800000',
   white: '#FFFFFF'
@@ -441,7 +441,7 @@ function getDurationFromDates(
           <h2 className="text-2xl font-bold text-gray-900 mb-2">Données de réservation manquantes</h2>
           <p className="text-gray-600 mb-4">Veuillez recommencer votre recherche.</p>
           <Button onClick={() => router.push('/')} className="bg-blue-600 hover:bg-blue-700">
-            Retour à l'accueil
+            Retour à l&rsquo;accueil
           </Button>
         </div>
       </div>
@@ -449,68 +449,86 @@ function getDurationFromDates(
   }
 
   return (
+    
     <div className="min-h-screen pt-32 bg-gradient-to-br from-gray-50 to-white">
       <div className="max-w-7xl mx-auto px-4 py-8">
         {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="mb-8"
-        >
-          <Button
-            variant="ghost"
-            onClick={() => router.back()}
-            className="mb-4 text-gray-600 hover:text-gray-900"
-          >
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Retour à la sélection
-          </Button>
-          
-          <div className="text-center">
-            <h1 className="text-3xl md:text-4xl font-bold mb-2" style={{ color: colors.maroon }}>
-              Finaliser votre réservation multiple
-            </h1>
-            <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
-              Complétez les informations pour confirmer vos <span className="font-semibold text-blue-600">{getTotalRoomsCount()}</span> chambre{getTotalRoomsCount() > 1 ? 's' : ''}
-            </p>
-            {/* Progress Steps */}
-             <div className="flex justify-center items-center space-x-8 mb-8">
-              {[
-                { step: 1, label: "Vérification" },
-                { step: 2, label: "Informations & Paiement" },
-                { step: 3, label: "Confirmation" }
-              ].map(({ step, label }) => (
-                <div key={step} className="flex items-center">
-                  <div className="flex flex-col items-center">
-                    <div
-                      className={`w-14 h-14 rounded-full flex items-center justify-center text-lg font-bold transition-all duration-300 ${
-                        currentStep >= step
-                          ? 'bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow-xl transform scale-105'
-                          : 'bg-gray-200 text-gray-600 shadow-md'
-                      }`}
-                    >
-                       {step === 3 && currentStep === 3 ? (
-                        <CheckCircle className="h-8 w-8" />
-                      ) : (
-                        step
-                      )}
-                    </div>
-                    <span className={`text-sm mt-2 font-medium ${currentStep >= step ? 'text-blue-600' : 'text-gray-500'}`}>
-                      {label}
-                    </span>
-                  </div>
-                  {step < 3 && (
-                    <div
-                      className={`w-24 h-2 mx-6 rounded-full transition-all duration-300 ${
-                        currentStep > step ? 'bg-gradient-to-r from-blue-500 to-purple-500' : 'bg-gray-200'
-                      }`}
-                    />
-                  )}
-                </div>
-              ))}
+<motion.div
+  initial={{ opacity: 0, y: -20 }}
+  animate={{ opacity: 1, y: 0 }}
+  className="mb-8 font-[Poppins,'Times New Roman',serif]"
+>
+  <Button
+    variant="ghost"
+    onClick={() => router.back()}
+    className="mb-4 text-gray-600 hover:text-gray-900"
+  >
+    <ArrowLeft className="h-4 w-4 mr-2" />
+    Retour à la sélection
+  </Button>
+  
+  <div className="text-center">
+    <h1
+      className="text-3xl md:text-4xl font-bold mb-2"
+      style={{ color: "#014d71" }}
+    >
+      Finaliser votre réservation multiple
+    </h1>
+    <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
+      Complétez les informations pour confirmer vos{" "}
+      <span className="font-semibold" style={{ color: "#f0b800" }}>
+        {getTotalRoomsCount()}
+      </span>{" "}
+      chambre{getTotalRoomsCount() > 1 ? "s" : ""}
+    </p>
+
+    {/* Progress Steps */}
+    <div className="flex justify-center items-center space-x-8 mb-8">
+      {[
+        { step: 1, label: "Vérification" },
+        { step: 2, label: "Informations & Paiement" },
+        { step: 3, label: "Confirmation" },
+      ].map(({ step, label }) => (
+        <div key={step} className="flex items-center">
+          <div className="flex flex-col items-center">
+            <div
+              className={`w-14 h-14 rounded-full flex items-center justify-center text-lg font-bold transition-all duration-300 ${
+                currentStep >= step
+                  ? "bg-gradient-to-r from-[#014d71] to-[#f0b800] text-white shadow-xl transform scale-105"
+                  : "bg-gray-200 text-gray-600 shadow-md"
+              }`}
+            >
+              {step === 3 && currentStep === 3 ? (
+                <CheckCircle className="h-8 w-8" />
+              ) : (
+                step
+              )}
             </div>
+            <span
+              className={`text-sm mt-2 font-medium ${
+                currentStep >= step
+                  ? "text-[#014d71]"
+                  : "text-gray-500"
+              }`}
+            >
+              {label}
+            </span>
           </div>
-        </motion.div>
+          {step < 3 && (
+            <div
+              className={`w-24 h-2 mx-6 rounded-full transition-all duration-300 ${
+                currentStep > step
+                  ? "bg-gradient-to-r from-[#014d71] to-[#f0b800]"
+                  : "bg-gray-200"
+              }`}
+            />
+          )}
+        </div>
+      ))}
+    </div>
+  </div>
+</motion.div>
+
         
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Main Content */}
@@ -655,318 +673,320 @@ function getDurationFromDates(
                     </div>
                   </div>
 
-                  {/* Chambres sélectionnées */}
-                  <div className="mb-6">
-                    <h4 className="font-bold text-gray-900 text-lg flex items-center mb-4">
-                      <BedDouble className="h-6 w-6 mr-3 text-purple-600" />
-                      Détails de la réservation
-                    </h4>
-                    <div className="space-y-4">
-                      {getSelectedRoomsDetails().map((room, index) => (
-                        <motion.div 
-                          key={`${room.id}-${index}`} 
-                          className="p-4 bg-gray-50 rounded-lg border hover:shadow-lg transition-all duration-300"
-                          initial={{ opacity: 0, x: -20 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          transition={{ delay: index * 0.1 }}
-                        >
-                          <div className="flex items-center gap-4 mb-3">
-                            <div className="relative w-20 h-16">
-                              <Image
-                                src={room.image}
-                                alt={room.name}
-                                fill
-                                className="object-cover rounded"
-                              />
-                            </div>
-                            <div className="flex-1">
-                              <h5 className="font-medium text-gray-900">{room.name}</h5>
-                              <p className="text-sm text-gray-600 capitalize">{room.room_type}</p>
-                              <p className="text-sm font-medium text-blue-600">
-                                {getReservationTypeLabel(room.reservationType)}
-                              </p>
-                            </div>
-                            <div className="text-right">
-                              <p className="font-semibold text-blue-600">
-                                {room.calculatedPrice.toLocaleString()} FCFA
-                              </p>
-                              <p className="text-xs text-gray-500">{room.duration}</p>
-                            </div>
-                          </div>
-                          
-                          {/* Détails spécifiques au type de réservation */}
-                          <div className="grid grid-cols-2 gap-4 text-sm text-gray-600 pt-3 border-t">
-                            {room.reservationType === 'classic' && (
-                              <>
-                                <div>Check-in: 14h00</div>
-                                <div>Check-out: 12h00</div>
-                              </>
-                            )}
-                            {room.reservationType === 'day_use' && (
-                              <>
-                                <div>Arrivée: 10h00</div>
-                                <div>Départ: 17h00</div>
-                              </>
-                            )}
-                            {room.reservationType === 'flexible' && (
-                              <>
-                                <div>Arrivée: {room.checkInTime || '14h00'}</div>
-                                <div>Départ: {room.checkOutTime || '18h00'}</div>
-                              </>
-                            )}
-                            <div className="col-span-2">
-                              <span className="font-medium">Prix: </span>
-                              {room.reservationType === 'classic' && `${room.price_per_night.toLocaleString()} FCFA/nuit`}
-                              {room.reservationType === 'day_use' && `${(room.day_use_price || Math.round(room.price_per_night * 0.7)).toLocaleString()} FCFA/jour`}
-                              {room.reservationType === 'flexible' && `${(room.hourly_rate || Math.round(room.price_per_night / 24)).toLocaleString()} FCFA/heure`}
-                            </div>
-                          </div>
-                        </motion.div>
-                      ))}
-                    </div>
-                  </div>
+             {/* Chambres sélectionnées */}
+<div className="mb-6 font-[Poppins,'Times New Roman',serif]">
+  <h4 className="font-bold text-[#014d71] text-lg flex items-center mb-4">
+    <BedDouble className="h-6 w-6 mr-3" style={{ color: "#f0b800" }} />
+    Détails de la réservation
+  </h4>
+  
+  <div className="space-y-4">
+    {getSelectedRoomsDetails().map((room, index) => (
+      <motion.div 
+        key={`${room.id}-${index}`} 
+        className="p-4 bg-gray-50 rounded-lg border hover:shadow-lg transition-all duration-300"
+        initial={{ opacity: 0, x: -20 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ delay: index * 0.1 }}
+      >
+        <div className="flex items-center gap-4 mb-3">
+          <div className="relative w-20 h-16">
+            <Image
+              src={room.image}
+              alt={room.name}
+              fill
+              className="object-cover rounded"
+            />
+          </div>
+          <div className="flex-1">
+            <h5 className="font-medium text-[#014d71]">{room.name}</h5>
+            <p className="text-sm text-gray-600 capitalize">{room.room_type}</p>
+            <p className="text-sm font-medium" style={{ color: "#f0b800" }}>
+              {getReservationTypeLabel(room.reservationType)}
+            </p>
+          </div>
+          <div className="text-right">
+            <p className="font-semibold" style={{ color: "#f0b800" }}>
+              {room.calculatedPrice.toLocaleString()} FCFA
+            </p>
+            <p className="text-xs text-gray-500">{room.duration}</p>
+          </div>
+        </div>
+        
+        {/* Détails spécifiques */}
+        <div className="grid grid-cols-2 gap-4 text-sm text-gray-600 pt-3 border-t">
+          {room.reservationType === 'classic' && (
+            <>
+              <div>Check-in: 14h00</div>
+              <div>Check-out: 12h00</div>
+            </>
+          )}
+          {room.reservationType === 'day_use' && (
+            <>
+              <div>Arrivée: 10h00</div>
+              <div>Départ: 17h00</div>
+            </>
+          )}
+          {room.reservationType === 'flexible' && (
+            <>
+              <div>Arrivée: {room.checkInTime || '14h00'}</div>
+              <div>Départ: {room.checkOutTime || '18h00'}</div>
+            </>
+          )}
+          <div className="col-span-2">
+            <span className="font-medium">Prix: </span>
+            {room.reservationType === 'classic' && `${room.price_per_night.toLocaleString()} FCFA/nuit`}
+            {room.reservationType === 'day_use' && `${(room.day_use_price || Math.round(room.price_per_night * 0.7)).toLocaleString()} FCFA/jour`}
+            {room.reservationType === 'flexible' && `${(room.hourly_rate || Math.round(room.price_per_night / 24)).toLocaleString()} FCFA/heure`}
+          </div>
+        </div>
+      </motion.div>
+    ))}
+  </div>
+</div>
 
-                  <Separator className="my-6" />
-                  
-                  {/* Résumé financier détaillé */}
-                  <div className="space-y-3">
-                    <h4 className="font-semibold text-gray-900">Détail des prix</h4>
-                    {getSelectedRoomsDetails().map((room, index) => (
-                      <div key={`price-${room.id}-${index}`} className="flex justify-between text-sm">
-                        <span>{room.name} - {getReservationTypeLabel(room.reservationType)}</span>
-                        <span>{room.calculatedPrice.toLocaleString()} FCFA</span>
-                      </div>
-                    ))}
-                    <div className="border-t pt-3">
-                      <div className="flex justify-between text-sm text-gray-600">
-                        <span>Sous-total</span>
-                        <span>{bookingData.totalPrice.toLocaleString()} FCFA</span>
-                      </div>
-                      <div className="flex justify-between text-sm text-gray-600">
-                        <span>Taxes et frais</span>
-                        <span>Inclus</span>
-                      </div>
-                    </div>
-                  </div>
+<Separator className="my-6" />
 
-                  {/* Services inclus */}
-                  <div className="bg-gradient-to-r from-green-50 to-blue-50 rounded-xl p-4 mb-6">
-                    <h4 className="font-bold text-gray-900 mb-3 flex items-center">
-                      <Check className="h-5 w-5 mr-2 text-green-600" />
-                      Services inclus
-                    </h4>
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                      {[
-                        { icon: Wifi, label: 'WiFi gratuit' },
-                        { icon: Car, label: 'Parking' },
-                        { icon: Coffee, label: 'Petit-déjeuner' },
-                        { icon: Shield, label: 'Sécurité 24h' }
-                      ].map((service, idx) => (
-                        <div key={idx} className="flex items-center text-sm text-gray-700">
-                          <service.icon className="h-4 w-4 mr-2 text-green-600" />
-                          {service.label}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
+{/* Résumé financier */}
+<div className="space-y-3 font-[Poppins,'Times New Roman',serif]">
+  <h4 className="font-semibold text-[#014d71]">Détail des prix</h4>
+  {getSelectedRoomsDetails().map((room, index) => (
+    <div key={`price-${room.id}-${index}`} className="flex justify-between text-sm">
+      <span>{room.name} - {getReservationTypeLabel(room.reservationType)}</span>
+      <span style={{ color: "#f0b800" }}>{room.calculatedPrice.toLocaleString()} FCFA</span>
+    </div>
+  ))}
+  <div className="border-t pt-3">
+    <div className="flex justify-between text-sm text-gray-600">
+      <span>Sous-total</span>
+      <span>{bookingData.totalPrice.toLocaleString()} FCFA</span>
+    </div>
+    <div className="flex justify-between text-sm text-gray-600">
+      <span>Taxes et frais</span>
+      <span>Inclus</span>
+    </div>
+  </div>
+</div>
 
-                  {/* Total */}
-                  <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl p-6 text-white">
-                    <div className="flex justify-between items-center">
-                      <div>
-                        <h4 className="text-lg font-medium opacity-90">Total de votre séjour</h4>
-                        <p className="text-sm opacity-75">
-                          {getNights()} nuit{getNights() > 1 ? 's' : ''} • Taxes et services inclus
-                        </p>
-                      </div>
-                      <div className="text-right">
-                        <div className="text-3xl font-bold">
-                          {bookingData.totalPrice.toLocaleString()} FCFA
-                        </div>
-                        {getNights() > 0 && (
-                          <div className="text-sm opacity-75">
-                            Soit {Math.round(bookingData.totalPrice / getNights()).toLocaleString()} FCFA/nuit
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </div>
+{/* Services inclus */}
+<div className="bg-gradient-to-r from-[#f0b8001a] to-[#014d711a] rounded-xl p-4 mb-6">
+  <h4 className="font-bold text-[#014d71] mb-3 flex items-center">
+    <Check className="h-5 w-5 mr-2" style={{ color: "#f0b800" }} />
+    Services inclus
+  </h4>
+  <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+    {[
+      { icon: Wifi, label: 'WiFi gratuit' },
+      { icon: Car, label: 'Parking' },
+      { icon: Coffee, label: 'Petit-déjeuner' },
+      { icon: Shield, label: 'Sécurité 24h' }
+    ].map((service, idx) => (
+      <div key={idx} className="flex items-center text-sm text-gray-700">
+        <service.icon className="h-4 w-4 mr-2" style={{ color: "#f0b800" }} />
+        {service.label}
+      </div>
+    ))}
+  </div>
+</div>
+
+{/* Total */}
+<div className="bg-gradient-to-r from-[#014d71] to-[#f0b800] rounded-xl p-6 text-white">
+  <div className="flex justify-between items-center">
+    <div>
+      <h4 className="text-lg font-medium opacity-90">Total de votre séjour</h4>
+      <p className="text-sm opacity-75">
+        {getNights()} nuit{getNights() > 1 ? 's' : ''} • Taxes et services inclus
+      </p>
+    </div>
+    <div className="text-right">
+      <div className="text-3xl font-bold">
+        {bookingData.totalPrice.toLocaleString()} FCFA
+      </div>
+      {getNights() > 0 && (
+        <div className="text-sm opacity-75">
+          Soit {Math.round(bookingData.totalPrice / getNights()).toLocaleString()} FCFA/nuit
+        </div>
+      )}
+    </div>
+  </div>
+</div>
+
                 </div>
               </Card>
             </motion.div>
 
             {/* Form Steps */}
             <AnimatePresence mode="wait">
-              {currentStep === 1 && (
-                <motion.div
-                  key="step1"
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -20 }}
+  {currentStep === 1 && (
+    <motion.div
+      key="step1"
+      initial={{ opacity: 0, x: 20 }}
+      animate={{ opacity: 1, x: 0 }}
+      exit={{ opacity: 0, x: -20 }}
+    >
+      <Card className="p-6 shadow-xl rounded-2xl bg-white">
+        <div className="flex items-center mb-6">
+          <Info className="h-6 w-6 text-blue-500 mr-3" />
+          <h3 className="text-2xl font-bold text-blue-900 tracking-tight">
+            Vérifiez votre sélection
+          </h3>
+        </div>
+
+        <div className="bg-blue-50 p-6 rounded-xl border border-blue-100 mb-6">
+          <h4 className="font-semibold text-lg text-blue-800 mb-3">Informations importantes</h4>
+          <ul className="space-y-2 text-sm leading-relaxed text-blue-800">
+            <li className="flex items-start">
+              <Check className="h-4 w-4 mr-2 mt-0.5 text-blue-500" />
+              <span className="font-medium">
+                Vous avez sélectionné {getTotalRoomsCount()} chambre
+                {getTotalRoomsCount() > 1 ? 's' : ''}
+              </span>
+            </li>
+            <li className="flex items-start">
+              <Check className="h-4 w-4 mr-2 mt-0.5 text-blue-500" />
+              {Array.from(new Set(bookingData.selectedRooms.map(r => r.reservationType))).map(type => (
+                <span key={type} className="font-medium">
+                  {type === 'classic' && `Séjour de ${getNights()} nuit${getNights() > 1 ? 's' : ''}`}
+                  {type === 'day_use' && 'Day Use (1 journée)'}
+                  {type === 'flexible' && 'Horaires flexibles (X heures)'}
+                </span>
+              ))}
+            </li>
+          </ul>
+        </div>
+
+        <p className="text-gray-600 text-sm leading-relaxed mb-6">
+          Veuillez vérifier les détails de votre réservation ci-dessus. 
+          Vous pourrez modifier vos informations personnelles et choisir votre mode de paiement à l&rsquo;étape suivante.
+        </p>
+
+        <div className="flex justify-end">
+          <Button
+            onClick={nextStep}
+            className="bg-yellow-600 hover:bg-yellow-700 px-8 py-2 text-white rounded-lg shadow-md transition-all duration-200"
+          >
+            Continuer
+            <ChevronRight className="h-4 w-4 ml-2" />
+          </Button>
+        </div>
+      </Card>
+    </motion.div>
+  )}
+
+             {currentStep === 2 && (
+    <motion.div
+      key="step2"
+      initial={{ opacity: 0, x: 20 }}
+      animate={{ opacity: 1, x: 0 }}
+      exit={{ opacity: 0, x: -20 }}
+    >
+      <Card className="p-6 shadow-xl rounded-2xl bg-white">
+        <div className="flex items-center mb-6">
+          <User className="h-6 w-6 text-yellow-500 mr-3" />
+          <h3 className="text-2xl font-bold tracking-tight"style={{ color: "#014d71" }}>
+            Informations personnelles et paiement
+          </h3>
+        </div>
+
+        {/* Guest Information */}
+        <div className="mb-8">
+          <h4 className="text-lg font-semibold mb-4 flex items-center " style={{ color: "#014d71" }}>
+            <User className="h-5 w-5 mr-2 text-yellow-500" />
+            Informations du client principal
+          </h4>
+
+          {isUserLoggedIn && !showGuestForm ? (
+            <div className="space-y-4">
+              <div className="p-4 bg-green-50 rounded-lg border border-green-200">
+                <div className="flex items-center mb-2">
+                  <div className="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
+                  <span className="text-sm font-medium text-green-800">Compte connecté</span>
+                </div>
+                <div className="text-sm text-green-700 leading-relaxed">
+                  <p className="font-medium">{formData.guestInfo.fullName}</p>
+                  <p>{formData.guestInfo.email}</p>
+                  <p>{formData.guestInfo.phone}</p>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setShowGuestForm(true)}
+                  className="w-full border-blue-300 text-blue-700 hover:bg-blue-50"
                 >
-                  <Card className="p-6 shadow-lg">
-                    <div className="flex items-center mb-6">
-                      <Info className="h-6 w-6 text-blue-600 mr-3" />
-                      <h3 className="text-xl font-bold text-blue-900">
-                        Vérifiez votre sélection
-                      </h3>
-                    </div>
-                    
-                    <div className="bg-blue-50 p-6 rounded-lg mb-6">
-                      <h4 className="font-semibold text-blue-900 mb-3">Informations importantes</h4>
-                      <ul className="space-y-2 text-sm text-blue-800">
-                        <li className="flex items-start">
-                          <Check className="h-4 w-4 mr-2 mt-0.5 text-blue-600" />
-                          <span>Vous avez sélectionné {getTotalRoomsCount()} chambre{getTotalRoomsCount() > 1 ? 's' : ''}</span>
-                        </li>
-                       <li className="flex items-start">
-  <Check className="h-4 w-4 mr-2 mt-0.5 text-blue-600" />  
-  {Array.from(new Set(bookingData.selectedRooms.map(r => r.reservationType))).map(type => (
-    <span key={type}>
-      {type === 'classic' && `Séjour de ${getNights()} nuit${getNights() > 1 ? 's' : ''}`}
-      {type === 'day_use' && 'Day Use (1 journée)'}
-      {type === 'flexible' && 'Horaires flexibles (X heures)'} 
-    </span>
-  ))}
- 
-</li>
-
-                       
-                      </ul>
-                    </div>
-                    
-                    <p className="text-gray-600 mb-6">
-                      Veuillez vérifier les détails de votre réservation ci-dessus. 
-                      Vous pourrez modifier vos informations personnelles et choisir votre mode de paiement à l'étape suivante.
-                    </p>
-
-                    <div className="flex justify-end">
-                      <Button
-                        onClick={nextStep}
-                        className="bg-blue-600 hover:bg-blue-700 px-8"
-                      >
-                        Continuer
-                        <ChevronRight className="h-4 w-4 ml-2" />
-                      </Button>
-                    </div>
-                  </Card>
-                </motion.div>
+                  Réserver pour quelqu&rsquo;un d&rsquo;autre
+                </Button>
+                <p className="text-xs text-gray-500 text-center">
+                  Ou modifier les informations
+                </p>
+              </div>
+            </div>
+          ) : (
+            <>
+              {showGuestForm && (
+                <div className="mb-4 p-3 bg-blue-50 rounded-lg border border-blue-100">
+                  <p className="text-sm text-blue-700 leading-snug">
+                    <strong>Réservation pour un tiers</strong><br/>
+                    Remplissez les informations de la personne qui séjournera.
+                  </p>
+                </div>
               )}
 
-              {currentStep === 2 && (
-                <motion.div
-                  key="step2"
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -20 }}
-                >
-                  <Card className="p-6 shadow-lg">
-                    <div className="flex items-center mb-6">
-                      <User className="h-6 w-6 text-blue-600 mr-3" />
-                      <h3 className="text-xl font-bold text-blue-900">
-                        Informations personnelles et paiement
-                      </h3>
-                    </div>
+                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                <div>
+                  <Label className="text-sm font-medium text-gray-700">Nom complet *</Label>
+                  <div className="relative mt-2">
+                    <Input
+                      value={formData.guestInfo.fullName}
+                      onChange={(e) => handleInputChange('guestInfo', 'fullName', e.target.value)}
+                      className="pl-10 rounded-lg border-gray-300 focus:border-blue-500 focus:ring focus:ring-blue-200"
+                      placeholder="Entrez votre nom complet"
+                      required
+                    />
+                    <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                  </div>
+                </div>
+                <div>
+                  <Label className="text-sm font-medium text-gray-700">Adresse email *</Label>
+                  <div className="relative mt-2">
+                    <Input
+                      type="email"
+                      value={formData.guestInfo.email}
+                      onChange={(e) => handleInputChange('guestInfo', 'email', e.target.value)}
+                      className="pl-10 rounded-lg border-gray-300 focus:border-blue-500 focus:ring focus:ring-blue-200"
+                      placeholder="votre@email.com"
+                      required
+                    />
+                    <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                  </div>
+                </div>
+              </div>
 
-                    {/* Guest Information */}
-                    <div className="mb-8">
-                      <h4 className="text-lg font-semibold mb-4 flex items-center">
-                        <User className="h-5 w-5 mr-2 text-blue-600" />
-                        Informations du client principal
-                      </h4>
-                      
-                      {isUserLoggedIn && !showGuestForm ? (
-                        <div className="space-y-4">
-                          <div className="p-4 bg-green-50 rounded-lg border border-green-200">
-                            <div className="flex items-center mb-2">
-                              <div className="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
-                              <span className="text-sm font-medium text-green-800">Compte connecté</span>
-                            </div>
-                            <div className="text-sm text-green-700">
-                              <p><strong>{formData.guestInfo.fullName}</strong></p>
-                              <p>{formData.guestInfo.email}</p>
-                              <p>{formData.guestInfo.phone}</p>
-                            </div>
-                          </div>
-                          
-                          <div className="space-y-2">
-                            <Button
-                              type="button"
-                              variant="outline"
-                              onClick={() => setShowGuestForm(true)}
-                              className="w-full"
-                            >
-                              Réserver pour quelqu'un d'autre
-                            </Button>
-                            <p className="text-xs text-gray-500 text-center">
-                              Ou modifier les informations
-                            </p>
-                          </div>
-                        </div>
-                      ) : (
-                        <>
-                          {showGuestForm && (
-                            <div className="mb-4 p-3 bg-blue-50 rounded-lg">
-                              <p className="text-sm text-blue-700">
-                                <strong>Réservation pour un tiers</strong><br/>
-                                Remplissez les informations de la personne qui séjournera.
-                              </p>
-                            </div>
-                          )}
-                          
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                            <div>
-                              <Label className="text-sm font-medium text-gray-700">Nom complet *</Label>
-                              <div className="relative mt-2">
-                                <Input
-                                  value={formData.guestInfo.fullName}
-                                  onChange={(e) => handleInputChange('guestInfo', 'fullName', e.target.value)}
-                                  className="pl-10"
-                                  placeholder="Entrez votre nom complet"
-                                  required
-                                />
-                                <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                              </div>
-                            </div>
-                            <div>
-                              <Label className="text-sm font-medium text-gray-700">Adresse email *</Label>
-                              <div className="relative mt-2">
-                                <Input
-                                  type="email"
-                                  value={formData.guestInfo.email}
-                                  onChange={(e) => handleInputChange('guestInfo', 'email', e.target.value)}
-                                  className="pl-10"
-                                  placeholder="votre@email.com"
-                                  required
-                                />
-                                <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                              </div>
-                            </div>
-                          </div>
+              <div className="mb-6">
+                <Label className="text-sm font-medium text-gray-700">Numéro de téléphone *</Label>
+                <div className="relative mt-2">
+                  <Input
+                    value={formData.guestInfo.phone || ''}
+                    onChange={(e) => handleInputChange('guestInfo', 'phone', formatBeninPhone(e.target.value))}
+                    placeholder="+229 01 XX XX XX"
+                    className="pl-10 rounded-lg border-gray-300 focus:border-blue-500 focus:ring focus:ring-blue-200"
+                  />
+                  <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                </div>
+              </div>
 
-                          <div className="mb-6">
-                            <Label className="text-sm font-medium text-gray-700">Numéro de téléphone *</Label>
-                            <div className="relative mt-2">
-                              <Input
-  value={formData.guestInfo.phone || ''}
-  onChange={(e) => handleInputChange('guestInfo', 'phone', formatBeninPhone(e.target.value))}
-  placeholder="+229 01 XX XX XX"
-  className="mt-1"
-/>
-                              <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                            </div>
-                          </div>
-
-                          <div className="mb-8">
-                            <Label className="text-sm font-medium text-gray-700">Demandes spéciales</Label>
-                            <textarea
-                              value={formData.guestInfo.specialRequests}
-                              onChange={(e) => handleInputChange('guestInfo', 'specialRequests', e.target.value)}
-                              className="w-full mt-2 px-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                              rows={3}
-                              placeholder="Allergies, préférences, demandes particulières..."
-                            />
-                          </div>
+              <div className="mb-8">
+                <Label className="text-sm font-medium text-gray-700">Demandes spéciales</Label>
+                <textarea
+                  value={formData.guestInfo.specialRequests}
+                  onChange={(e) => handleInputChange('guestInfo', 'specialRequests', e.target.value)}
+                  className="w-full mt-2 px-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  rows={3}
+                  placeholder="Allergies, préférences, demandes particulières..."
+                />
+              </div>
                         </>
                       )}
                     </div>
@@ -988,7 +1008,7 @@ function getDurationFromDates(
                             key={option.key}
                             className={`p-4 cursor-pointer border-2 transition-all duration-300 relative ${
                               formData.paymentInfo.option === option.key
-                                ? 'border-blue-500 bg-blue-50 shadow-md'
+                                ? 'border-yellow-500 bg-blue-50 shadow-md'
                                 : 'border-gray-200 hover:border-gray-300 hover:shadow-sm'
                             }`}
                             onClick={() => handleInputChange('paymentInfo', 'option', option.key)}
@@ -1010,181 +1030,185 @@ function getDurationFromDates(
                       </div>
 
                       {/* Payment Methods */}
-                      {formData.paymentInfo.option !== 'onsite' && (
-                        <div className="mb-6">
-                          <Label className="text-base font-semibold mb-3 block">Méthode de paiement</Label>
-                          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-                            {[
-                              { key: 'card', label: 'Carte bancaire', icon: CreditCard, desc: 'Visa, Mastercard' },
-                              { key: 'mobile', label: 'Mobile Money', icon: Smartphone, desc: 'MTN, Moov' },
-                              { key: 'bank', label: 'Virement', icon: Building, desc: 'Banque' },
-                              { key: 'cash', label: 'Espèces', icon: Banknote, desc: 'À la réception' }
-                            ].map((method) => (
-                              <Card
-                                key={method.key}
-                                className={`p-4 cursor-pointer border-2 transition-all duration-300 ${
-                                  formData.paymentInfo.method === method.key
-                                    ? 'border-blue-500 bg-blue-50 shadow-md'
-                                    : 'border-gray-200 hover:border-gray-300 hover:shadow-sm'
-                                }`}
-                                onClick={() => handleInputChange('paymentInfo', 'method', method.key)}
-                              >
-                                <div className="text-center">
-                                  <method.icon className="h-8 w-8 mx-auto mb-2 text-blue-600" />
-                                  <div className="text-sm font-medium">{method.label}</div>
-                                  <div className="text-xs text-gray-500 mt-1">{method.desc}</div>
-                                  {formData.paymentInfo.method === method.key && (
-                                    <Check className="h-4 w-4 text-blue-600 mx-auto mt-2" />
-                                  )}
-                                </div>
-                              </Card>
-                            ))}
-                          </div>
+{formData.paymentInfo.option !== 'onsite' && (
+  <div className="mb-6 font-sans">
+    <Label className="text-base font-semibold mb-3 block text-brandBlue">
+      Méthode de paiement
+    </Label>
 
-                          {/* Payment Details Forms */}
-                          <AnimatePresence>
-                            {formData.paymentInfo.method === 'card' && (
-                              <motion.div
-                                initial={{ opacity: 0, height: 0 }}
-                                animate={{ opacity: 1, height: 'auto' }}
-                                exit={{ opacity: 0, height: 0 }}
-                                className="bg-gray-50 p-6 rounded-lg"
-                              >
-                                <h4 className="font-semibold mb-4 flex items-center">
-                                  <CreditCard className="h-5 w-5 mr-2" />
-                                  Informations de carte
-                                </h4>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                  <div className="md:col-span-2">
-                                    <Label className="text-sm">Nom sur la carte</Label>
-                                    <Input
-                                      value={formData.paymentInfo.cardDetails?.name || ''}
-                                      onChange={(e) => handleNestedInputChange('paymentInfo', 'cardDetails', 'name', e.target.value)}
-                                      placeholder="Nom complet"
-                                      className="mt-1"
-                                    />
-                                  </div>
-                                  <div className="md:col-span-2">
-                                    <Label className="text-sm">Numéro de carte</Label>
-                                    <Input
-                                      value={formData.paymentInfo.cardDetails?.number || ''}
-                                      onChange={(e) => handleNestedInputChange('paymentInfo', 'cardDetails', 'number', formatCardNumber(e.target.value))}
-                                      placeholder="1234 5678 9012 3456"
-                                      maxLength={19}
-                                      className="mt-1"
-                                    />
-                                  </div>
-                                  <div>
-                                    <Label className="text-sm">Date d'expiration</Label>
-                                    <Input
-                                      value={formData.paymentInfo.cardDetails?.expiry || ''}
-                                      onChange={(e) => handleNestedInputChange('paymentInfo', 'cardDetails', 'expiry', formatExpiry(e.target.value))}
-                                      placeholder="MM/AA"
-                                      maxLength={5}
-                                      className="mt-1"
-                                    />
-                                  </div>
-                                  <div>
-                                    <Label className="text-sm">CVV</Label>
-                                    <div className="relative">
-                                      <Input
-                                        type={showCvv ? 'text' : 'password'}
-                                        value={formData.paymentInfo.cardDetails?.cvv || ''}
-                                        onChange={(e) => handleNestedInputChange('paymentInfo', 'cardDetails', 'cvv', e.target.value.replace(/\D/g, '').slice(0, 3))}
-                                        placeholder="123"
-                                        maxLength={3}
-                                        className="mt-1 pr-10"
-                                      />
-                                      <button
-                                        type="button"
-                                        onClick={() => setShowCvv(!showCvv)}
-                                        className="absolute right-3 top-1/2 transform -translate-y-1/2"
-                                      >
-                                        {showCvv ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                                      </button>
-                                    </div>
-                                  </div>
-                                </div>
-                              </motion.div>
-                            )}
+    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+      {[
+        { key: 'card', label: 'Carte bancaire', icon: CreditCard, desc: 'Visa, Mastercard' },
+        { key: 'mobile', label: 'Mobile Money', icon: Smartphone, desc: 'MTN, Moov' },
+        { key: 'bank', label: 'Virement', icon: Building, desc: 'Banque' },
+        { key: 'cash', label: 'Espèces', icon: Banknote, desc: 'À la réception' }
+      ].map((method) => (
+        <Card
+          key={method.key}
+          className={`p-4 cursor-pointer border-2 transition-all duration-300 rounded-lg
+            ${formData.paymentInfo.method === method.key
+              ? 'border-brandBlue bg-brandBlue/10 shadow-md'
+              : 'border-gray-200 hover:border-brandYellow hover:shadow-sm'
+            }`}
+          onClick={() => handleInputChange('paymentInfo', 'method', method.key)}
+        >
+          <div className="text-center">
+            <method.icon className={`h-8 w-8 mx-auto mb-2 ${formData.paymentInfo.method === method.key ? 'text-brandBlue' : 'text-gray-500'}`} />
+            <div className="text-sm font-medium text-brandBlue">{method.label}</div>
+            <div className="text-xs text-gray-500 mt-1">{method.desc}</div>
+            {formData.paymentInfo.method === method.key && (
+              <Check className="h-4 w-4 text-brandYellow mx-auto mt-2" />
+            )}
+          </div>
+        </Card>
+      ))}
+    </div>
 
-                            {formData.paymentInfo.method === 'mobile' && (
-                              <motion.div
-                                initial={{ opacity: 0, height: 0 }}
-                                animate={{ opacity: 1, height: 'auto' }}
-                                exit={{ opacity: 0, height: 0 }}
-                                className="bg-gray-50 p-6 rounded-lg"
-                              >
-                                <h4 className="font-semibold mb-4 flex items-center">
-                                  <Smartphone className="h-5 w-5 mr-2" />
-                                  Mobile Money
-                                </h4>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                  <div>
-                                    <Label className="text-sm">Opérateur</Label>
-                                    <select
-                                      value={formData.paymentInfo.mobileDetails?.operator || 'mtn'}
-                                      onChange={(e) => handleNestedInputChange('paymentInfo', 'mobileDetails', 'operator', e.target.value)}
-                                      className="w-full mt-1 px-3 py-2 border border-gray-300 rounded-lg"
-                                    >
-                                      <option value="mtn">MTN Mobile Money</option>
-                                      <option value="moov">Moov Money</option>
-                                    </select>
-                                  </div>
-                                  <div>
-                                  <Label className="text-sm">Numéro de téléphone</Label>
-<Input
-  value={formData.paymentInfo.mobileDetails?.number || ''}
-  onChange={(e) => handleNestedInputChange('paymentInfo', 'mobileDetails', 'number', formatBeninPhone(e.target.value))}
-  placeholder="+229 01 XX XX XX"
-  className="mt-1"
-/>
-                                  </div>
-                                </div>
-                              </motion.div>
-                            )}
+    {/* Payment Details Forms */}
+    <AnimatePresence>
+      {formData.paymentInfo.method === 'card' && (
+        <motion.div
+          initial={{ opacity: 0, height: 0 }}
+          animate={{ opacity: 1, height: 'auto' }}
+          exit={{ opacity: 0, height: 0 }}
+          className="bg-gray-50 p-6 rounded-lg"
+        >
+          <h4 className="font-semibold mb-4 flex items-center text-brandBlue">
+            <CreditCard className="h-5 w-5 mr-2 text-brandYellow" />
+            Informations de carte
+          </h4>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="md:col-span-2">
+              <Label className="text-sm text-brandBlue">Nom sur la carte</Label>
+              <Input
+                value={formData.paymentInfo.cardDetails?.name || ''}
+                onChange={(e) => handleNestedInputChange('paymentInfo', 'cardDetails', 'name', e.target.value)}
+                placeholder="Nom complet"
+                className="mt-1"
+              />
+            </div>
+            <div className="md:col-span-2">
+              <Label className="text-sm text-brandBlue">Numéro de carte</Label>
+              <Input
+                value={formData.paymentInfo.cardDetails?.number || ''}
+                onChange={(e) => handleNestedInputChange('paymentInfo', 'cardDetails', 'number', formatCardNumber(e.target.value))}
+                placeholder="1234 5678 9012 3456"
+                maxLength={19}
+                className="mt-1"
+              />
+            </div>
+            <div>
+              <Label className="text-sm text-brandBlue">Date d&rsquo;expiration</Label>
+              <Input
+                value={formData.paymentInfo.cardDetails?.expiry || ''}
+                onChange={(e) => handleNestedInputChange('paymentInfo', 'cardDetails', 'expiry', formatExpiry(e.target.value))}
+                placeholder="MM/AA"
+                maxLength={5}
+                className="mt-1"
+              />
+            </div>
+            <div>
+              <Label className="text-sm text-brandBlue">CVV</Label>
+              <div className="relative">
+                <Input
+                  type={showCvv ? 'text' : 'password'}
+                  value={formData.paymentInfo.cardDetails?.cvv || ''}
+                  onChange={(e) => handleNestedInputChange('paymentInfo', 'cardDetails', 'cvv', e.target.value.replace(/\D/g, '').slice(0, 3))}
+                  placeholder="123"
+                  maxLength={3}
+                  className="mt-1 pr-10"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowCvv(!showCvv)}
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-brandBlue"
+                >
+                  {showCvv ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </button>
+              </div>
+            </div>
+          </div>
+        </motion.div>
+      )}
 
-                            {formData.paymentInfo.method === 'bank' && (
-                              <motion.div
-                                initial={{ opacity: 0, height: 0 }}
-                                animate={{ opacity: 1, height: 'auto' }}
-                                exit={{ opacity: 0, height: 0 }}
-                                className="bg-gray-50 p-6 rounded-lg"
-                              >
-                                <h4 className="font-semibold mb-4 flex items-center">
-                                  <Building className="h-5 w-5 mr-2" />
-                                  Virement bancaire
-                                </h4>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                  <div>
-                                    <Label className="text-sm">Nom de la banque</Label>
-                                    <select
-                                      value={formData.paymentInfo.bankDetails?.bankName || ''}
-                                      onChange={(e) => handleNestedInputChange('paymentInfo', 'bankDetails', 'bankName', e.target.value)}
-                                      className="w-full mt-1 px-3 py-2 border border-gray-300 rounded-lg"
-                                    >
-                                      <option value="">Sélectionner une banque</option>
-                                      <option value="ecobank">Ecobank</option>
-                                      <option value="boa">Bank of Africa</option>
-                                      <option value="sgb">Société Générale Bénin</option>
-                                      <option value="orabank">Orabank</option>
-                                    </select>
-                                  </div>
-                                  <div>
-                                    <Label className="text-sm">Numéro de compte</Label>
-                                    <Input
-                                      value={formData.paymentInfo.bankDetails?.accountNumber || ''}
-                                      onChange={(e) => handleNestedInputChange('paymentInfo', 'bankDetails', 'accountNumber', e.target.value)}
-                                      placeholder="Numéro de compte"
-                                      className="mt-1"
-                                    />
-                                  </div>
-                                </div>
-                              </motion.div>
-                            )}
-                          </AnimatePresence>
-                        </div>
-                      )}
+      {formData.paymentInfo.method === 'mobile' && (
+        <motion.div
+          initial={{ opacity: 0, height: 0 }}
+          animate={{ opacity: 1, height: 'auto' }}
+          exit={{ opacity: 0, height: 0 }}
+          className="bg-gray-50 p-6 rounded-lg"
+        >
+          <h4 className="font-semibold mb-4 flex items-center text-brandBlue">
+            <Smartphone className="h-5 w-5 mr-2 text-brandYellow" />
+            Mobile Money
+          </h4>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <Label className="text-sm text-brandBlue">Opérateur</Label>
+              <select
+                value={formData.paymentInfo.mobileDetails?.operator || 'mtn'}
+                onChange={(e) => handleNestedInputChange('paymentInfo', 'mobileDetails', 'operator', e.target.value)}
+                className="w-full mt-1 px-3 py-2 border border-gray-300 rounded-lg"
+              >
+                <option value="mtn">MTN Mobile Money</option>
+                <option value="moov">Moov Money</option>
+              </select>
+            </div>
+            <div>
+              <Label className="text-sm text-brandBlue">Numéro de téléphone</Label>
+              <Input
+                value={formData.paymentInfo.mobileDetails?.number || ''}
+                onChange={(e) => handleNestedInputChange('paymentInfo', 'mobileDetails', 'number', formatBeninPhone(e.target.value))}
+                placeholder="+229 01 XX XX XX"
+                className="mt-1"
+              />
+            </div>
+          </div>
+        </motion.div>
+      )}
+
+      {formData.paymentInfo.method === 'bank' && (
+        <motion.div
+          initial={{ opacity: 0, height: 0 }}
+          animate={{ opacity: 1, height: 'auto' }}
+          exit={{ opacity: 0, height: 0 }}
+          className="bg-gray-50 p-6 rounded-lg"
+        >
+          <h4 className="font-semibold mb-4 flex items-center text-brandBlue">
+            <Building className="h-5 w-5 mr-2 text-brandYellow" />
+            Virement bancaire
+          </h4>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <Label className="text-sm text-brandBlue">Nom de la banque</Label>
+              <select
+                value={formData.paymentInfo.bankDetails?.bankName || ''}
+                onChange={(e) => handleNestedInputChange('paymentInfo', 'bankDetails', 'bankName', e.target.value)}
+                className="w-full mt-1 px-3 py-2 border border-gray-300 rounded-lg"
+              >
+                <option value="">Sélectionner une banque</option>
+                <option value="ecobank">Ecobank</option>
+                <option value="boa">Bank of Africa</option>
+                <option value="sgb">Société Générale Bénin</option>
+                <option value="orabank">Orabank</option>
+              </select>
+            </div>
+            <div>
+              <Label className="text-sm text-brandBlue">Numéro de compte</Label>
+              <Input
+                value={formData.paymentInfo.bankDetails?.accountNumber || ''}
+                onChange={(e) => handleNestedInputChange('paymentInfo', 'bankDetails', 'accountNumber', e.target.value)}
+                placeholder="Numéro de compte"
+                className="mt-1"
+              />
+            </div>
+          </div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  </div>
+)}
+
                     </div>
 
                     <div className="flex justify-between">
@@ -1194,7 +1218,7 @@ function getDurationFromDates(
                       </Button>
                       <Button
                         onClick={handleSubmit}
-                        className="bg-blue-600 hover:bg-blue-700 px-8"
+                        className="bg-yellow-600 hover:bg-yellow-700 px-8"
                         disabled={isSubmitting || !formData.guestInfo.fullName || !formData.guestInfo.email || !formData.guestInfo.phone}
                       >
                         {isSubmitting ? (
@@ -1244,7 +1268,7 @@ function getDurationFromDates(
   <div className="space-y-3">
     <div className="flex justify-between items-center">
       <span className="text-gray-600">Numéro de réservation:</span>
-      <span className="font-bold text-blue-600">#BDL{Date.now().toString().slice(-6)}</span>
+      <span className="font-bold "style={{ color: "#014d71" }}>#BDL{Date.now().toString().slice(-6)}</span>
     </div>
     <div className="flex justify-between items-center">
       <span className="text-gray-600">Nombre de chambres:</span>
@@ -1259,7 +1283,7 @@ function getDurationFromDates(
     </div>
     <div className="flex justify-between items-center">
       <span className="text-gray-600">Montant payé:</span>
-      <span className="font-bold text-xl text-blue-600">
+      <span className="font-bold text-xl "style={{ color: "#014d71" }}>
         {calculatePaymentAmount().toLocaleString()} FCFA
       </span>
     </div>
@@ -1284,11 +1308,11 @@ function getDurationFromDates(
                         variant="outline"
                         className="px-6"
                       >
-                        Retour à l'accueil
+                        Retour à l&rsquo;accueil
                       </Button>
                       <Button
                         onClick={() => window.print()}
-                        className="bg-blue-600 hover:bg-blue-700 px-6"
+                        className="bg-yellow-600 hover:bg-yellow-700 px-6"
                       >
                         Imprimer la confirmation
                       </Button>
@@ -1305,7 +1329,7 @@ function getDurationFromDates(
               <Card className="p-6 shadow-lg border-2" style={{ borderColor: colors.gold }}>
                 <div className="flex items-center mb-4">
                   <Info className="h-5 w-5 text-blue-600 mr-2" />
-                  <h3 className="text-lg font-semibold">Résumé du paiement</h3>
+                  <h3 className="text-lg font-semibold"style={{ color: "#014d71" }}>Résumé du paiement</h3>
                 </div>
 
                 <div className="space-y-3 mb-6">
@@ -1324,7 +1348,7 @@ function getDurationFromDates(
                   <Separator />
                   <div className="flex justify-between font-bold text-lg">
                     <span>Total:</span>
-                    <span className="text-blue-600">
+                    <span className="text-yellow-600">
                       {bookingData.totalPrice.toLocaleString()} FCFA
                     </span>
                   </div>

@@ -41,8 +41,7 @@ export type Pricing = Array<{
 }>;
 
 
-const sampleRooms: Room[] =[
-  // ...
+const sampleRooms: Room[] = [
   {
     id: 1,
     name: "Chambre Deluxe Vue Mer",
@@ -62,6 +61,8 @@ const sampleRooms: Room[] =[
     is_available: true,
     status: "available",
     image: "https://images.pexels.com/photos/164595/pexels-photo-164595.jpeg",
+    description: "Une chambre élégante avec vue panoramique sur la mer. Parfaite pour les couples en quête de romantisme avec son lit king size et sa décoration raffinée.",
+    wifiCode: "HOTEL_DULAC_2024", // WiFi unifié pour tout l'hôtel
     room_images: [
       { image: "https://images.pexels.com/photos/271643/pexels-photo-271643.jpeg" },
       { image: "https://images.pexels.com/photos/261395/pexels-photo-261395.jpeg" }
@@ -73,57 +74,57 @@ const sampleRooms: Room[] =[
       { id: 4, name: "Service chambre", description: false, icon: "https://cdn-icons-png.flaticon.com/512/3050/3050209.png" }
     ],
     reservation_types: [
-  {
-    id: 1,
-    name: "Nuitée",
-    code: "classic", // Add the code property
-    description: "Arrivée 14h - Départ 11h",
-    is_flexible: false, // Add the is_flexible property
-    slots: [{ checkin_time: 14, checkout_time: 11 }]
-  },
-  {
-    id: 2,
-    name: "DAY-USE",
-    code: "day", // Add the code property
-    description: "De 10h à 17h",
-    is_flexible: false, // Add the is_flexible property
-    slots: [{ checkin_time: 10, checkout_time: 17 }]
-  },
-  {
-    id: 3,
-    name: "Flexible horaire",
-    code: "flexible", // Add the code property
-    description: "Choisissez vos heures",
-    is_flexible: true, // Add the is_flexible property
-    slots: []
-  }
-],
+      {
+        id: 1,
+        name: "Nuitée",
+        code: "classic",
+        description: "Arrivée 14h - Départ 11h",
+        is_flexible: false,
+        slots: [{ checkin_time: 14, checkout_time: 11 }]
+      },
+      {
+        id: 2,
+        name: "DAY-USE",
+        code: "day_use",
+        description: "De 10h à 17h",
+        is_flexible: false,
+        slots: [{ checkin_time: 10, checkout_time: 17 }]
+      },
+      {
+        id: 3,
+        name: "Flexible horaire",
+        code: "flexible",
+        description: "Choisissez vos heures",
+        is_flexible: true,
+        slots: []
+      }
+    ],
     pricing: [
-{
-  reservation_type_id: 1,
-  reservation_type_name: "Nuitée",
-  price: 35000,
-  hourly_price: 0, 
-  is_hourly_based: false,
-  currency: "FCFA"
-},
-{
-  reservation_type_id: 2,
-  reservation_type_name: "DAY-USE",
-  price: 15000,
-  hourly_price: 0, 
-  is_hourly_based: false,
-  currency: "FCFA"
-},
-  {
-  reservation_type_id: 3,
-  reservation_type_name: "Flexible horaire",
-  price: 8000, 
-  hourly_price: 8000,
-  is_hourly_based: true,
-  currency: "FCFA"
-}
-]
+      {
+        reservation_type_id: 1,
+        reservation_type_name: "Nuitée",
+        price: 35000,
+        hourly_price: 0,
+        is_hourly_based: false,
+        currency: "FCFA"
+      },
+      {
+        reservation_type_id: 2,
+        reservation_type_name: "DAY-USE",
+        price: 15000,
+        hourly_price: 0,
+        is_hourly_based: false,
+        currency: "FCFA"
+      },
+      {
+        reservation_type_id: 3,
+        reservation_type_name: "Flexible horaire",
+        price: 8000,
+        hourly_price: 8000,
+        is_hourly_based: true,
+        currency: "FCFA"
+      }
+    ]
   },
   {
     id: 2,
@@ -144,6 +145,8 @@ const sampleRooms: Room[] =[
     is_available: true,
     status: "available",
     image: "https://images.pexels.com/photos/189296/pexels-photo-189296.jpeg",
+    description: "Suite luxueuse avec vue sur la piscine. Espace généreux avec jacuzzi privé et terrasse. Idéale pour les familles ou les séjours d'affaires haut de gamme.",
+    wifiCode: "HOTEL_DULAC_2024",
     room_images: [
       { image: "https://images.pexels.com/photos/258154/pexels-photo-258154.jpeg" },
       { image: "https://images.pexels.com/photos/1643383/pexels-photo-1643383.jpeg" }
@@ -170,7 +173,7 @@ const sampleRooms: Room[] =[
         code: "day_use",
         description: "De 9h à 19h",
         is_flexible: false,
-        slots:[{ checkin_time: 9, checkout_time: 19 }]
+        slots: [{ checkin_time: 9, checkout_time: 19 }]
       }
     ],
     pricing: [
@@ -211,6 +214,8 @@ const sampleRooms: Room[] =[
     is_available: true,
     status: "available",
     image: "https://images.pexels.com/photos/271639/pexels-photo-271639.jpeg",
+    description: "Chambre confortable et économique avec vue sur le jardin. Parfaite pour les voyageurs d'affaires ou les courts séjours. Équipements essentiels inclus.",
+    wifiCode: "HOTEL_DULAC_2024",
     room_images: [
       { image: "https://images.pexels.com/photos/262048/pexels-photo-262048.jpeg" }
     ],
@@ -259,6 +264,8 @@ const sampleRooms: Room[] =[
     is_available: true,
     status: "available",
     image: "https://images.pexels.com/photos/1571460/pexels-photo-1571460.jpeg",
+    description: "Suite spacieuse conçue pour les familles. Espace jeux pour enfants, lits séparés et équipements adaptés. Vue sur la ville et confort maximal pour tous.",
+    wifiCode: "HOTEL_DULAC_2024",
     room_images: [
       { image: "https://images.pexels.com/photos/271618/pexels-photo-271618.jpeg" },
       { image: "https://images.pexels.com/photos/271624/pexels-photo-271624.jpeg" }
@@ -276,7 +283,7 @@ const sampleRooms: Room[] =[
         code: "classic",
         description: "Arrivée 14h - Départ 11h",
         is_flexible: false,
-        slots:  [{ checkin_time: 14, checkout_time: 11 }]
+        slots: [{ checkin_time: 14, checkout_time: 11 }]
       },
       {
         id: 8,
@@ -325,6 +332,8 @@ const sampleRooms: Room[] =[
     is_available: true,
     status: "available",
     image: "https://images.pexels.com/photos/1571463/pexels-photo-1571463.jpeg",
+    description: "Chambre business avec bureau ergonomique et équipements professionnels. Parfaite pour les voyageurs d'affaires avec imprimante et WiFi haut débit.",
+    wifiCode: "HOTEL_DULAC_2024",
     room_images: [
       { image: "https://images.pexels.com/photos/1571465/pexels-photo-1571465.jpeg" },
       { image: "https://images.pexels.com/photos/1571468/pexels-photo-1571468.jpeg" }
@@ -342,7 +351,7 @@ const sampleRooms: Room[] =[
         code: "classic",
         description: "Arrivée 14h - Départ 11h",
         is_flexible: false,
-        slots:[{ checkin_time: 14, checkout_time: 11 }]
+        slots: [{ checkin_time: 14, checkout_time: 11 }]
       },
       {
         id: 10,
@@ -391,6 +400,8 @@ const sampleRooms: Room[] =[
     is_available: true,
     status: "available",
     image: "https://images.pexels.com/photos/1457842/pexels-photo-1457842.jpeg",
+    description: "Chambre romantique avec ambiance intime. Bain à remous, champagne offert et service spécialisé pour les couples. Parfaite pour les lunes de miel et anniversaires.",
+    wifiCode: "HOTEL_DULAC_2024",
     room_images: [
       { image: "https://images.pexels.com/photos/271635/pexels-photo-271635.jpeg" },
       { image: "https://images.pexels.com/photos/271640/pexels-photo-271640.jpeg" }
@@ -405,7 +416,7 @@ const sampleRooms: Room[] =[
       {
         id: 11,
         name: "Nuitée",
-        code: "Classic",
+        code: "classic",
         description: "Arrivée 16h - Départ 12h",
         is_flexible: false,
         slots: [{ checkin_time: 16, checkout_time: 12 }]
@@ -434,17 +445,16 @@ const sampleRooms: Room[] =[
         price: 18000,
         hourly_price: 9000,
         is_hourly_based: false,
-        currency: "fCFA"
-     }
-]
-
-  
+        currency: "FCFA"
+      }
+    ]
   }
 ];
+
 export default sampleRooms;
 
 export type Room = {
-    id: number;
+  id: number;
   name: string;
   status: string;
   room_type: string;
@@ -455,8 +465,8 @@ export type Room = {
   hourly_rate: number;
   floor: string;
   surface_area: number;
-  view: string ;
-  bed_type: string ;
+  view: string;
+  bed_type: string;
   flooring_type: string | boolean;
   image: string;
   is_smoking_allowed: boolean;
@@ -464,6 +474,8 @@ export type Room = {
   in_maintenance: boolean;
   checkin_date?: string;
   checkout_date?: string;
+  description: string; // Ajouté
+  wifiCode: string;     // Ajouté
   room_images: {
     image: string;
   }[];
@@ -477,7 +489,7 @@ export type Room = {
     id: number;
     name: string;
     code: string;
-   description: string | boolean;
+    description: string | boolean;
     is_flexible: boolean;
     slots: Array<{
       checkin_time: number;
@@ -492,7 +504,6 @@ export type Room = {
     is_hourly_based: boolean;
     currency: string | null;
   }>;
-
 };
 
 export type RoomType = 

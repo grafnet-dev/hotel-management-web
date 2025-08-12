@@ -5,6 +5,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '../../components/ui/button';
 import  sampleRooms  from '../../types';
+
 import RoomList from '../../components/roomlist';
 import { WhatsAppButton } from '../../components/WhatsAppButton';
 import {
@@ -379,7 +380,7 @@ const carouselImages = [
   },
   {
     url: "https://images.pexels.com/photos/271624/pexels-photo-271624.jpeg",
-    title: "Bain du Lac - Ouidah",
+    title: "Relacs Zone - Ouidah",
     subtitle: "Suites de luxe avec terrasse"
   },
   {
@@ -485,7 +486,7 @@ const carouselImages = [
             className="mb-12"
           >
             <h1 className="text-7xl md:text-7xl font-bold mb-6 bg-gradient-to-r from-white to-yellow-200 bg-clip-text text-transparent">
-              Bain du Lac
+              Relacs Zone 
             </h1>
            <p className="text-3xl md:text-4xl mb-4 font-light">
               {carouselImages[currentImageIndex].title}
@@ -624,7 +625,7 @@ const carouselImages = [
                 backgroundImage: `linear-gradient(135deg, ${colors.teal}, ${colors.gold})` 
               }}
             >
-              l'Excellence
+              L&rsquo;Excellence
             </span>
           </h2>
 
@@ -636,8 +637,8 @@ const carouselImages = [
             className="text-xl max-w-3xl mx-auto leading-relaxed mb-12"
             style={{ color: colors.black }}
           >
-            Plongez dans un univers où chaque détail raconte une histoire de luxe et de raffinement. 
-            Explorez nos espaces d'exception à travers cette galerie immersive.
+           Plongez dans un univers o&ugrave; chaque d&eacute;tail raconte une histoire de luxe et de raffinement. 
+Explorez nos espaces d&rsquo;exception &agrave; travers cette galerie immersive.
           </motion.p>
 
           {/* Enhanced Navigation Controls */}
@@ -789,16 +790,17 @@ const carouselImages = [
                     )}
 
                     {/* Image */}
-                    <img
-                      src={image.url}
-                      alt={image.title}
-                      className={`w-full h-full object-cover transition-all duration-700 group-hover:scale-105 ${
-                        isLoaded ? 'opacity-100' : 'opacity-0'
-                      }`}
-                      onLoad={() => handleImageLoad(activeCategory, index)}
-                      onError={() => handleImageError(activeCategory, index)}
-                    />
-
+              <Image
+  src={image.url}
+  alt={image.title}
+  layout="fill" 
+  objectFit="cover" 
+  className={`w-full h-full object-cover transition-all duration-700 group-hover:scale-105 ${
+    isLoaded ? 'opacity-100' : 'opacity-0'
+  }`}
+  onLoad={() => handleImageLoad(activeCategory, index)}
+  onError={() => handleImageError(activeCategory, index)}
+/>
                     {/* Gradient Overlay */}
                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-60 group-hover:opacity-40 transition-opacity duration-500" />
 
@@ -912,7 +914,7 @@ const carouselImages = [
       {lightboxImageLoading && (
         <div className="flex flex-col items-center justify-center text-white">
           <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-white mb-4"></div>
-          <p className="text-lg">Chargement de l'image...</p>
+          <p className="text-lg">Chargement de l&rsquo;image...</p>
         </div>
       )}
 
@@ -921,7 +923,7 @@ const carouselImages = [
         <div className="flex flex-col items-center justify-center text-white">
           <Camera size={48} className="mb-4 text-gray-400" />
           <p className="text-lg mb-2">Erreur de chargement</p>
-          <p className="text-sm text-gray-400">L'image n'a pas pu être chargée</p>
+          <p className="text-sm text-gray-400">L&rsquo;image n&rsquo;a pas pu &ecirc;tre charg&eacute;e</p>
           <button
             onClick={closeLightbox}
             className="mt-4 px-6 py-2 bg-white/20 rounded-lg hover:bg-white/30 transition-colors"
@@ -966,29 +968,29 @@ const carouselImages = [
           </button>
 
           {/* Image Container */}
-          <motion.div
-            initial={{ scale: 0.8, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            exit={{ scale: 0.8, opacity: 0 }}
-            className="relative max-w-6xl max-h-[90vh] w-full flex items-center justify-center"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <img
-              src={selectedImage.image.url}
-              alt={selectedImage.image.title}
-              className="max-w-full max-h-full object-contain rounded-lg shadow-2xl"
-              style={{ 
-                maxHeight: '80vh',
-                display: 'block' // Force l'affichage
-              }}
-              onLoad={() => {
-                console.log('Image du lightbox chargée');
-              }}
-              onError={(e) => {
-                console.error('Erreur lors du chargement dans le lightbox');
-                setLightboxImageError(true);
-              }}
-            />
+      <motion.div
+  initial={{ scale: 0.8, opacity: 0 }}
+  animate={{ scale: 1, opacity: 1 }}
+  exit={{ scale: 0.8, opacity: 0 }}
+  className="relative max-w-6xl max-h-[90vh] w-full flex items-center justify-center"
+  onClick={(e) => e.stopPropagation()}
+>
+  <Image
+    src={selectedImage.image.url}
+    alt={selectedImage.image.title}
+    className="max-w-full max-h-full object-contain rounded-lg shadow-2xl"
+    style={{ 
+      maxHeight: '80vh',
+      display: 'block' // Force l'affichage
+    }}
+    onLoad={() => {
+      console.log('Image du lightbox chargée');
+    }}
+    onError={(e) => {
+  console.error('Erreur lors du chargement dans le lightbox:', e);
+  setLightboxImageError(true);
+}}
+  />
             
             {/* Image Info */}
             <motion.div
