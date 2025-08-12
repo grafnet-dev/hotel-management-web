@@ -20,6 +20,10 @@ const colors = {
 };
 
 
+type DateRange = {
+  from?: Date;
+  to?: Date;
+};
 
 type RoomSelection = {
   id: number;       
@@ -27,13 +31,8 @@ type RoomSelection = {
   children: number; 
 };
 
-type DateRange = {
-  from: Date;
-  to?: Date;
-};
 
-
-export default function Rooms({ allRooms }: { allRooms: Room[] }) {
+export default function Rooms() {
   const [currentPage, setCurrentPage] = useState(1);
   const [isFiltersOpen, setIsFiltersOpen] = useState(false);
   const [filteredRooms, setFilteredRooms] = useState<Room[]>(sampleRooms);
@@ -63,18 +62,19 @@ const handleSearch = (params: {
            (params.isDayUse ? room.day_use_price > 0 : true);
   });
   
+  
 
   setFilteredRooms(filtered);
   scrollToResults();
 };
-  const roomsPerPage = 6;
-  const totalPages = Math.ceil(allRooms?.length / roomsPerPage);
-  const currentRooms = useMemo(() => 
-    allRooms && allRooms.length > 0 
-      ? allRooms.slice((currentPage - 1) * roomsPerPage, currentPage * roomsPerPage) 
-      : [], 
-    [allRooms, currentPage, roomsPerPage]
-  );
+const roomsPerPage = 6;
+const totalPages = Math.ceil(filteredRooms?.length / roomsPerPage);
+const paginatedRooms = useMemo(() => 
+  filteredRooms && filteredRooms.length > 0 
+    ? filteredRooms.slice((currentPage - 1) * roomsPerPage, currentPage * roomsPerPage) 
+    : [], 
+  [filteredRooms, currentPage, roomsPerPage]
+);
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, [currentPage]);
@@ -184,7 +184,7 @@ const handleSearch = (params: {
 
       <div className="lg:w-3/4">
         {/* Room Cards */}
-       <RoomList  rooms={filteredRooms} onBookNow={() => console.log('Book now clicked!')} />
+       <RoomList rooms={paginatedRooms} onBookNow={() => console.log('Book now clicked!')} />
 
         {/* Pagination */}
       <div className="flex justify-center mt-12">

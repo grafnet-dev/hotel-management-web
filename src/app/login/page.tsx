@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from 'react';
-import { Mail, Lock, Hotel, Facebook, Twitter, Sparkles, Eye, EyeOff, ArrowRight, Shield, Star, MapPin, Crown, Gift, Clock, Users } from 'lucide-react';
+import { Mail, Lock,  Facebook, Twitter, Sparkles, Eye, EyeOff, ArrowRight, Shield, Star, MapPin, Crown, Gift, Clock, Users } from 'lucide-react';
 import Link from 'next/link';
 
 const colors = {
@@ -20,14 +20,14 @@ export default function HotelLogin() {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
- const handleSubmit = async (e: React.MouseEvent<HTMLFormElement>) => {
-    if (e) e.preventDefault();
-    setIsLoading(true);
-    setTimeout(() => {
-      setIsLoading(false);
-      alert('Connexion réussie!');
-    }, 2000);
-  };
+const handleSubmit = async (e: React.MouseEvent<HTMLButtonElement>) => {
+  if (e) e.preventDefault();
+  setIsLoading(true);
+  setTimeout(() => {
+    setIsLoading(false);
+    alert('Connexion réussie!');
+  }, 2000);
+};
 
   return (
     <div 

@@ -676,7 +676,7 @@ function DateSelector({ type, onComplete }: { type: 'classique' | 'day-use' | 'f
   return (
     <div className="space-y-4 p-4 bg-white rounded-lg border">
       <div>
-        <Label>Date d'arrivée</Label>
+        <Label>Date d&eacute;arrivée</Label>
         <Input
           type="date"
           value={checkInDate}
@@ -702,7 +702,7 @@ function DateSelector({ type, onComplete }: { type: 'classique' | 'day-use' | 'f
       {type === 'flexible' && (
         <div className="grid grid-cols-2 gap-2">
           <div>
-            <Label>Heure d'arrivée</Label>
+            <Label>Heure d&eacute;arrivée</Label>
             <Input
               type="time"
               value={checkInTime}
@@ -761,7 +761,7 @@ function GuestSelector({ onComplete }: { onComplete: (guests: Guests) => void })
   return (
     <div className="space-y-4 p-4 bg-white rounded-lg border">
       <div>
-        <Label>Nombre d'adultes</Label>
+        <Label>Nombre d&eacute;adultes</Label>
         <div className="flex items-center space-x-3 mt-2">
           <Button
             variant="outline"

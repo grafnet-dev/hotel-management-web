@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { Calendar, Users, Sparkles, CalendarDays, Search, X, Clock, ChevronDown } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-
+import { Room } from '../types';
 
 type DateRange = {
   from?: Date;
@@ -15,12 +15,30 @@ type Child = {
 };
 
 type RoomSelection = {
-  id: number;
-  adults: number;
-  children: Child[];
+  id: number;       
+  adults: number;   
+  children: number; // Changé de Child[] à number pour correspondre au fichier principal
 };
 
-
+interface BookingSectionProps {
+  rooms: Room[];
+  colors: {
+    teal: string;
+    lightTeal: string;
+    darkTeal: string;
+    gold: string;
+    orange: string;
+    maroon: string;
+    white: string;
+  };
+  onSearch?: (params: {
+    date: Date | DateRange | undefined;
+    rooms: RoomSelection[];
+    isDayUse: boolean;
+    totalAdults: number;
+    totalChildren: number;
+  }) => void;
+}
 
 interface SearchData {
   reservationType: ReservationType;
@@ -291,63 +309,63 @@ const SimpleDatePicker = ({
   );
 };
 
-const BookingSection: React.FC = () => {
+// Changement principal : destructurer les props correctement
+const BookingSection: React.FC<BookingSectionProps> = ({ rooms,  onSearch }) => {
   const router = useRouter();
   const [reservationType, setReservationType] = useState<ReservationType>('classic');
   const [dateRange, setDateRange] = useState<DateRange>({});
   const [selectedDate, setSelectedDate] = useState<Date>();
   const [flexibleHours, setFlexibleHours] = useState({ start: '14:00', end: '18:00' });
   const [isSearching, setIsSearching] = useState(false);
-  const [isGuestsPopoverOpen, setIsGuestsPopoverOpen] = useState(false);
-  
-  const [rooms, setRooms] = useState<RoomSelection[]>([
-    { id: 1, adults: 1, children: [] }
+
+  const [roomSelections, setRoomSelections] = useState([
+    { id: 1, adults: 1, children: [] as Child[] }
   ]);
 
-  const totalAdults = useMemo(() => rooms.reduce((sum, room) => sum + room.adults, 0), [rooms]);
-  const totalChildren = useMemo(() => rooms.reduce((sum, room) => sum + room.children.length, 0), [rooms]);
+  const totalAdults = useMemo(() => roomSelections.reduce((sum, room) => sum + room.adults, 0), [roomSelections]);
+  const totalChildren = useMemo(() => roomSelections.reduce((sum, room) => sum + room.children.length, 0), [roomSelections]);
 
   const updateRoomAdults = (roomIndex: number, adults: number) => {
-    const newRooms = [...rooms];
+    const newRooms = [...roomSelections];
     newRooms[roomIndex].adults = adults;
-    setRooms(newRooms);
+    setRoomSelections(newRooms);
   };
 
   const addChild = (roomIndex: number) => {
-    const newRooms = [...rooms];
+    const newRooms = [...roomSelections];
     if (newRooms[roomIndex].children.length < MAX_CHILDREN_PER_ROOM) {
       newRooms[roomIndex].children.push({ id: Date.now(), age: 5 });
-      setRooms(newRooms);
+      setRoomSelections(newRooms);
     }
   };
 
   const removeChild = (roomIndex: number, childId: number) => {
-    const newRooms = [...rooms];
+    const newRooms = [...roomSelections];
     newRooms[roomIndex].children = newRooms[roomIndex].children.filter(c => c.id !== childId);
-    setRooms(newRooms);
+    setRoomSelections(newRooms);
   };
 
   const updateChildAge = (roomIndex: number, childId: number, age: number) => {
-    const newRooms = [...rooms];
+    const newRooms = [...roomSelections];
     const child = newRooms[roomIndex].children.find(c => c.id === childId);
     if (child) child.age = age;
-    setRooms(newRooms);
+    setRoomSelections(newRooms);
   };
 
   const addRoom = () => {
-    if (rooms.length < MAX_ROOMS) {
-      setRooms([...rooms, { id: Date.now(), adults: 2, children: [] }]);
+    if (roomSelections.length < MAX_ROOMS) {
+      setRoomSelections([...roomSelections, { id: Date.now(), adults: 2, children: [] }]);
     }
   };
 
   const removeRoom = (index: number) => {
-    if (rooms.length > 1) {
-      setRooms(rooms.filter((_, i) => i !== index));
+    if (roomSelections.length > 1) {
+      setRoomSelections(roomSelections.filter((_, i) => i !== index));
     }
   };
 
   const validateGuestsSelection = useCallback(() => {
-    for (const room of rooms) {
+    for (const room of roomSelections) {
       for (const child of room.children) {
         if (child.age < MIN_CHILD_AGE || child.age > MAX_CHILD_AGE) {
           return false;
@@ -355,12 +373,10 @@ const BookingSection: React.FC = () => {
       }
     }
     return true;
-  }, [rooms]);
+  }, [roomSelections]);
 
   const handleGuestsValidation = () => {
-    if (validateGuestsSelection()) {
-      setIsGuestsPopoverOpen(false);
-    } else {
+    if (!validateGuestsSelection()) {
       alert("Veuillez vérifier que tous les âges des enfants sont valides (0-17 ans)");
     }
   };
@@ -372,16 +388,31 @@ const BookingSection: React.FC = () => {
   };
 
   const handleSearch = () => {
-    // Validation logic...
     setIsSearching(true);
+    
+    // Appeler la fonction onSearch si elle est fournie
+    if (onSearch) {
+      const searchParams = {
+        date: reservationType === 'classic' ? dateRange : selectedDate,
+        rooms: roomSelections.map(room => ({
+          id: room.id,
+          adults: room.adults,
+          children: room.children.length // Convertir en nombre pour correspondre au type attendu
+        })),
+        isDayUse: reservationType === 'day_use',
+        totalAdults,
+        totalChildren
+      };
+      onSearch(searchParams);
+    }
     
     setTimeout(() => {
       const searchData: SearchData = {
         reservationType,
         adults: totalAdults,
         children: totalChildren,
-        roomsCount: rooms.length,
-        roomsData: JSON.stringify(rooms.map(room => ({
+        roomsCount: roomSelections.length,
+        roomsData: JSON.stringify(roomSelections.map(room => ({
           adults: room.adults,
           children: room.children.map(child => child.age)
         })))
@@ -460,7 +491,6 @@ const BookingSection: React.FC = () => {
 
   return (
     <section className="py-6 px-4 sm:px-6 lg:px-8 bg-gray-50">
-
       <div className="max-w-7xl mx-auto">
         <div className="text-center mb-6">
           <div className="flex items-center justify-center gap-2 mb-2">
@@ -648,7 +678,7 @@ const BookingSection: React.FC = () => {
               </div>
               
               <p className="text-xs text-gray-600">
-                Sélectionnez le nombre d'invités et chambres
+                Sélectionnez le nombre d&apos;invités et chambres
               </p>
 
               <CustomPopover
@@ -656,7 +686,7 @@ const BookingSection: React.FC = () => {
                   <button className="w-full p-2 sm:p-3 border border-teal-500 rounded-lg hover:bg-gray-50 transition-colors text-left flex items-center">
                     <Users className="mr-2 h-4 w-4 text-teal-500" />
                     <span className="text-sm truncate">
-                      {rooms.length} chambre{rooms.length > 1 ? 's' : ''}, {totalAdults} adulte{totalAdults > 1 ? 's' : ''}, {totalChildren} enfant{totalChildren > 1 ? 's' : ''}
+                      {roomSelections.length} chambre{roomSelections.length > 1 ? 's' : ''}, {totalAdults} adulte{totalAdults > 1 ? 's' : ''}, {totalChildren} enfant{totalChildren > 1 ? 's' : ''}
                     </span>
                   </button>
                 }
@@ -666,11 +696,11 @@ const BookingSection: React.FC = () => {
                       Configuration des chambres
                     </h4>
                     
-                    {rooms.map((room, index) => (
+                    {roomSelections.map((room, index) => (
                       <div key={room.id} className="space-y-2 p-3 bg-gray-50 rounded-lg">
                         <div className="flex justify-between items-center">
                           <h5 className="font-medium text-gray-700 text-sm">Chambre {index + 1}</h5>
-                          {rooms.length > 1 && (
+                          {roomSelections.length > 1 && (
                             <button 
                               onClick={() => removeRoom(index)}
                               className="text-red-500 hover:text-red-700 text-xs px-1 py-0.5 hover:bg-red-50 rounded"
@@ -771,7 +801,7 @@ const BookingSection: React.FC = () => {
                     </div>
                   </div>
                 }
-                onClose={() => setIsGuestsPopoverOpen(false)}
+                
               />
             </div>
 
@@ -813,7 +843,7 @@ const BookingSection: React.FC = () => {
                 <div className="space-y-1 text-xs">
                   {reservationType === 'classic' ? (
                     <>
-                      {!dateRange.from && <p className="text-red-500">• Sélectionnez une date d'arrivée</p>}
+                      {!dateRange.from && <p className="text-red-500">• Sélectionnez une date d&eacute;arrivée</p>}
                       {!dateRange.to && dateRange.from && <p className="text-red-500">• Sélectionnez une date de départ</p>}
                     </>
                   ) : !selectedDate && <p className="text-red-500">• Sélectionnez une date</p>}

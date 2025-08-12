@@ -119,16 +119,17 @@ interface RoomDetails {
   room_type: string;
   image: string;
   price_per_night: number;
-  day_use_price?: number;
-  hourly_rate?: number;
+  day_use_price: number;
+  hourly_rate: number;
   num_person: number;
-  reservationType: string;
+  reservationType: 'classic' | 'day_use' | 'flexible'; 
   calculatedPrice: number;
   duration: string;
   checkInTime?: string;
   checkOutTime?: string;
   count?: number;
 }
+
 
 export default function BookingForm() {
   const router = useRouter();
@@ -338,10 +339,16 @@ const getSelectedRoomsDetails = (): RoomDetails[] => {
     const room = sampleRooms.find(r => r.id === selection.roomId);
     if (!room) throw new Error(`Room not found with id ${selection.roomId}`);
 
-   
     let price = 0;
     if (selection.reservationType === 'classic') {
-      const nights = Math.max(1, Math.ceil((new Date(selection.checkOutDate).getTime() - new Date(selection.checkInDate).getTime()) / (1000 * 60 * 60 * 24)));
+      const nights = Math.max(
+        1,
+        Math.ceil(
+          (new Date(selection.checkOutDate).getTime() -
+            new Date(selection.checkInDate).getTime()) /
+            (1000 * 60 * 60 * 24)
+        )
+      );
       price = room.price_per_night * nights;
     } else if (selection.reservationType === 'day_use') {
       price = room.day_use_price || Math.round(room.price_per_night * 0.7);
@@ -356,18 +363,21 @@ const getSelectedRoomsDetails = (): RoomDetails[] => {
       room_type: room.room_type,
       image: room.image,
       price_per_night: room.price_per_night,
-      day_use_price: room.day_use_price,
-      hourly_rate: room.hourly_rate,
+      day_use_price: room.day_use_price ?? 0,
+      hourly_rate: room.hourly_rate ?? Math.round(room.price_per_night / 24),
       num_person: room.num_person,
       reservationType: selection.reservationType,
       calculatedPrice: price,
-     duration: selection.hours ? `${selection.hours}h` : getDurationFromDates(selection),
+      duration: selection.hours
+        ? `${selection.hours}h`
+        : getDurationFromDates(selection),
       checkInTime: selection.checkInTime,
       checkOutTime: selection.checkOutTime,
       count: selection.count
     };
-  }).filter((room): room is RoomDetails => room !== null);
+  });
 };
+
 function getDurationFromDates(
   room: RoomSelection,
   fallbackCheckIn?: string,

@@ -17,6 +17,18 @@ const colors = {
   gray: "#f8f9fa"
 };
 
+interface RoomDetailRoom extends Room {
+  is_day_use: boolean;
+  day_use_check_in: string;
+  day_use_check_out: string;
+  default_check_in_time: string;
+  default_check_out_time: string;
+}
+type RoomDetailProps = {
+  room: RoomDetailRoom;
+  onClose: () => void;
+};
+
 // Animation variants
 const backdropVariants = {
   hidden: { opacity: 0 },
@@ -115,10 +127,7 @@ const featureIcons = {
   ),
 };
 
-type RoomDetailProps = {
-  room: Room;
-  onClose: () => void;
-};
+
 
 const RoomDetail = ({ room, onClose }: RoomDetailProps) => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
@@ -791,7 +800,7 @@ const RoomDetail = ({ room, onClose }: RoomDetailProps) => {
             <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
-            Jusqu'à cette heure
+            Jusqu&eacute;à cette heure
           </p>
         </div>
       </div>

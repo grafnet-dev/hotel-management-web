@@ -39,7 +39,7 @@ const RoomSelection = ({
         <div className="flex items-center gap-2 p-3 bg-blue-50 text-blue-800 rounded-lg">
           <Info className="h-4 w-4" />
           <p className="text-sm">
-            Vous modifiez une réservation issue d'une recherche. 
+            Vous modifiez une réservation issue d&eacute;une recherche. 
             {maxQuantity && ` Quantité maximale: ${maxQuantity}`}
           </p>
         </div>

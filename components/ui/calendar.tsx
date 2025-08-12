@@ -8,40 +8,20 @@ import { buttonVariants } from '../../components/ui/button';
 
 export type CalendarProps = React.ComponentProps<typeof DayPicker>;
 
-const handleNextMonthClick = () => {
-  console.log('Next month clicked');
-};
-
-const handlePreviousMonthClick = () => {
-  console.log('Previous month clicked');
-};
-
-const today = new Date();
-const nextMonth = new Date(today.getFullYear(), today.getMonth() + 1, 1);
-const previousMonth = new Date(today.getFullYear(), today.getMonth() - 1, 1);
-<CustomNavigation
-  nextMonth={nextMonth}
-  previousMonth={previousMonth}
-  onNextClick={handleNextMonthClick}
-  onPreviousClick={handlePreviousMonthClick}
-/>
-
-function CustomNavigation({ 
-  nextMonth,
-  previousMonth,
-  onNextClick,
-  onPreviousClick,
+function CustomNavigation({
+  currentMonth,
+  onMonthChange,
 }: {
-  nextMonth?: Date;
-  previousMonth?: Date;
-  onNextClick?: () => void;
-  onPreviousClick?: () => void;
+  currentMonth: Date;
+  onMonthChange: (month: Date) => void;
 }) {
+  const previousMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1, 1);
+  const nextMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 1);
+
   return (
-    <div className="absolute inset-y-0 flex items-center justify-between px-1">
+    <div className="flex items-center justify-between mb-2">
       <button
-        disabled={!previousMonth}
-        onClick={onPreviousClick}
+        onClick={() => onMonthChange(previousMonth)}
         className={cn(
           buttonVariants({ variant: 'outline' }),
           'h-7 w-7 bg-transparent p-0 opacity-50 hover:opacity-100'
@@ -49,9 +29,11 @@ function CustomNavigation({
       >
         <ChevronLeft className="h-4 w-4" />
       </button>
+      <span className="font-medium text-sm">
+        {currentMonth.toLocaleString('default', { month: 'long', year: 'numeric' })}
+      </span>
       <button
-        disabled={!nextMonth}
-        onClick={onNextClick}
+        onClick={() => onMonthChange(nextMonth)}
         className={cn(
           buttonVariants({ variant: 'outline' }),
           'h-7 w-7 bg-transparent p-0 opacity-50 hover:opacity-100'
@@ -69,44 +51,45 @@ function Calendar({
   showOutsideDays = true,
   ...props
 }: CalendarProps) {
+  const [month, setMonth] = React.useState(new Date());
+
   return (
-    <DayPicker
-      showOutsideDays={showOutsideDays}
-      className={cn('p-3', className)}
-      classNames={{
-        months: 'flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0',
-        month: 'space-y-4',
-        caption: 'flex justify-center pt-1 relative items-center',
-        caption_label: 'text-sm font-medium text-white',
-        nav: 'hidden',
-        table: 'w-full border-collapse space-y-1',
-        head_row: 'flex',
-        head_cell:
-          'text-muted-foreground rounded-md w-9 font-normal text-[0.8rem]',
-        row: 'flex w-full mt-2',
-        cell: 'text-center text-sm p-0 relative [&:has([aria-selected])]:bg-accent first:[&:has([aria-selected])]:rounded-l-md last:[&:has([aria-selected])]:rounded-r-md focus-within:relative focus-within:z-20',
-        day: cn(
-          buttonVariants({ variant: 'ghost' }),
-          'h-9 w-9 p-0 font-normal aria-selected:opacity-100'
-        ),
-        day_range_end: 'day-range-end',
-        day_selected:
-          'bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground focus:bg-primary focus:text-primary-foreground',
-        day_today: 'bg-accent text-accent-foreground',
-        day_outside:
-          'text-muted-foreground opacity-50 aria-selected:bg-accent/50 aria-selected:text-muted-foreground aria-selected:opacity-30',
-        day_disabled: 'text-muted-foreground opacity-50',
-        day_range_middle:
-          'aria-selected:bg-accent aria-selected:text-accent-foreground',
-        day_hidden: 'invisible',
-        ...classNames,
-      }}
-      components={{
-        IconLeft: () => <ChevronLeft className="h-4 w-4" />,
-        IconRight: () => <ChevronRight className="h-4 w-4" />,
-      }}
-      {...props}
-    />
+    <div className="p-3">
+      <CustomNavigation currentMonth={month} onMonthChange={setMonth} />
+      <DayPicker
+        month={month}
+        onMonthChange={setMonth}
+        showOutsideDays={showOutsideDays}
+        className={cn('p-3', className)}
+        classNames={{
+          months: 'flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0',
+          month: 'space-y-4',
+          caption: 'hidden', // on cache l'ancien caption/navigation interne
+          table: 'w-full border-collapse space-y-1',
+          head_row: 'flex',
+          head_cell:
+            'text-muted-foreground rounded-md w-9 font-normal text-[0.8rem]',
+          row: 'flex w-full mt-2',
+          cell: 'text-center text-sm p-0 relative [&:has([aria-selected])]:bg-accent first:[&:has([aria-selected])]:rounded-l-md last:[&:has([aria-selected])]:rounded-r-md focus-within:relative focus-within:z-20',
+          day: cn(
+            buttonVariants({ variant: 'ghost' }),
+            'h-9 w-9 p-0 font-normal aria-selected:opacity-100'
+          ),
+          day_range_end: 'day-range-end',
+          day_selected:
+            'bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground focus:bg-primary focus:text-primary-foreground',
+          day_today: 'bg-accent text-accent-foreground',
+          day_outside:
+            'text-muted-foreground opacity-50 aria-selected:bg-accent/50 aria-selected:text-muted-foreground aria-selected:opacity-30',
+          day_disabled: 'text-muted-foreground opacity-50',
+          day_range_middle:
+            'aria-selected:bg-accent aria-selected:text-accent-foreground',
+          day_hidden: 'invisible',
+          ...classNames,
+        }}
+        {...props}
+      />
+    </div>
   );
 }
 

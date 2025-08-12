@@ -191,7 +191,7 @@ Merci de me confirmer la disponibilité et le tarif pour cette réservation.`;
                   </h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <Label>Date d'arrivée *</Label>
+                      <Label>Date d&eacute;arrivée *</Label>
                       <Input
                         type="date"
                         value={formData.checkIn}
@@ -225,7 +225,7 @@ Merci de me confirmer la disponibilité et le tarif pour cette réservation.`;
                 <div>
                   <h3 className="text-lg font-semibold mb-4 flex items-center">
                     <Users className="h-5 w-5 mr-2 text-blue-600" />
-                    Nombre d'occupants
+                    Nombre d&eacute;occupants
                   </h3>
                   <div className="grid grid-cols-2 gap-4">
                     <div>

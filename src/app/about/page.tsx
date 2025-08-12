@@ -2,6 +2,7 @@
 
 import { motion } from 'framer-motion';
 import { Card } from '../../../components/ui/card';
+import Image from 'next/image';
 
 // Définition des couleurs exactes
 const colors = {
@@ -91,12 +92,14 @@ export default function About() {
           initial={{ scale: 1.2, opacity: 0.8 }}
           animate={{ scale: 1, opacity: 1 }}
           transition={{ duration: 2, ease: "easeOut" }}
+          variants={scaleIn}
         >
-          <img
-            src="https://images.pexels.com/photos/258154/pexels-photo-258154.jpeg"
-            alt="Hôtel premium au Bénin"
-            className="w-full h-full object-cover"
-          />
+           <Image
+    src="https://images.pexels.com/photos/258154/pexels-photo-258154.jpeg"
+    alt="Hôtel premium au Bénin"
+    layout="fill"
+    objectFit="cover"
+  />
           <div className="absolute inset-0" style={{ 
             background: `linear-gradient(135deg, ${colors.maroon}80, ${colors.teal}60, ${colors.darkTeal}70)` 
           }} />
@@ -114,6 +117,7 @@ export default function About() {
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.3, duration: 1 }}
               className="mb-8"
+
             >
               <div className="inline-block px-8 py-3 rounded-full border-2 mb-6" 
                    style={{ 
@@ -256,21 +260,25 @@ export default function About() {
                   viewport={{ once: true }}
                 >
                   <motion.div variants={item} className="relative h-64 rounded-2xl overflow-hidden shadow-xl">
-                    <img
-                      src="https://images.pexels.com/photos/161758/governor-s-mansion-montgomery-alabama-grand-staircase-161758.jpeg"
-                      alt="Architecture intérieure"
-                      className="w-full h-full object-cover"
-                    />
+                   <Image
+    src="https://images.pexels.com/photos/161758/governor-s-mansion-montgomery-alabama-grand-staircase-161758.jpeg"
+    alt="Architecture intérieure"
+    className="w-full h-full object-cover"
+    width={400} // Specify the width of the image
+    height={400} // Specify the height of the image
+  />
                     <div className="absolute inset-0" style={{ 
                       background: `linear-gradient(to top, ${colors.maroon}40, transparent)` 
                     }} />
                   </motion.div>
                   <motion.div variants={item} className="relative h-48 rounded-2xl overflow-hidden shadow-xl">
-                    <img
-                      src="https://images.pexels.com/photos/164595/pexels-photo-164595.jpeg"
-                      alt="Chambre premium"
-                      className="w-full h-full object-cover"
-                    />
+                    <Image
+  src="https://images.pexels.com/photos/164595/pexels-photo-164595.jpeg"
+  alt="Chambre premium"
+  className="w-full h-full object-cover"
+  width={400} // Specify the width of the image
+  height={400} // Specify the height of the image
+/>
                     <div className="absolute inset-0" style={{ 
                       background: `linear-gradient(to top, ${colors.teal}40, transparent)` 
                     }} />
@@ -284,21 +292,24 @@ export default function About() {
                   viewport={{ once: true }}
                 >
                   <motion.div variants={item} className="relative h-48 rounded-2xl overflow-hidden shadow-xl">
-                    <img
-                      src="https://images.pexels.com/photos/958545/pexels-photo-958545.jpeg"
-                      alt="Gastronomie"
-                      className="w-full h-full object-cover"
-                    />
+               <Image
+  src="https://images.pexels.com/photos/958545/pexels-photo-958545.jpeg"
+  alt="Gastronomie"
+  layout="fill"
+  objectFit="cover"
+/>
                     <div className="absolute inset-0" style={{ 
                       background: `linear-gradient(to top, ${colors.orange}40, transparent)` 
                     }} />
                   </motion.div>
                   <motion.div variants={item} className="relative h-64 rounded-2xl overflow-hidden shadow-xl">
-                    <img
-                      src="https://images.pexels.com/photos/3551238/pexels-photo-3551238.jpeg"
-                      alt="Spa et bien-être"
-                      className="w-full h-full object-cover"
-                    />
+                   <Image
+  src="https://images.pexels.com/photos/3551238/pexels-photo-3551238.jpeg"
+  alt="Hôtel premium au Bénin"
+  width={1920} // Spécifiez la largeur de l'image
+  height={1080} // Spécifiez la hauteur de l'image si nécessaire
+  objectFit="cover"
+/>
                     <div className="absolute inset-0" style={{ 
                       background: `linear-gradient(to top, ${colors.gold}40, transparent)` 
                     }} />
@@ -364,14 +375,14 @@ export default function About() {
                 color: colors.teal,
                 gradient: `linear-gradient(135deg, ${colors.teal}20, ${colors.teal}05)`
               }
-            ].map((value, index) => (
-              <motion.div 
-                key={value.title}
-                variants={item}
-                whileHover={{ y: -15, scale: 1.02 }}
-                transition={{ duration: 0.3 }}
-                className="group"
-              >
+          ].map((value, index) => (
+  <motion.div 
+    key={`${value.title}-${index}`}
+    variants={item}
+    whileHover={{ y: -15, scale: 1.02 }}
+    transition={{ duration: 0.3 }}
+    className="group"
+  >
                 <Card className="p-10 h-full rounded-3xl border-0 shadow-lg group-hover:shadow-2xl transition-all duration-500"
                   style={{ 
                     background: `linear-gradient(135deg, white, ${value.gradient})`,
@@ -512,7 +523,7 @@ export default function About() {
                 color: colors.orange,
                 gradient: `linear-gradient(45deg, ${colors.orange}80, ${colors.gold}60)`
               }
-            ].map((service, index) => (
+            ].map((service) => (
               <motion.div 
                 key={service.title}
                 variants={item}

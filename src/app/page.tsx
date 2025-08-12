@@ -51,16 +51,17 @@ interface Image {
   url: string;
 }
 
+type DateRange = {
+  from?: Date;
+  to?: Date;
+};
+
 type RoomSelection = {
   id: number;       
   adults: number;   
   children: number; 
 };
 
-type DateRange = {
-  from: Date;
-  to?: Date;
-};
 
 
 
@@ -166,10 +167,7 @@ const handleSearch = (params: {
   totalAdults: number;
   totalChildren: number;
 }) => {
-
-  
-console.log(params);
-  
+  console.log(params);
   scrollToResults();
 };
   const [activeCategory, setActiveCategory] = useState(0);
@@ -252,6 +250,7 @@ const toggleFavorite = (categoryIndex: number, imageIndex: number) => {
       return newFavorites;
     });
   };
+  
 
 const handleImageLoad = (categoryIndex: number, imageIndex: number) => {
   setImageLoadStates(prev => ({
