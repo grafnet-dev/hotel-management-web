@@ -12,9 +12,9 @@ export function WhatsAppButton() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [userInfo, setUserInfo] = useState<{ firstName: string; lastName: string; email: string; phone: string; } | null>(null);
 
-  // Simuler les informations utilisateur connecté (frontend)
+  
   useEffect(() => {
-    // Vérifier si l'utilisateur est "connecté" (simulation)
+   
     const isLoggedIn = localStorage.getItem('user_logged_in');
     if (isLoggedIn) {
       setUserInfo({

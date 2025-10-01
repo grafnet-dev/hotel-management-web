@@ -6,13 +6,13 @@ import Image from 'next/image';
 
 // Définition des couleurs exactes
 const colors = {
-  teal: '#008080',       // Bleu sarcelle
-  gold: '#D4AF37',       // Or
-  orange: '#FF8C42',     // Orange
-  maroon: '#800020',     // Marron
-  lightTeal: '#E6F2F2',  // Sarcelle clair
-  darkTeal: '#006666',   // Sarcelle foncé
-  cream: '#F5F5DC',      // Crème
+  teal: '#014d71',       
+  gold: '#f0b800',       
+  orange: '#FF8C42',     
+  maroon: '#800020',     
+  lightTeal: '#E6F2F2',  
+  darkTeal: '#006666',  
+  cream: '#F5F5DC',     
 };
 
 const container = {

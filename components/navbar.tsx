@@ -238,41 +238,51 @@ export function Navbar() {
           </div>
 
           {/* Menu mobile - Dropdown */}
-          {isOpen && (
-            <div className="lg:hidden bg-white shadow-custom mt-2 rounded-lg animate-in fade-in border border-secondary border-opacity-20">
-              <div className="px-4 py-3 space-y-2">
-                {navItems.map((item) => (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    className="block px-4 py-3 font-poppins font-medium text-primary hover:bg-secondary hover:bg-opacity-10 hover:text-secondary rounded-md transition-colors"
-                    onClick={() => setIsOpen(false)}
-                    aria-label={item.label}
-                  >
-                    {item.label}
-                  </Link>
-                ))}
-                <div className="pt-2">
-                  {isLoggedIn ? (
-                    <div className="px-4 py-3 border-t border-secondary border-opacity-20">
-                      <Button 
-                        variant="link"
-                        className="w-full justify-start text-primary font-poppins font-semibold pl-0 hover:text-secondary"
-                      >
-                        Mon compte
-                      </Button>
-                    </div>
-                  ) : (
-                    <Button
-                      className="w-full gradient-primary hover:gradient-secondary text-white font-poppins font-bold py-3 transition-all duration-300"
-                    >
-                      RÉSERVER MAINTENANT
-                    </Button>
-                  )}
-                </div>
-              </div>
-            </div>
-          )}
+         
+{isOpen && (
+  <div className="lg:hidden bg-white shadow-custom mt-2 rounded-lg border border-secondary border-opacity-20">
+    <div className="px-4 py-3 space-y-2">
+      {navItems.map((item) => (
+        <Link
+          key={item.href}
+          href={item.href}
+          className="block px-4 py-3 font-poppins font-medium text-primary 
+                     hover:bg-secondary hover:bg-opacity-10 hover:text-secondary 
+                     focus:bg-secondary focus:bg-opacity-10 focus:text-secondary 
+                     active:bg-secondary active:bg-opacity-20 rounded-md transition-colors"
+          onClick={() => setIsOpen(false)} // <-- ferme le menu après clic
+          aria-label={item.label}
+        >
+          {item.label}
+        </Link>
+      ))}
+      <div className="pt-2">
+        {isLoggedIn ? (
+          <div className="px-4 py-3 border-t border-secondary border-opacity-20">
+            <Button 
+              variant="link"
+              className="w-full justify-start text-primary font-poppins font-semibold pl-0 
+                         hover:text-secondary focus:text-secondary active:text-secondary"
+              onClick={() => setIsOpen(false)} // ferme aussi si on clique
+            >
+              Mon compte
+            </Button>
+          </div>
+        ) : (
+          <Button
+            className="w-full gradient-primary hover:gradient-secondary focus:gradient-secondary 
+                       active:gradient-secondary text-white font-poppins font-bold py-3 
+                       transition-all duration-300"
+            onClick={() => setIsOpen(false)}
+          >
+            RÉSERVER MAINTENANT
+          </Button>
+        )}
+      </div>
+    </div>
+  </div>
+)}
+
         </div>
       </nav>
     </>

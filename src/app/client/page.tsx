@@ -4,85 +4,81 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Card } from '../../../components/ui/card';
 import { Button } from '../../../components/ui/button';
-import { Label } from '../../../components/ui/label';
+import { Input } from '../../../components/ui/input';
+
 import { Badge } from '../../../components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../../components/ui/tabs';
 import { Separator } from '../../../components/ui/separator';
-import { Input } from '../../../components/ui/input';
 import { 
-  User, 
+
   Star, 
   Calendar, 
-  CreditCard, 
+  Clock, 
+  MapPin, 
   Phone, 
+  Mail, 
+  Wifi, 
+  BedDouble, 
+
+  Download, 
   MessageCircle, 
-  Settings,
-  BedDouble,
-  Wifi,
-  Users,
-  Clock,
-  AlertCircle,
-  Edit3,
-  Trash2,
-  Plus,
-  Minus,
-  ShoppingCart,
-  Coffee,
+  Settings, 
+  Edit3, 
+  Trash2, 
 
-  Bath,
-  Download,
-  Send,
-  Heart,
-  Gift,
+  Gift, 
+  TrendingUp,
+  History,
+ 
+  Search,
   Bell,
-  Shield,
-  Camera,
-  X,
-  Loader2,
-  Banknote,
-  Wallet
-} from 'lucide-react';
-import { useParams, useRouter } from 'next/navigation';
-import Image from 'next/image';
 
-// Couleurs Hôtel du Lac
+  Camera,
+  Sparkles,
+  Crown,
+ 
+  
+  DollarSign,
+  Package,
+  Utensils,
+  Car,
+  Shirt,
+  Coffee,
+  Droplets
+} from 'lucide-react';
+import {  useRouter } from 'next/navigation';
+import Image from 'next/image';
+import { ProfileEditModal } from '../../../components/client/ProfileEditModal';
+import { SettingsModal } from '../../../components/client/SettingsModal';
+import { ServiceOrderModal } from '../../../components/client/ServiceOrderModal';
+
+// Nouvelles couleurs et typographie
 const colors = {
-  teal: '#008080',
-  lightTeal: '#E6F2F2',
-  darkTeal: '#006666',
-  gold: '#FFD700',
-  orange: '#FFA500',
-  maroon: '#800000',
-  white: '#FFFFFF'
+  primary: '#014d71',
+  secondary: '#f0b800',
+  primaryLight: '#0a5d85',
+  secondaryLight: '#f5c842',
+  white: '#ffffff',
+  gray: '#f8f9fa',
+  lightGray: '#e9ecef',
+  darkGray: '#6c757d',
+  success: '#28a745',
+  warning: '#ffc107',
+  danger: '#dc3545'
 };
 
-
-interface UserInfo {
-  id: string;
-  name: string;
-  email: string;
-  firstName: string;
-  lastName: string;
-  phone: string;
-  avatar: string;
-  loyaltyPoints: number;
-  memberSince: string; // Date in ISO format
-  totalStays: number;
-  favoriteRoom: string; // Could be a room name or ID
-
-
-
-  // Add other properties as needed
-}
-
+const fonts = {
+  primary: 'Poppins, sans-serif',
+  secondary: 'Times New Roman, serif'
+};
 
 interface Reservation {
-  id: string;
+  id: number;
   roomId: number;
   roomName: string;
   roomImage: string;
   roomType: string;
-  wifiCode?: string;
+  wifiCode: string;
   reservationType: string;
   checkInDate: string;
   checkOutDate: string;
@@ -90,7 +86,7 @@ interface Reservation {
   checkOutTime: string;
   adults: number;
   children: Array<{ age: number }>;
- guestInfo: string | number; 
+  guestInfo: Record<string, unknown>;
   specialRequests: string;
   totalPrice: number;
   paidAmount: number;
@@ -101,1430 +97,1127 @@ interface Reservation {
   duration: string;
 }
 
-interface Service {
-  id: number;
-  name: string;
+interface ServiceOrder {
+  id: string;
   category: string;
+  service: string;
   price: number;
   quantity: number;
-  total: number;
-  date: string;
-  status: string;
+  status: 'pending' | 'confirmed' | 'completed';
+  orderedAt: string;
+  completedAt?: string;
+  notes?: string;
 }
 
-interface ServiceCategory {
-  id: string;
-  name: string;
-  icon: React.ComponentType<{ className?: string }>;
-  items: ServiceItem[];
-}
-
-interface ServiceItem {
-  id: number;
-  name: string;
-  price: number;
-  description: string;
-  duration?: string;
-  image?: string;
-  stock?: number;
-  category: string;
-  configurable?: {
-    time?: boolean; 
-    guests?: boolean; 
-    notes?: boolean; 
+interface UserProfile {
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone: string;
+  avatar: string;
+  loyaltyPoints: number;
+  memberSince: string;
+  totalStays: number;
+  totalSpent: number;
+  preferences: {
+    language: string;
+    currency: string;
+    notifications: boolean;
+    newsletter: boolean;
   };
 }
 
-const ServicesSection = ({ 
-  categories,
-  onOrderService,
-  onQuickPurchase
-}: {
-  categories: ServiceCategory[];
-  onOrderService: (item: ServiceItem) => void;
-  onQuickPurchase: (item: ServiceItem) => void;
-}) => {
-  const [activeCategory, setActiveCategory] = useState(categories[0].id);
-  const [stock, setStock] = useState<Record<number, number>>(
-    categories.reduce((acc, category) => {
-      category.items.forEach(item => {
-        if (item.stock !== undefined) {
-          acc[item.id] = item.stock;
-        }
-      });
-      return acc;
-    }, {} as Record<number, number>)
-  );
 
-  const updateStock = (itemId: number, change: number) => {
-    setStock(prev => ({
+
+const SERVICES_CATEGORIES = {
+  spa: {
+    name: 'Spa & Bien-être',
+    icon: Sparkles,
+    color: colors.primary,
+    services: [
+      { name: 'Massage relaxant', price: 25000, duration: '60 min', description: 'Massage complet du corps' },
+      { name: 'Massage thérapeutique', price: 35000, duration: '90 min', description: 'Massage médical spécialisé' },
+      { name: 'Soin du visage', price: 20000, duration: '45 min', description: 'Nettoyage et hydratation' },
+      { name: 'Manucure/Pédicure', price: 15000, duration: '60 min', description: 'Soins des ongles complets' },
+      { name: 'Sauna', price: 8000, duration: '30 min', description: 'Séance de sauna privé' }
+    ]
+  },
+  restaurant: {
+    name: 'Restaurant',
+    icon: Utensils,
+    color: colors.secondary,
+    services: [
+      { name: 'Petit-déjeuner continental', price: 8000, duration: '7h-10h', description: 'Buffet complet' },
+      { name: 'Déjeuner 3 services', price: 18000, duration: '12h-15h', description: 'Menu du chef' },
+      { name: 'Dîner gastronomique', price: 35000, duration: '19h-22h', description: 'Menu dégustation' },
+      { name: 'Cocktail de bienvenue', price: 5000, duration: 'Flexible', description: 'Cocktail signature' },
+      { name: 'Plateau fromages', price: 12000, duration: 'Flexible', description: 'Sélection de fromages locaux' }
+    ]
+  },
+  roomservice: {
+    name: 'Service en chambre',
+    icon: Coffee,
+    color: colors.primary,
+    services: [
+      { name: 'Nettoyage supplémentaire', price: 5000, duration: '30 min', description: 'Nettoyage complet' },
+      { name: 'Changement de draps', price: 3000, duration: '15 min', description: 'Draps frais' },
+      { name: 'Serviettes supplémentaires', price: 2000, duration: '10 min', description: 'Set de serviettes' },
+      { name: 'Amenities premium', price: 8000, duration: '5 min', description: 'Produits de luxe' },
+      { name: 'Assistance technique', price: 0, duration: '15 min', description: 'Support technique gratuit' }
+    ]
+  },
+  laundry: {
+    name: 'Blanchisserie',
+    icon: Shirt,
+    color: colors.secondary,
+    services: [
+      { name: 'Lavage standard', price: 3000, duration: '24h', description: 'Par pièce' },
+      { name: 'Lavage express', price: 5000, duration: '4h', description: 'Service rapide' },
+      { name: 'Repassage', price: 2000, duration: '2h', description: 'Par pièce' },
+      { name: 'Nettoyage à sec', price: 8000, duration: '48h', description: 'Vêtements délicats' },
+      { name: 'Service complet', price: 12000, duration: '24h', description: 'Lavage + repassage' }
+    ]
+  },
+  transport: {
+    name: 'Transport',
+    icon: Car,
+    color: colors.primary,
+    services: [
+      { name: 'Navette aéroport', price: 15000, duration: '45 min', description: 'Aller simple' },
+      { name: 'Taxi en ville', price: 8000, duration: '30 min', description: 'Course en ville' },
+      { name: 'Location voiture', price: 35000, duration: '24h', description: 'Véhicule standard' },
+      { name: 'Chauffeur privé', price: 25000, duration: '4h', description: 'Service personnalisé' },
+      { name: 'Transfert gare', price: 10000, duration: '20 min', description: 'Aller simple' }
+    ]
+  },
+  minibar: {
+    name: 'Minibar',
+    icon: Package,
+    color: colors.secondary,
+    services: [
+      { name: 'Eau minérale', price: 1000, stock: 5, description: '50cl' },
+      { name: 'Jus d\'orange', price: 2000, stock: 3, description: '25cl' },
+      { name: 'Coca-Cola', price: 1500, stock: 4, description: '33cl' },
+      { name: 'Bière locale', price: 3000, stock: 2, description: '33cl' },
+      { name: 'Vin rouge', price: 8000, stock: 1, description: '37.5cl' },
+      { name: 'Chocolat', price: 2500, stock: 3, description: 'Tablette 100g' },
+      { name: 'Biscuits', price: 1800, stock: 4, description: 'Paquet assortis' },
+      { name: 'Cacahuètes', price: 2200, stock: 2, description: 'Sachet 50g' }
+    ]
+  }
+};
+
+const LOYALTY_TIERS = [
+  { name: 'Bronze', min: 0, max: 999, discount: 0, color: '#cd7f32' },
+  { name: 'Argent', min: 1000, max: 1999, discount: 5, color: '#c0c0c0' },
+  { name: 'Or', min: 2000, max: 4999, discount: 10, color: colors.secondary },
+  { name: 'Platine', min: 5000, max: 9999, discount: 15, color: '#e5e4e2' },
+  { name: 'Diamant', min: 10000, max: Infinity, discount: 20, color: '#b9f2ff' }
+];
+
+export default function ClientSpace() {
+  const router = useRouter();
+  // const userId = params.userId as string;
+
+  const [userProfile, setUserProfile] = useState<UserProfile>({
+    firstName: 'Jean',
+    lastName: 'Dupont',
+    email: 'jean.dupont@email.com',
+    phone: '+229 97 12 34 56',
+    avatar: 'https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg',
+    loyaltyPoints: 1250,
+    memberSince: '2023-01-15',
+    totalStays: 8,
+    totalSpent: 450000,
+    preferences: {
+      language: 'fr',
+      currency: 'XOF',
+      notifications: true,
+      newsletter: true
+    }
+  });
+
+  const [reservations, setReservations] = useState<Reservation[]>([]);
+  const [serviceOrders, setServiceOrders] = useState<ServiceOrder[]>([]);
+  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
+  const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
+  const [isServiceModalOpen, setIsServiceModalOpen] = useState(false);
+  type Service = {
+    name: string;
+    price: number;
+    duration?: string;
+    description: string;
+    stock?: number;
+    category?: string;
+  };
+
+  const [selectedService, setSelectedService] = useState<Service | null>(null);
+  const [activeTab, setActiveTab] = useState('overview');
+  const [historyFilter, setHistoryFilter] = useState('all');
+  const [searchTerm, setSearchTerm] = useState('');
+
+  useEffect(() => {
+    // Charger les réservations depuis localStorage
+    const savedReservations = localStorage.getItem('userReservations');
+    if (savedReservations) {
+      setReservations(JSON.parse(savedReservations));
+    }
+
+    // Charger les commandes de services
+    const savedOrders = localStorage.getItem('serviceOrders');
+    if (savedOrders) {
+      setServiceOrders(JSON.parse(savedOrders));
+    }
+
+    // Calculer les points de fidélité basés sur la fréquentation
+    calculateLoyaltyPoints();
+  }, []);
+
+  const calculateLoyaltyPoints = () => {
+    const now = new Date();
+    const lastStay = new Date(userProfile.memberSince);
+    const daysSinceLastStay = Math.floor((now.getTime() - lastStay.getTime()) / (1000 * 60 * 60 * 24));
+    
+    let bonusPoints = 0;
+    if (daysSinceLastStay <= 30) {
+      bonusPoints = 500; // Moins d'un mois
+    } else if (daysSinceLastStay <= 60) {
+      bonusPoints = 200; // Moins de 2 mois
+    }
+
+    setUserProfile(prev => ({
       ...prev,
-      [itemId]: Math.max(0, (prev[itemId] || 0) + change)
+      loyaltyPoints: prev.loyaltyPoints + bonusPoints
     }));
   };
 
-  const currentCategory = categories.find(cat => cat.id === activeCategory);
-
-  return (
-    <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-      {/* Navigation latérale */}
-      <div className="lg:col-span-1">
-        <Card className="p-4 border-0 shadow-lg" style={{ backgroundColor: colors.white }}>
-          <h3 className="text-lg font-semibold mb-4" style={{ color: colors.darkTeal }}>
-            Catégories
-          </h3>
-          <div className="space-y-2">
-            {categories.map(category => (
-              <button
-                key={category.id}
-                onClick={() => setActiveCategory(category.id)}
-                className={`w-full text-left px-4 py-3 rounded-lg flex items-center space-x-3 transition-colors ${
-                  activeCategory === category.id 
-                    ? 'bg-teal-50 text-teal-800'
-                    : 'hover:bg-gray-50'
-                }`}
-                style={{ 
-                  backgroundColor: activeCategory === category.id ? colors.lightTeal : 'transparent',
-                  color: activeCategory === category.id ? colors.darkTeal : 'inherit'
-                }}
-              >
-                <category.icon className="h-5 w-5" />
-                <span>{category.name}</span>
-              </button>
-            ))}
-          </div>
-        </Card>
-      </div>
-
-      {/* Contenu principal */}
-      <div className="lg:col-span-3">
-        <Card className="p-6 border-0 shadow-lg" style={{ backgroundColor: colors.white }}>
-          <div className="flex items-center space-x-3 mb-6">
-            <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ backgroundColor: colors.lightTeal }}>
-            
-            </div>
-            <h3 className="text-xl font-semibold" style={{ color: colors.darkTeal }}>
-              {currentCategory?.name}
-            </h3>
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {currentCategory?.items.map((item) => (
-              <motion.div
-                key={item.id}
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-              >
-                <Card className="h-full flex flex-col overflow-hidden hover:shadow-lg transition-all duration-300">
-                  {item.image && (
-                    <div className="relative h-32">
-                      <Image
-                        src={item.image}
-                        alt={item.name}
-                        fill
-                        className="object-cover"
-                      />
-                      {item.stock !== undefined && (
-                        <div className="absolute top-2 right-2">
-                          <Badge className="bg-white/90 text-gray-900 text-xs">
-                            Stock: {stock[item.id] || item.stock}
-                          </Badge>
-                        </div>
-                      )}
-                    </div>
-                  )}
-                  <div className="p-4 flex-1 flex flex-col">
-                    <div className="flex-1">
-                      <h4 className="font-medium mb-1">{item.name}</h4>
-                      <p className="text-sm text-gray-600 mb-2">{item.description}</p>
-                      {item.duration && (
-                        <p className="text-xs text-gray-500 mb-2">
-                          Durée: {item.duration}
-                        </p>
-                      )}
-                    </div>
-                    <div className="flex justify-between items-center mt-3">
-                      <span className="font-bold" style={{ color: colors.teal }}>
-                        {item.price > 0 ? `${item.price.toLocaleString()} FCFA` : 'Gratuit'}
-                      </span>
-                      {item.stock !== undefined ? (
-                        <Button
-                          size="sm"
-                          onClick={() => {
-                            if (stock[item.id] > 0) {
-                              updateStock(item.id, -1);
-                              onQuickPurchase(item);
-                            }
-                          }}
-                          style={{ backgroundColor: colors.orange }}
-                          className="text-xs px-2 py-1 h-7"
-                          disabled={stock[item.id] <= 0}
-                        >
-                          {stock[item.id] > 0 ? 'Acheter' : 'Épuisé'}
-                        </Button>
-                      ) : (
-                        <Button
-                          size="sm"
-                          onClick={() => onOrderService(item)}
-                          style={{ backgroundColor: colors.teal }}
-                          className="text-xs px-2 py-1 h-7"
-                        >
-                          Commander
-                        </Button>
-                      )}
-                    </div>
-                  </div>
-                </Card>
-              </motion.div>
-            ))}
-          </div>
-        </Card>
-      </div>
-    </div>
-  );
-};
-
-export default function ClientSpace() {
-  const params = useParams();
-  const router = useRouter();
-  const userId = params.userId as string;
-
-  const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
-  const [reservations, setReservations] = useState<Reservation[]>([]);
-  const [services, setServices] = useState<Service[]>([]);
-  const [activeTab, setActiveTab] = useState('overview');
-  const [contactMessage, setContactMessage] = useState('');
-  const [rating, setRating] = useState(0);
-  const [review, setReview] = useState('');
-  const [editingReservation, setEditingReservation] = useState<string | null>(null);
-  const [quickPayAmount, setQuickPayAmount] = useState(0);
-  const [showQuickPay, setShowQuickPay] = useState(false);
-  const [selectedMinibarItem, setSelectedMinibarItem] = useState<ServiceItem | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-
-  const serviceCategories: ServiceCategory[] = [
-    {
-      id: 'minibar',
-      name: 'Minibar',
-      icon: Coffee,
-      items: [
-        { id: 1, name: 'Eau minérale', price: 500, description: 'Bouteille 50cl', stock: 5, category: 'Boissons', image: 'https://images.pexels.com/photos/416528/pexels-photo-416528.jpeg', configurable: {
-          notes: true
-        } },
-        { id: 2, name: 'Coca-Cola', price: 800, description: 'Canette 33cl', stock: 3, category: 'Boissons', image: 'https://images.pexels.com/photos/50593/coca-cola-cold-drink-soft-drink-coke-50593.jpeg', configurable: {
-          notes: true
-        } },
-        { id: 3, name: 'Jus d\'orange', price: 1200, description: 'Bouteille 25cl', stock: 2, category: 'Boissons', image: 'https://images.pexels.com/photos/96974/pexels-photo-96974.jpeg', configurable: {
-          notes: true
-        } },
-        { id: 4, name: 'Bière locale', price: 1500, description: 'Bouteille 33cl', stock: 4, category: 'Alcools', image: 'https://images.pexels.com/photos/1552630/pexels-photo-1552630.jpeg', configurable: {
-          notes: true
-        } },
-        { id: 5, name: 'Vin rouge', price: 3500, description: 'Verre 15cl', stock: 1, category: 'Alcools', image: 'https://images.pexels.com/photos/434311/pexels-photo-434311.jpeg', configurable: {
-          notes: true
-        } },
-        { id: 6, name: 'Chips', price: 600, description: 'Sachet 100g', stock: 6, category: 'Snacks', image: 'https://images.pexels.com/photos/209206/pexels-photo-209206.jpeg', configurable: {
-          notes: true
-        } },
-        { id: 7, name: 'Chocolat', price: 1000, description: 'Tablette 100g', stock: 3, category: 'Snacks', image: 'https://images.pexels.com/photos/65882/chocolate-dark-coffee-confiserie-65882.jpeg', configurable: {
-          notes: true
-        } },
-        { id: 8, name: 'Biscuits', price: 750, description: 'Paquet 200g', stock: 4, category: 'Snacks', image: 'https://images.pexels.com/photos/890577/pexels-photo-890577.jpeg', configurable: {
-          notes: true
-        } },
-      ]
-    },
-    {
-      id: 'spa',
-      name: 'Spa & Bien-être',
-      icon: Bath,
-      items: [
-        { id: 9, name: 'Massage relaxant', price: 15000, description: '60 minutes de détente', duration: '1h', category: 'Spa', configurable: {
-          time: true,
-          guests: true,
-          notes: true
-        } },
-        { id: 10, name: 'Soin du visage', price: 12000, description: 'Nettoyage et hydratation', duration: '45min', category: 'Spa', configurable: {
-          time: true,
-          guests: true,
-          notes: true
-        } },
-        { id: 11, name: 'Enveloppement corps', price: 18000, description: 'Argile et huiles essentielles', duration: '1h30', category: 'Spa', configurable: {
-          time: true,
-          guests: true,
-          notes: true
-        } },
-        { id: 12, name: 'Accès piscine', price: 5000, description: 'Accès journée à l\'espace piscine', duration: 'Journée', category: 'Spa', configurable: {
-          time: true,
-          guests: true,
-          notes: true
-        } },
-      ]
-    },
-    {
-      id: 'restaurant',
-      name: 'Restaurant',
-      icon: ShoppingCart,
-      items: [
-        { id: 13, name: 'Petit déjeuner', price: 6500, description: 'Buffet continental', category: 'Nourriture', configurable: {
-          time: true,
-          guests: true,
-          notes: true
-        } },
-        { id: 14, name: 'Déjeuner', price: 12000, description: 'Menu du jour', category: 'Nourriture', configurable: {
-          time: true,
-          guests: true,
-          notes: true
-        } },
-        { id: 15, name: 'Dîner', price: 15000, description: 'Menu gastronomique', category: 'Nourriture', configurable: {
-          time: true,
-          guests: true,
-          notes: true
-        } },
-        { id: 16, name: 'Plateau de fruits', price: 4500, description: 'Fruits de saison', category: 'Nourriture', configurable: {
-          time: true,
-          guests: true,
-          notes: true
-        } },
-      ]
-    },
-    {
-      id: 'room-service',
-      name: 'Room Service',
-      icon: Bell,
-      items: [
-        { id: 17, name: 'Nettoyage express', price: 0, description: 'Service de ménage rapide', category: 'Service', configurable: {
-          time: true,
-          guests: true,
-          notes: true
-        } },
-        { id: 18, name: 'Serviettes supplémentaires', price: 0, description: 'Lot de serviettes propres', category: 'Service', configurable: {
-          time: true,
-          guests: true,
-          notes: true
-        } },
-        { id: 19, name: 'Réveil programmé', price: 0, description: 'Appel téléphonique à l\'heure demandée', category: 'Service', configurable: {
-          time: true,
-          guests: true,
-          notes: true
-        } },
-        { id: 20, name: 'Retard check-out', price: 8000, description: 'Prolongation jusqu\'à 16h', duration: '2h', category: 'Service', configurable: {
-          time: true,
-          guests: true,
-          notes: true
-        } },
-      ]
-    }
-  ];
-
-  useEffect(() => {
-   
-    setTimeout(() => {
-     
-  setUserInfo({
-  id: userId,
-  name: 'Manoel Sedjro',
-  firstName: 'Manoel',
-  lastName: 'Sedjro',
-  email: 'sedjro@email.com',
-  phone: '+229 01 97 12 34 56',
-  avatar: 'https://i.pravatar.cc/300?img=2',
-  loyaltyPoints: 1250,
-  memberSince: '2023-01-15',
-  totalStays: 8,
-  favoriteRoom: 'Suite Présidentielle'
-});
-
-      // Charger les réservations depuis localStorage
-      const savedReservations = JSON.parse(localStorage.getItem('userReservations') || '[]');
-      setReservations(savedReservations);
-
-      // Charger les services depuis localStorage
-      const savedServices = JSON.parse(localStorage.getItem('userServices') || '[]');
-      setServices(savedServices);
-
-      setIsLoading(false);
-    }, 1000);
-  }, [userId]);
-
-  
-
-  const getTotalSpent = () => {
-    const reservationTotal = reservations.reduce((sum, res) => sum + res.paidAmount, 0);
-    const serviceTotal = services.reduce((sum, service) => sum + service.total, 0);
-    return reservationTotal + serviceTotal;
+  const getCurrentTier = () => {
+    return LOYALTY_TIERS.find(tier => 
+      userProfile.loyaltyPoints >= tier.min && userProfile.loyaltyPoints <= tier.max
+    ) || LOYALTY_TIERS[0];
   };
 
-  const getPendingAmount = () => {
-    return reservations.reduce((sum, res) => sum + res.remainingAmount, 0);
+  const getNextTier = () => {
+    const currentTier = getCurrentTier();
+    const currentIndex = LOYALTY_TIERS.indexOf(currentTier);
+    return currentIndex < LOYALTY_TIERS.length - 1 ? LOYALTY_TIERS[currentIndex + 1] : null;
   };
 
-  const processQuickPayment = async () => {
-    if (!selectedMinibarItem) return;
-
-    // Simulation du paiement
-    await new Promise(resolve => setTimeout(resolve, 1500));
-
-    // Ajouter à la facture
-    const newService = {
-      id: Date.now(),
-      name: selectedMinibarItem.name,
-      category: selectedMinibarItem.category,
-      price: selectedMinibarItem.price,
-      quantity: 1,
-      total: selectedMinibarItem.price,
-      date: new Date().toISOString(),
-      status: 'confirmed'
+  const handleServiceOrder = (category: string, service: Service, quantity: number, notes?: string) => {
+    const newOrder: ServiceOrder = {
+      id: Date.now().toString(),
+      category,
+      service: service.name,
+      price: service.price,
+      quantity,
+      status: 'pending',
+      orderedAt: new Date().toISOString(),
+      notes
     };
 
-    setServices(prev => [...prev, newService]);
-    localStorage.setItem('userServices', JSON.stringify([...services, newService]));
-    setShowQuickPay(false);
-    setSelectedMinibarItem(null);
+    const updatedOrders = [...serviceOrders, newOrder];
+    setServiceOrders(updatedOrders);
+    localStorage.setItem('serviceOrders', JSON.stringify(updatedOrders));
 
-    // Notification de succès
-    alert(`${selectedMinibarItem.name} acheté avec succès !`);
+    // Ajouter les points de fidélité (1 point par 1000 FCFA dépensés)
+    const pointsEarned = Math.floor((service.price * quantity) / 1000);
+    setUserProfile(prev => ({
+      ...prev,
+      loyaltyPoints: prev.loyaltyPoints + pointsEarned,
+      totalSpent: prev.totalSpent + (service.price * quantity)
+    }));
   };
 
-  const handleEditReservation = (reservationId: string) => {
-    setEditingReservation(editingReservation === reservationId ? null : reservationId);
-  };
-
-  const handleDeleteReservation = (reservationId: string) => {
-    if (confirm('Êtes-vous sûr de vouloir supprimer cette réservation ?')) {
-      const updatedReservations = reservations.filter(r => r.id !== reservationId);
-      setReservations(updatedReservations);
-      localStorage.setItem('userReservations', JSON.stringify(updatedReservations));
+  const handleDirectPurchase = (service: Service) => {
+    handleServiceOrder('minibar', service, 1);
+    
+    
+    const updatedServices = { ...SERVICES_CATEGORIES };
+    const item = updatedServices.minibar.services.find(s => s.name === service.name);
+    if (item && item.stock) {
+      item.stock -= 1;
     }
   };
 
-  const updateReservationGuests = (reservationId: string, adults: number, children: Array<{ age: number }>) => {
-    const updatedReservations = reservations.map(r => 
-      r.id === reservationId ? { ...r, adults, children } : r
-    );
+  const deleteReservation = (reservationId: number) => {
+    const updatedReservations = reservations.filter(r => r.id !== reservationId);
     setReservations(updatedReservations);
     localStorage.setItem('userReservations', JSON.stringify(updatedReservations));
   };
 
-  const sendContactMessage = () => {
-    if (!contactMessage.trim()) return;
-    
-    // Simuler l'envoi du message
-    alert('Message envoyé avec succès ! Nous vous répondrons dans les plus brefs délais.');
-    setContactMessage('');
-  };
+const filteredHistory = serviceOrders.filter(order => {
+ 
+  if (!order) return false;
+  
+  const service = order.service || '';
+  const category = order.category || '';
+  const search = searchTerm || '';
+  
+  const matchesFilter = historyFilter === 'all' || order.status === historyFilter;
+  const matchesSearch = service.toLowerCase().includes(search.toLowerCase()) ||
+                       category.toLowerCase().includes(search.toLowerCase());
+  
+  return matchesFilter && matchesSearch;
+});
 
-  const submitReview = () => {
-    if (!review.trim() || rating === 0) {
-      alert('Veuillez donner une note et ajouter un commentaire');
-      return;
-    }
-
-    // Simuler la soumission de l'avis
-    alert('Merci pour votre avis ! Il sera publié après modération.');
-    setRating(0);
-    setReview('');
-  };
-
-  if (isLoading) {
-    return (
-      <div className="min-h-screen pt-16 flex items-center justify-center" style={{ backgroundColor: colors.lightTeal }}>
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          className="text-center"
-        >
-          <Loader2 className="h-12 w-12 animate-spin mx-auto mb-4" style={{ color: colors.teal }} />
-          <p className="text-lg font-medium" style={{ color: colors.darkTeal }}>
-            Chargement de votre espace personnel...
-          </p>
-        </motion.div>
-      </div>
-    );
-  }
+  const totalSpentToday = serviceOrders
+    .filter(order => new Date(order.orderedAt).toDateString() === new Date().toDateString())
+    .reduce((sum, order) => sum + (order.price * order.quantity), 0);
 
   return (
-    <div className="min-h-screen pt-32" style={{ backgroundColor: colors.lightTeal }}>
-      <div className="max-w-7xl mx-auto px-4 py-8">
-        {/* Header avec profil utilisateur */}
+    <div className="min-h-screen" style={{ backgroundColor: colors.gray, fontFamily: fonts.primary }}>
+      <div className="max-w-7xl mx-auto px-4 py-8 pt-32">
+        {/* Header avec profil */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           className="mb-8"
         >
-          <Card className="p-6 border-0 shadow-lg overflow-hidden relative" style={{ backgroundColor: colors.white }}>
-            {/* Fond décoratif */}
-            <div className="absolute top-0 right-0 w-64 h-64 opacity-10">
-              <div 
-                className="w-full h-full rounded-full"
-                style={{ background: `linear-gradient(135deg, ${colors.teal}, ${colors.gold})` }}
-              />
-            </div>
-            
-            <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between">
+          <Card className="p-6 border-0 shadow-lg" style={{ background: `linear-gradient(135deg, ${colors.primary} 0%, ${colors.primaryLight} 100%)` }}>
+            <div className="flex flex-col md:flex-row items-center justify-between text-white">
               <div className="flex items-center space-x-6 mb-4 md:mb-0">
-                <div className="relative">
-                  <div className="w-20 h-20 rounded-full overflow-hidden border-4" style={{ borderColor: colors.gold }}>
+                <motion.div
+                  whileHover={{ scale: 1.05 }}
+                  className="relative"
+                >
+                  <div className="w-24 h-24 rounded-full overflow-hidden border-4 border-white/30">
                     <Image
-  src={userInfo?.avatar ?? '/default-avatar.jpg'} 
-  alt="Profile"
-  width={80}
-  height={80}
-  className="object-cover"
-/>
+                      src={userProfile.avatar}
+                      alt="Profile"
+                      width={96}
+                      height={96}
+                      className="object-cover"
+                    />
                   </div>
                   <Button
                     size="icon"
                     className="absolute -bottom-2 -right-2 w-8 h-8 rounded-full"
-                    style={{ backgroundColor: colors.teal }}
+                    style={{ backgroundColor: colors.secondary }}
+                    onClick={() => setIsProfileModalOpen(true)}
                   >
                     <Camera className="h-4 w-4" />
                   </Button>
-                </div>
-                
+                </motion.div>
+
                 <div>
-                  <div className="flex items-center space-x-3 mb-2">
-                    <h1 className="text-2xl font-bold" style={{ color: colors.darkTeal }}>
-                      {userInfo?.firstName} {userInfo?.lastName}
-                    </h1>
-                    <Badge className="flex items-center space-x-1" style={{ backgroundColor: colors.gold, color: colors.darkTeal }}>
-                      <Shield className="h-3 w-3" />
-                      <span>Membre VIP</span>
+                  <h1 className="text-3xl font-bold" style={{ fontFamily: fonts.secondary }}>
+                    {userProfile.firstName} {userProfile.lastName}
+                  </h1>
+                  <p className="text-white/80 mb-2">Membre depuis {new Date(userProfile.memberSince).getFullYear()}</p>
+                  
+                  {/* Niveau de fidélité */}
+                  <div className="flex items-center space-x-3">
+                    <Badge 
+                      className="px-3 py-1 text-sm font-semibold"
+                      style={{ 
+                        backgroundColor: getCurrentTier().color,
+                        color: getCurrentTier().name === 'Or' ? colors.primary : 'white'
+                      }}
+                    >
+                      <Crown className="h-4 w-4 mr-1" />
+                      {getCurrentTier().name}
                     </Badge>
-                  </div>
-                  <p className="text-gray-600 mb-1">{userInfo?.email}</p>
-                  <p className="text-gray-600 mb-2">{userInfo?.phone}</p>
-                  <div className="flex items-center space-x-4 text-sm">
-                    <span className="flex items-center" style={{ color: colors.teal }}>
-                      <Star className="h-4 w-4 mr-1" />
-                      {userInfo?.loyaltyPoints} points
-                    </span>
-                   {userInfo?.memberSince && (
-  <span>
-    Membre depuis {new Date(userInfo.memberSince).toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })}
-  </span>
-)}
+                    <div className="flex items-center space-x-2">
+                      <Star className="h-5 w-5" style={{ color: colors.secondary }} />
+                      <span className="font-bold">{userProfile.loyaltyPoints.toLocaleString()} points</span>
+                    </div>
                   </div>
                 </div>
               </div>
 
-              <div className="flex flex-col space-y-3">
-                <div className="grid grid-cols-2 gap-4 text-center">
-                  <div className="p-3 rounded-lg" style={{ backgroundColor: colors.lightTeal }}>
-                    <div className="text-2xl font-bold" style={{ color: colors.darkTeal }}>
-                      {userInfo?.totalStays}
-                    </div>
-                    <div className="text-xs text-gray-600">Séjours</div>
-                  </div>
-                  <div className="p-3 rounded-lg" style={{ backgroundColor: colors.lightTeal }}>
-                    <div className="text-2xl font-bold" style={{ color: colors.darkTeal }}>
-                      {getTotalSpent().toLocaleString()}
-                    </div>
-                    <div className="text-xs text-gray-600">FCFA dépensés</div>
-                  </div>
-                </div>
+              <div className="flex space-x-3">
                 <Button
                   variant="outline"
-                  size="sm"
-                  className="flex items-center space-x-2"
-                  style={{ borderColor: colors.teal, color: colors.teal }}
+                  className="border-white/30 text-white hover:bg-white/10"
+                  onClick={() => setIsProfileModalOpen(true)}
                 >
-                  <Settings className="h-4 w-4" />
-                  <span>Paramètres</span>
+                  <Edit3 className="h-4 w-4 mr-2" />
+                  Modifier profil
+                </Button>
+                <Button
+                  variant="outline"
+                  className="border-white/30 text-white hover:bg-white/10"
+                  onClick={() => setIsSettingsModalOpen(true)}
+                >
+                  <Settings className="h-4 w-4 mr-2" />
+                  Paramètres
                 </Button>
               </div>
             </div>
+
+            {/* Barre de progression fidélité */}
+            {getNextTier() && (
+              <div className="mt-6">
+                <div className="flex justify-between text-sm text-white/80 mb-2">
+                  <span>Progression vers {getNextTier()?.name}</span>
+                  <span>{userProfile.loyaltyPoints} / {getNextTier()?.min}</span>
+                </div>
+                <div className="w-full bg-white/20 rounded-full h-2">
+                  <motion.div
+                    className="h-2 rounded-full"
+                    style={{ backgroundColor: colors.secondary }}
+                    initial={{ width: 0 }}
+                    animate={{ 
+                      width: `${Math.min(100, (userProfile.loyaltyPoints / (getNextTier()?.min || 1)) * 100)}%` 
+                    }}
+                    transition={{ duration: 1, delay: 0.5 }}
+                  />
+                </div>
+              </div>
+            )}
           </Card>
         </motion.div>
 
-        {/* Navigation par onglets */}
+        {/* Statistiques rapides */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
+          className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8"
         >
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-            <TabsList className="grid w-full grid-cols-2 lg:grid-cols-6 h-auto p-1 bg-white/50 backdrop-blur-sm">
-              <TabsTrigger value="overview" className="flex flex-col items-center p-3 data-[state=active]:bg-white">
-                <User className="h-5 w-5 mb-1" />
-                <span className="text-xs">Vue d&rsquo;ensemble</span>
-              </TabsTrigger>
-              <TabsTrigger value="rooms" className="flex flex-col items-center p-3 data-[state=active]:bg-white">
-                <BedDouble className="h-5 w-5 mb-1" />
-                <span className="text-xs">Mes Chambres</span>
-              </TabsTrigger>
-              <TabsTrigger value="services" className="flex flex-col items-center p-3 data-[state=active]:bg-white">
-                <ShoppingCart className="h-5 w-5 mb-1" />
-                <span className="text-xs">Services</span>
-              </TabsTrigger>
-              <TabsTrigger value="billing" className="flex flex-col items-center p-3 data-[state=active]:bg-white">
-                <CreditCard className="h-5 w-5 mb-1" />
-                <span className="text-xs">Facturation</span>
-              </TabsTrigger>
-              <TabsTrigger value="contact" className="flex flex-col items-center p-3 data-[state=active]:bg-white">
-                <MessageCircle className="h-5 w-5 mb-1" />
-                <span className="text-xs">Contact</span>
-              </TabsTrigger>
-              <TabsTrigger value="reviews" className="flex flex-col items-center p-3 data-[state=active]:bg-white">
-                <Star className="h-5 w-5 mb-1" />
-                <span className="text-xs">Avis</span>
-              </TabsTrigger>
-            </TabsList>
+          {[
+            { 
+              title: 'Séjours totaux', 
+              value: userProfile.totalStays, 
+              icon: Calendar, 
+              color: colors.primary,
+              suffix: ''
+            },
+            { 
+              title: 'Dépenses totales', 
+              value: userProfile.totalSpent, 
+              icon: DollarSign, 
+              color: colors.secondary,
+              suffix: ' FCFA'
+            },
+            { 
+              title: 'Aujourd\'hui', 
+              value: totalSpentToday, 
+              icon: TrendingUp, 
+              color: colors.success,
+              suffix: ' FCFA'
+            },
+            { 
+              title: 'Remise actuelle', 
+              value: getCurrentTier().discount, 
+              icon: Gift, 
+              color: colors.warning,
+              suffix: '%'
+            }
+          ].map((stat, index) => (
+            <motion.div
+              key={stat.title}
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.3 + index * 0.1 }}
+            >
+              <Card className="p-6 border-0 shadow-md hover:shadow-lg transition-shadow">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-gray-600 mb-1">{stat.title}</p>
+                    <p className="text-2xl font-bold" style={{ color: stat.color }}>
+                      {typeof stat.value === 'number' ? stat.value.toLocaleString() : stat.value}{stat.suffix}
+                    </p>
+                  </div>
+                  <div 
+                    className="w-12 h-12 rounded-lg flex items-center justify-center"
+                    style={{ backgroundColor: `${stat.color}20` }}
+                  >
+                    <stat.icon className="h-6 w-6" style={{ color: stat.color }} />
+                  </div>
+                </div>
+              </Card>
+            </motion.div>
+          ))}
+        </motion.div>
 
-            {/* Vue d'ensemble */}
-            <TabsContent value="overview" className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                {/* Statistiques */}
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ delay: 0.1 }}
-                >
-                  <Card className="p-6 border-0 shadow-lg" style={{ backgroundColor: colors.white }}>
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-sm text-gray-600">Réservations actives</p>
-                        <p className="text-2xl font-bold" style={{ color: colors.darkTeal }}>
-                          {reservations.filter(r => r.status === 'confirmed').length}
-                        </p>
-                      </div>
-                      <div className="w-12 h-12 rounded-lg flex items-center justify-center" style={{ backgroundColor: colors.lightTeal }}>
-                        <Calendar className="h-6 w-6" style={{ color: colors.teal }} />
-                      </div>
-                    </div>
-                  </Card>
-                </motion.div>
+        {/* Onglets principaux */}
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+          <TabsList className="grid w-full grid-cols-6 h-12" style={{ backgroundColor: colors.lightGray }}>
+            <TabsTrigger value="overview" className="data-[state=active]:bg-white">Vue d&apos;ensemble</TabsTrigger>
+            <TabsTrigger value="rooms" className="data-[state=active]:bg-white">Mes Chambres</TabsTrigger>
+            <TabsTrigger value="services" className="data-[state=active]:bg-white">Services</TabsTrigger>
+            <TabsTrigger value="billing" className="data-[state=active]:bg-white">Facturation</TabsTrigger>
+            <TabsTrigger value="history" className="data-[state=active]:bg-white">Historique</TabsTrigger>
+            <TabsTrigger value="contact" className="data-[state=active]:bg-white">Contact</TabsTrigger>
+          </TabsList>
 
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ delay: 0.2 }}
-                >
-                  <Card className="p-6 border-0 shadow-lg" style={{ backgroundColor: colors.white }}>
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-sm text-gray-600">Total dépensé</p>
-                        <p className="text-2xl font-bold" style={{ color: colors.darkTeal }}>
-                          {getTotalSpent().toLocaleString()}
-                        </p>
-                        <p className="text-xs text-gray-500">FCFA</p>
-                      </div>
-                      <div className="w-12 h-12 rounded-lg flex items-center justify-center" style={{ backgroundColor: colors.lightTeal }}>
-                        <Banknote className="h-6 w-6" style={{ color: colors.teal }} />
-                      </div>
-                    </div>
-                  </Card>
-                </motion.div>
-
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ delay: 0.3 }}
-                >
-                  <Card className="p-6 border-0 shadow-lg" style={{ backgroundColor: colors.white }}>
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-sm text-gray-600">Points fidélité</p>
-                        <p className="text-2xl font-bold" style={{ color: colors.darkTeal }}>
-                          {userInfo?.loyaltyPoints}
-                        </p>
-                      </div>
-                      <div className="w-12 h-12 rounded-lg flex items-center justify-center" style={{ backgroundColor: colors.lightTeal }}>
-                        <Gift className="h-6 w-6" style={{ color: colors.teal }} />
-                      </div>
-                    </div>
-                  </Card>
-                </motion.div>
-
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ delay: 0.4 }}
-                >
-                  <Card className="p-6 border-0 shadow-lg" style={{ backgroundColor: colors.white }}>
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-sm text-gray-600">Solde à payer</p>
-                        <p className="text-2xl font-bold" style={{ color: colors.maroon }}>
-                          {getPendingAmount().toLocaleString()}
-                        </p>
-                        <p className="text-xs text-gray-500">FCFA</p>
-                      </div>
-                      <div className="w-12 h-12 rounded-lg flex items-center justify-center" style={{ backgroundColor: '#fee2e2' }}>
-                        <AlertCircle className="h-6 w-6" style={{ color: colors.maroon }} />
-                      </div>
-                    </div>
-                  </Card>
-                </motion.div>
-              </div>
-
-              {/* Réservations récentes */}
-              <Card className="p-6 border-0 shadow-lg" style={{ backgroundColor: colors.white }}>
-                <h3 className="text-xl font-semibold mb-4" style={{ color: colors.darkTeal }}>
-                  Réservations récentes
+          {/* Vue d'ensemble */}
+          <TabsContent value="overview" className="space-y-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* Réservations actives */}
+              <Card className="p-6 border-0 shadow-md">
+                <h3 className="text-xl font-semibold mb-4 flex items-center" style={{ color: colors.primary }}>
+                  <BedDouble className="h-5 w-5 mr-2" />
+                  Réservations Actives
                 </h3>
                 <div className="space-y-4">
-                  {reservations.slice(0, 3).map((reservation, index) => (
+                  {reservations.slice(0, 2).map((reservation) => (
                     <motion.div
                       key={reservation.id}
                       initial={{ opacity: 0, x: -20 }}
                       animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: index * 0.1 }}
-                      className="flex items-center space-x-4 p-4 rounded-lg border"
+                      className="flex items-center space-x-4 p-4 rounded-lg"
+                      style={{ backgroundColor: colors.gray }}
                     >
-                      <div className="w-16 h-16 rounded-lg overflow-hidden">
+                      <div className="relative w-16 h-16 rounded-lg overflow-hidden">
                         <Image
                           src={reservation.roomImage}
                           alt={reservation.roomName}
-                          width={64}
-                          height={64}
+                          fill
                           className="object-cover"
                         />
                       </div>
                       <div className="flex-1">
-                        <h4 className="font-semibold" style={{ color: colors.darkTeal }}>
-                          {reservation.roomName}
-                        </h4>
+                        <h4 className="font-semibold">{reservation.roomName}</h4>
                         <p className="text-sm text-gray-600">
-                          {new Date(reservation.checkInDate).toLocaleDateString('fr-FR')} - {reservation.duration}
+                          {new Date(reservation.checkInDate).toLocaleDateString('fr-FR')} - 
+                          {new Date(reservation.checkOutDate).toLocaleDateString('fr-FR')}
                         </p>
                         <div className="flex items-center space-x-2 mt-1">
-                          <Badge 
-                            className={`text-xs ${
-                              reservation.status === 'confirmed' ? 'bg-green-100 text-green-800' :
-                              reservation.status === 'partial' ? 'bg-orange-100 text-orange-800' :
-                              'bg-gray-100 text-gray-800'
-                            }`}
-                          >
-                            {reservation.status === 'confirmed' ? 'Confirmé' :
-                             reservation.status === 'partial' ? 'Acompte versé' : 'En attente'}
-                          </Badge>
-                          <span className="text-sm font-medium" style={{ color: colors.teal }}>
-                            {reservation.totalPrice.toLocaleString()} FCFA
-                          </span>
+                          <Wifi className="h-4 w-4" style={{ color: colors.secondary }} />
+                          <span className="text-sm font-mono">{reservation.wifiCode}</span>
                         </div>
+                      </div>
+                      <Badge 
+                        className={`${
+                          reservation.status === 'confirmed' ? 'bg-green-100 text-green-800' :
+                          reservation.status === 'partial' ? 'bg-yellow-100 text-yellow-800' :
+                          'bg-gray-100 text-gray-800'
+                        }`}
+                      >
+                        {reservation.status === 'confirmed' ? 'Confirmé' :
+                         reservation.status === 'partial' ? 'Acompte versé' : 'En attente'}
+                      </Badge>
+                    </motion.div>
+                  ))}
+                </div>
+              </Card>
+
+              {/* Services récents */}
+              <Card className="p-6 border-0 shadow-md">
+                <h3 className="text-xl font-semibold mb-4 flex items-center" style={{ color: colors.primary }}>
+                  <Clock className="h-5 w-5 mr-2" />
+                  Services Récents
+                </h3>
+                <div className="space-y-4">
+                  {serviceOrders.slice(0, 3).map((order) => (
+                    <motion.div
+                      key={order.id}
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      className="flex items-center justify-between p-4 rounded-lg"
+                      style={{ backgroundColor: colors.gray }}
+                    >
+                      <div>
+                        <h4 className="font-semibold">{order.service}</h4>
+                        <p className="text-sm text-gray-600 capitalize">{order.category}</p>
+                        <p className="text-xs text-gray-500">
+                          {new Date(order.orderedAt).toLocaleDateString('fr-FR')}
+                        </p>
+                      </div>
+                      <div className="text-right">
+                        <p className="font-semibold" style={{ color: colors.secondary }}>
+                          {(order.price * order.quantity).toLocaleString()} FCFA
+                        </p>
+                        <Badge 
+                          className={`${
+                            order.status === 'completed' ? 'bg-green-100 text-green-800' :
+                            order.status === 'confirmed' ? 'bg-blue-100 text-blue-800' :
+                            'bg-yellow-100 text-yellow-800'
+                          }`}
+                        >
+                          {order.status === 'completed' ? 'Terminé' :
+                           order.status === 'confirmed' ? 'Confirmé' : 'En attente'}
+                        </Badge>
                       </div>
                     </motion.div>
                   ))}
                 </div>
               </Card>
-            </TabsContent>
+            </div>
+          </TabsContent>
 
-            {/* Mes Chambres */}
-            <TabsContent value="rooms" className="space-y-6">
-              <div className="flex justify-between items-center">
-                <h2 className="text-2xl font-bold" style={{ color: colors.darkTeal }}>
-                  Mes Réservations de Chambres
-                </h2>
+          {/* Mes Chambres */}
+          <TabsContent value="rooms" className="space-y-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {reservations.map((reservation) => (
+                <motion.div
+                  key={reservation.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                >
+                  <Card className="overflow-hidden border-0 shadow-md hover:shadow-lg transition-shadow">
+                    <div className="relative h-48">
+                      <Image
+                        src={reservation.roomImage}
+                        alt={reservation.roomName}
+                        fill
+                        className="object-cover"
+                      />
+                      <div className="absolute top-4 right-4">
+                        <Badge 
+                          className={`${
+                            reservation.status === 'confirmed' ? 'bg-green-500' :
+                            reservation.status === 'partial' ? 'bg-yellow-500' :
+                            'bg-gray-500'
+                          } text-white`}
+                        >
+                          {reservation.status === 'confirmed' ? 'Confirmé' :
+                           reservation.status === 'partial' ? 'Acompte versé' : 'En attente'}
+                        </Badge>
+                      </div>
+                    </div>
+                    
+                    <div className="p-6">
+                      <div className="flex justify-between items-start mb-4">
+                        <div>
+                          <h3 className="text-xl font-semibold" style={{ color: colors.primary }}>
+                            {reservation.roomName}
+                          </h3>
+                          <p className="text-gray-600 capitalize">{reservation.roomType}</p>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-2xl font-bold" style={{ color: colors.secondary }}>
+                            {reservation.totalPrice.toLocaleString()} FCFA
+                          </p>
+                          <p className="text-sm text-gray-600">{reservation.duration}</p>
+                        </div>
+                      </div>
+
+                      <div className="space-y-3 mb-4">
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm text-gray-600">Type de réservation:</span>
+                          <span className="font-medium capitalize">
+                            {reservation.reservationType === 'classic' ? 'Classique' :
+                             reservation.reservationType === 'day_use' ? 'Day Use' : 'Flexible'}
+                          </span>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm text-gray-600">Dates:</span>
+                          <span className="font-medium">
+                            {new Date(reservation.checkInDate).toLocaleDateString('fr-FR')}
+                            {reservation.reservationType === 'classic' && 
+                              ` - ${new Date(reservation.checkOutDate).toLocaleDateString('fr-FR')}`
+                            }
+                          </span>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm text-gray-600">Invités:</span>
+                          <span className="font-medium">
+                            {reservation.adults} adulte{reservation.adults > 1 ? 's' : ''}
+                            {reservation.children.length > 0 && 
+                              `, ${reservation.children.length} enfant${reservation.children.length > 1 ? 's' : ''}`
+                            }
+                          </span>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm text-gray-600 flex items-center">
+                            <Wifi className="h-4 w-4 mr-1" />
+                            Code WiFi:
+                          </span>
+                          <span className="font-mono font-bold" style={{ color: colors.secondary }}>
+                            {reservation.wifiCode}
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Paiement */}
+                      <div className="mb-4 p-3 rounded-lg" style={{ backgroundColor: colors.gray }}>
+                        <div className="flex justify-between items-center mb-2">
+                          <span className="text-sm text-gray-600">Paiement:</span>
+                          <span className="font-semibold" style={{ color: colors.success }}>
+                            {reservation.paidAmount.toLocaleString()} FCFA payés
+                          </span>
+                        </div>
+                        {reservation.remainingAmount > 0 && (
+                          <div className="flex justify-between items-center">
+                            <span className="text-sm text-gray-600">Reste à payer:</span>
+                            <span className="font-semibold" style={{ color: colors.danger }}>
+                              {reservation.remainingAmount.toLocaleString()} FCFA
+                            </span>
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="flex space-x-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="flex-1"
+                          style={{ borderColor: colors.primary, color: colors.primary }}
+                        >
+                          <Edit3 className="h-4 w-4 mr-1" />
+                          Modifier
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="text-red-600 border-red-200 hover:bg-red-50"
+                          onClick={() => deleteReservation(reservation.id)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  </Card>
+                </motion.div>
+              ))}
+            </div>
+
+            {reservations.length === 0 && (
+              <Card className="p-12 text-center border-0 shadow-md">
+                <BedDouble className="h-16 w-16 mx-auto mb-4 text-gray-400" />
+                <h3 className="text-xl font-semibold mb-2" style={{ color: colors.primary }}>
+                  Aucune réservation
+                </h3>
+                <p className="text-gray-600 mb-6">
+                  Vous n&apos;avez pas encore de réservation active.
+                </p>
                 <Button
                   onClick={() => router.push('/rooms')}
-                  className="flex items-center space-x-2"
-                  style={{ backgroundColor: colors.teal }}
+                  style={{ backgroundColor: colors.primary }}
                 >
-                  <Plus className="h-4 w-4" />
-                  <span>Nouvelle réservation</span>
+                  Réserver une chambre
+                </Button>
+              </Card>
+            )}
+          </TabsContent>
+
+          {/* Services */}
+          <TabsContent value="services" className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {Object.entries(SERVICES_CATEGORIES).map(([key, category]) => (
+                <motion.div
+                  key={key}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: Object.keys(SERVICES_CATEGORIES).indexOf(key) * 0.1 }}
+                >
+                  <Card className="p-6 border-0 shadow-md hover:shadow-lg transition-all cursor-pointer group">
+                    <div className="flex items-center mb-4">
+                      <div 
+                        className="w-12 h-12 rounded-lg flex items-center justify-center mr-4 group-hover:scale-110 transition-transform"
+                        style={{ backgroundColor: `${category.color}20` }}
+                      >
+                        <category.icon className="h-6 w-6" style={{ color: category.color }} />
+                      </div>
+                      <div>
+                        <h3 className="text-lg font-semibold" style={{ color: colors.primary }}>
+                          {category.name}
+                        </h3>
+                        <p className="text-sm text-gray-600">
+                          {category.services.length} service{category.services.length > 1 ? 's' : ''}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="space-y-3">
+                      {category.services.slice(0, 3).map((service, index) => (
+                        <div key={index} className="flex items-center justify-between">
+                          <div className="flex-1">
+                            <p className="font-medium text-sm">{service.name}</p>
+                            <p className="text-xs text-gray-500">{service.description}</p>
+                          </div>
+                          <div className="text-right">
+                            {key === 'minibar' && 'stock' in service && service.stock !== undefined ? (
+                              <Button
+                                size="sm"
+                                disabled={service.stock === 0}
+                                onClick={() => handleDirectPurchase(service)}
+                                style={{ 
+                                  backgroundColor: service.stock > 0 ? colors.secondary : colors.lightGray,
+                                  color: service.stock > 0 ? 'white' : colors.darkGray
+                                }}
+                              >
+                                {service.stock > 0 ? `${service.price.toLocaleString()}` : 'Épuisé'}
+                              </Button>
+                            ) : (
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => {
+                                  setSelectedService({ ...service, category: key });
+                                  setIsServiceModalOpen(true);
+                                }}
+                                style={{ borderColor: category.color, color: category.color }}
+                              >
+                                {service.price === 0 ? 'Gratuit' : `${service.price.toLocaleString()}`}
+                              </Button>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+
+                    {category.services.length > 3 && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="w-full mt-4"
+                        style={{ color: category.color }}
+                      >
+                        Voir tous les services ({category.services.length})
+                      </Button>
+                    )}
+                  </Card>
+                </motion.div>
+              ))}
+            </div>
+          </TabsContent>
+
+          {/* Facturation */}
+          <TabsContent value="billing" className="space-y-6">
+            <Card className="p-6 border-0 shadow-md">
+              <div className="flex justify-between items-center mb-6">
+                <h3 className="text-2xl font-semibold" style={{ color: colors.primary, fontFamily: fonts.secondary }}>
+                  Facture Détaillée
+                </h3>
+                <Button
+                  variant="outline"
+                  style={{ borderColor: colors.secondary, color: colors.secondary }}
+                >
+                  <Download className="h-4 w-4 mr-2" />
+                  Télécharger PDF
                 </Button>
               </div>
 
-              {reservations.length > 0 ? (
-                <div className="space-y-6">
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {reservations.map((reservation, index) => (
-                      <motion.div
-                        key={reservation.id}
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: index * 0.1 }}
-                      >
-                        <Card className="overflow-hidden hover:shadow-lg transition-all duration-300">
-                          <div className="relative h-48">
-                            <Image
-                              src={reservation.roomImage}
-                              alt={reservation.roomName}
-                              fill
-                              className="object-cover"
-                            />
-                            <div className="absolute top-3 right-3">
-                              <Badge 
-                                className={`${
-                                  reservation.status === 'confirmed' ? 'bg-green-500' :
-                                  reservation.status === 'partial' ? 'bg-orange-500' :
-                                  reservation.status === 'pending' ? 'bg-yellow-500' :
-                                  'bg-red-500'
-                                } text-white`}
-                              >
-                                {reservation.status === 'confirmed' ? 'Confirmé' :
-                                 reservation.status === 'partial' ? 'Acompte versé' :
-                                 reservation.status === 'pending' ? 'En attente' : 'Annulé'}
-                              </Badge>
-                            </div>
-                            <div className="absolute top-3 left-3 flex space-x-2">
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => handleEditReservation(reservation.id)}
-                                className="bg-white/20 backdrop-blur-sm hover:bg-white/30 text-white"
-                              >
-                                <Edit3 className="h-4 w-4" />
-                              </Button>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => handleDeleteReservation(reservation.id)}
-                                className="bg-red-500/20 backdrop-blur-sm hover:bg-red-500/30 text-white"
-                              >
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
+              {/* Hébergement */}
+              <div className="mb-8">
+                <h4 className="text-lg font-semibold mb-4 flex items-center" style={{ color: colors.primary }}>
+                  <BedDouble className="h-5 w-5 mr-2" />
+                  Hébergement
+                </h4>
+                <div className="space-y-3">
+                  {reservations.map((reservation) => (
+                    <div key={reservation.id} className="flex justify-between items-center p-4 rounded-lg" style={{ backgroundColor: colors.gray }}>
+                      <div>
+                        <p className="font-medium">{reservation.roomName}</p>
+                        <p className="text-sm text-gray-600">
+                          {reservation.duration} • {reservation.adults} adulte{reservation.adults > 1 ? 's' : ''}
+                          {reservation.children.length > 0 && `, ${reservation.children.length} enfant${reservation.children.length > 1 ? 's' : ''}`}
+                        </p>
+                      </div>
+                      <div className="text-right">
+                        <p className="font-semibold">{reservation.totalPrice.toLocaleString()} FCFA</p>
+                        <p className="text-sm" style={{ color: reservation.paidAmount === reservation.totalPrice ? colors.success : colors.warning }}>
+                          {reservation.paidAmount.toLocaleString()} FCFA payés
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Services */}
+              <div className="mb-8">
+                <h4 className="text-lg font-semibold mb-4 flex items-center" style={{ color: colors.primary }}>
+                  <Sparkles className="h-5 w-5 mr-2" />
+                  Services
+                </h4>
+                <div className="space-y-3">
+                  {serviceOrders.map((order) => (
+                    <div key={order.id} className="flex justify-between items-center p-4 rounded-lg" style={{ backgroundColor: colors.gray }}>
+                      <div>
+                        <p className="font-medium">{order.service}</p>
+                        <p className="text-sm text-gray-600 capitalize">
+                          {order.category} • Qté: {order.quantity}
+                        </p>
+                      </div>
+                      <div className="text-right">
+                        <p className="font-semibold">{(order.price * order.quantity).toLocaleString()} FCFA</p>
+                        <Badge 
+                          className={`${
+                            order.status === 'completed' ? 'bg-green-100 text-green-800' :
+                            order.status === 'confirmed' ? 'bg-blue-100 text-blue-800' :
+                            'bg-yellow-100 text-yellow-800'
+                          }`}
+                        >
+                          {order.status === 'completed' ? 'Payé' :
+                           order.status === 'confirmed' ? 'Confirmé' : 'En attente'}
+                        </Badge>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Total */}
+              <Separator className="my-6" />
+              <div className="space-y-3">
+                <div className="flex justify-between text-lg">
+                  <span>Sous-total hébergement:</span>
+                  <span>{reservations.reduce((sum, r) => sum + r.totalPrice, 0).toLocaleString()} FCFA</span>
+                </div>
+                <div className="flex justify-between text-lg">
+                  <span>Sous-total services:</span>
+                  <span>{serviceOrders.reduce((sum, o) => sum + (o.price * o.quantity), 0).toLocaleString()} FCFA</span>
+                </div>
+                <div className="flex justify-between text-lg">
+                  <span>Remise fidélité ({getCurrentTier().discount}%):</span>
+                  <span style={{ color: colors.success }}>
+                    -{Math.round((reservations.reduce((sum, r) => sum + r.totalPrice, 0) + serviceOrders.reduce((sum, o) => sum + (o.price * o.quantity), 0)) * getCurrentTier().discount / 100).toLocaleString()} FCFA
+                  </span>
+                </div>
+                <Separator />
+                <div className="flex justify-between text-2xl font-bold" style={{ color: colors.primary }}>
+                  <span>Total:</span>
+                  <span>
+                    {Math.round((reservations.reduce((sum, r) => sum + r.totalPrice, 0) + serviceOrders.reduce((sum, o) => sum + (o.price * o.quantity), 0)) * (1 - getCurrentTier().discount / 100)).toLocaleString()} FCFA
+                  </span>
+                </div>
+              </div>
+            </Card>
+          </TabsContent>
+
+          {/* Historique */}
+          <TabsContent value="history" className="space-y-6">
+            <Card className="p-6 border-0 shadow-md">
+              <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 space-y-4 md:space-y-0">
+                <h3 className="text-2xl font-semibold" style={{ color: colors.primary, fontFamily: fonts.secondary }}>
+                  Historique des Services
+                </h3>
+                
+                <div className="flex flex-col md:flex-row space-y-2 md:space-y-0 md:space-x-4">
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                    <Input
+                      placeholder="Rechercher un service..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      className="pl-10 w-64"
+                    />
+                  </div>
+                  
+                  <select
+                    value={historyFilter}
+                    onChange={(e) => setHistoryFilter(e.target.value)}
+                    className="px-4 py-2 border rounded-lg focus:outline-none focus:ring-2"
+                   style={{ outlineColor: colors.primary }}
+                  >
+                    <option value="all">Tous les statuts</option>
+                    <option value="pending">En attente</option>
+                    <option value="confirmed">Confirmé</option>
+                    <option value="completed">Terminé</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <AnimatePresence>
+                  {filteredHistory.map((order, index) => (
+                    <motion.div
+                      key={order.id}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -20 }}
+                      transition={{ delay: index * 0.05 }}
+                      className="p-4 rounded-lg border hover:shadow-md transition-shadow "
+                      style={{ backgroundColor: colors.gray }}
+                    >
+                      <div className="flex flex-col md:flex-row justify-between items-start md:items-center space-y-2 md:space-y-0">
+                        <div className="flex-1">
+                          <div className="flex items-center space-x-3 mb-2">
+                              {(() => {
+    const categoryKey = order.category as keyof typeof SERVICES_CATEGORIES;
+    const categoryData = SERVICES_CATEGORIES[categoryKey];
+    const IconComponent = categoryData?.icon;
+    
+    return IconComponent ? (
+      <div 
+        className="w-10 h-10 rounded-lg flex items-center justify-center"
+        style={{ backgroundColor: `${categoryData.color}20` }}
+      >
+        <IconComponent 
+          className="h-5 w-5" 
+          style={{ color: categoryData.color }}
+        />
+      </div>
+    ) : null;
+  })()}
+
+                            <div>
+                              <h4 className="font-semibold">{order.service}</h4>
+                              <p className="text-sm text-gray-600 capitalize">{order.category}</p>
                             </div>
                           </div>
                           
-                          <div className="p-6">
-                            <div className="flex justify-between items-start mb-4">
-                              <div>
-                                <h3 className="text-lg font-semibold" style={{ color: colors.darkTeal }}>
-                                  {reservation.roomName}
-                                </h3>
-                                <p className="text-sm text-gray-600 capitalize">
-                                  {reservation.reservationType === 'classic' ? 'Séjour Classique' :
-                                   reservation.reservationType === 'day_use' ? 'Day Use' : 'Horaires Flexibles'}
-                                </p>
-                              </div>
-                              <div className="text-right">
-                                <div className="text-lg font-bold" style={{ color: colors.teal }}>
-                                  {reservation.totalPrice.toLocaleString()} FCFA
-                                </div>
-                                <div className="text-xs text-gray-500">{reservation.duration}</div>
-                              </div>
-                            </div>
-
-                            <div className="space-y-3 mb-4">
-                              <div className="flex items-center text-sm text-gray-600">
-                                <Calendar className="h-4 w-4 mr-2" />
-                                <span>
-                                  {new Date(reservation.checkInDate).toLocaleDateString('fr-FR')}
-                                  {reservation.reservationType === 'classic' && reservation.checkOutDate !== reservation.checkInDate && 
-                                    ` - ${new Date(reservation.checkOutDate).toLocaleDateString('fr-FR')}`
-                                  }
-                                </span>
-                              </div>
-                              
-                              {reservation.reservationType === 'flexible' && (
-                                <div className="flex items-center text-sm text-gray-600">
-                                  <Clock className="h-4 w-4 mr-2" />
-                                  <span>{reservation.checkInTime} - {reservation.checkOutTime}</span>
-                                </div>
-                              )}
-                              
-                              <div className="flex items-center text-sm text-gray-600">
-                                <Users className="h-4 w-4 mr-2" />
-                                <span>
-                                  {reservation.adults} adulte{reservation.adults > 1 ? 's' : ''}
-                                  {reservation.children.length > 0 && 
-                                    `, ${reservation.children.length} enfant${reservation.children.length > 1 ? 's' : ''} (${reservation.children.map(c => c.age).join(', ')} ans)`
-                                  }
-                                </span>
-                              </div>
-                              
-                              <div className="flex items-center text-sm text-gray-600">
-                                <Wifi className="h-4 w-4 mr-2" />
-                                <span className="font-mono bg-gray-100 px-2 py-1 rounded">
-                                  WiFi: {reservation.wifiCode || 'HOTEL2024'}
-                                </span>
-                              </div>
-                            </div>
-
-                            {reservation.remainingAmount > 0 && (
-                              <div className="mb-4 p-3 bg-orange-50 rounded-lg">
-                                <div className="flex justify-between items-center">
-                                  <span className="text-sm text-orange-700">Solde restant:</span>
-                                  <span className="font-semibold text-orange-700">
-                                    {reservation.remainingAmount.toLocaleString()} FCFA
-                                  </span>
-                                </div>
-                              </div>
+                          <div className="flex items-center space-x-4 text-sm text-gray-600">
+                            <span>Qté: {order.quantity}</span>
+                            <span>•</span>
+                            <span>{new Date(order.orderedAt).toLocaleDateString('fr-FR')} à {new Date(order.orderedAt).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}</span>
+                            {order.notes && (
+                              <>
+                                <span>•</span>
+                                <span className="italic">{order.notes}</span>
+                              </>
                             )}
-
-                            {/* Édition des invités */}
-                            <AnimatePresence>
-                              {editingReservation === reservation.id && (
-                                <motion.div
-                                  initial={{ opacity: 0, height: 0 }}
-                                  animate={{ opacity: 1, height: 'auto' }}
-                                  exit={{ opacity: 0, height: 0 }}
-                                  className="mb-4 p-4 bg-gray-50 rounded-lg"
-                                >
-                                  <h4 className="font-medium mb-3" style={{ color: colors.darkTeal }}>
-                                    Modifier les invités
-                                  </h4>
-                                  <div className="grid grid-cols-2 gap-4">
-                                    <div>
-                                      <Label className="text-sm">Adultes</Label>
-                                      <div className="flex items-center space-x-2 mt-1">
-                                        <Button
-                                          variant="outline"
-                                          size="sm"
-                                          onClick={() => {
-                                            if (reservation.adults > 1) {
-                                              updateReservationGuests(reservation.id, reservation.adults - 1, reservation.children);
-                                            }
-                                          }}
-                                          disabled={reservation.adults <= 1}
-                                        >
-                                          <Minus className="h-4 w-4" />
-                                        </Button>
-                                        <span className="w-8 text-center">{reservation.adults}</span>
-                                        <Button
-                                          variant="outline"
-                                          size="sm"
-                                          onClick={() => {
-                                            updateReservationGuests(reservation.id, reservation.adults + 1, reservation.children);
-                                          }}
-                                        >
-                                          <Plus className="h-4 w-4" />
-                                        </Button>
-                                      </div>
-                                    </div>
-                                    <div>
-                                      <Label className="text-sm">Enfants</Label>
-                                      <div className="space-y-2 mt-1">
-                                        {reservation.children.map((child, childIndex) => (
-                                          <div key={childIndex} className="flex items-center space-x-2">
-                                            <span className="text-xs">Enfant {childIndex + 1}:</span>
-                                            <Input
-                                              type="number"
-                                              min="0"
-                                              max="17"
-                                              value={child.age}
-                                              onChange={(e) => {
-                                                const newChildren = [...reservation.children];
-                                                newChildren[childIndex] = { age: parseInt(e.target.value) };
-                                                updateReservationGuests(reservation.id, reservation.adults, newChildren);
-                                              }}
-                                              className="w-16 h-8 text-xs"
-                                            />
-                                            <Button
-                                              variant="ghost"
-                                              size="sm"
-                                              onClick={() => {
-                                                const newChildren = reservation.children.filter((_, i) => i !== childIndex);
-                                                updateReservationGuests(reservation.id, reservation.adults, newChildren);
-                                              }}
-                                              className="text-red-600 h-8 w-8 p-0"
-                                            >
-                                              <X className="h-4 w-4" />
-                                            </Button>
-                                          </div>
-                                        ))}
-                                        <Button
-                                          variant="outline"
-                                          size="sm"
-                                          onClick={() => {
-                                            if (reservation.children.length < 3) {
-                                              const newChildren = [...reservation.children, { age: 5 }];
-                                              updateReservationGuests(reservation.id, reservation.adults, newChildren);
-                                            }
-                                          }}
-                                          disabled={reservation.children.length >= 3}
-                                          className="w-full"
-                                        >
-                                          <Plus className="h-4 w-4 mr-1" />
-                                          Ajouter enfant
-                                        </Button>
-                                      </div>
-                                    </div>
-                                  </div>
-                                </motion.div>
-                              )}
-                            </AnimatePresence>
                           </div>
-                        </Card>
-                      </motion.div>
-                    ))}
-                  </div>
-                </div>
-              ) : (
-                <Card className="p-12 text-center border-0 shadow-lg" style={{ backgroundColor: colors.white }}>
-                  <BedDouble className="h-16 w-16 mx-auto mb-4 text-gray-400" />
-                  <h3 className="text-xl font-semibold mb-2" style={{ color: colors.darkTeal }}>
-                    Aucune réservation
-                  </h3>
-                  <p className="text-gray-600 mb-6">
-                   Vous n&rsquo;avez pas encore de r&eacute;servation. D&eacute;couvrez nos chambres !
-                  </p>
-                  <Button
-                    onClick={() => router.push('/rooms')}
-                    style={{ backgroundColor: colors.teal }}
-                  >
-                    Réserver une chambre
-                  </Button>
-                </Card>
-              )}
-            </TabsContent>
-
-            {/* Services */}
-            <TabsContent value="services" className="space-y-6">
-              <div className="flex justify-between items-center">
-                <h2 className="text-2xl font-bold" style={{ color: colors.darkTeal }}>
-                  Services Hôteliers
-                </h2>
-                <Badge className="flex items-center space-x-1" style={{ backgroundColor: colors.lightTeal, color: colors.darkTeal }}>
-                  <ShoppingCart className="h-3 w-3" />
-                  <span>{services.length} commande{services.length > 1 ? 's' : ''}</span>
-                </Badge>
-              </div>
-
-              <ServicesSection 
-                categories={serviceCategories}
-                onOrderService={(item) => {
-                  const newService: Service = {
-                    id: Date.now(),
-                    name: item.name,
-                    category: item.category,
-                    price: item.price,
-                    quantity: 1,
-                    total: item.price,
-                    date: new Date().toISOString(),
-                    status: 'pending'
-                  };
-                  const updatedServices = [...services, newService];
-                  setServices(updatedServices);
-                  localStorage.setItem('userServices', JSON.stringify(updatedServices));
-                }}
-                onQuickPurchase={(item) => {
-                  setSelectedMinibarItem(item);
-                  setQuickPayAmount(item.price);
-                  setShowQuickPay(true);
-                }}
-              />
-
-              {/* Historique des services */}
-              {services.length > 0 && (
-                <Card className="p-6 border-0 shadow-lg" style={{ backgroundColor: colors.white }}>
-                  <h3 className="text-xl font-semibold mb-4" style={{ color: colors.darkTeal }}>
-                    Historique des services
-                  </h3>
-                  <div className="space-y-3">
-                    {services.slice(0, 5).map((service) => (
-                      <div key={service.id} className="flex items-center justify-between p-3 border rounded-lg">
-                        <div>
-                          <h4 className="font-medium" style={{ color: colors.darkTeal }}>
-                            {service.name}
-                          </h4>
-                          <p className="text-sm text-gray-600">
-                            {service.category} • {new Date(service.date).toLocaleDateString('fr-FR')}
-                            {service.quantity > 1 && ` • Quantité: ${service.quantity}`}
-                          </p>
                         </div>
-                        <div className="text-right">
-                          <p className="font-bold" style={{ color: colors.teal }}>
-                            {service.total.toLocaleString()} FCFA
-                          </p>
+                        
+                        <div className="flex items-center space-x-4">
+                          <div className="text-right">
+                            <p className="font-semibold text-lg" style={{ color: colors.secondary }}>
+                              {(order.price * order.quantity).toLocaleString()} FCFA
+                            </p>
+                            <p className="text-sm text-gray-600">
+                              {order.price.toLocaleString()} FCFA × {order.quantity}
+                            </p>
+                          </div>
+                          
                           <Badge 
-                            className={`text-xs ${
-                              service.status === 'confirmed' ? 'bg-green-100 text-green-800' :
-                              service.status === 'completed' ? 'bg-blue-100 text-blue-800' :
-                              'bg-orange-100 text-orange-800'
+                            className={`${
+                              order.status === 'completed' ? 'bg-green-100 text-green-800' :
+                              order.status === 'confirmed' ? 'bg-blue-100 text-blue-800' :
+                              'bg-yellow-100 text-yellow-800'
                             }`}
                           >
-                            {service.status === 'confirmed' ? 'Confirmé' :
-                             service.status === 'completed' ? 'Terminé' : 'En attente'}
+                            {order.status === 'completed' ? 'Terminé' :
+                             order.status === 'confirmed' ? 'Confirmé' : 'En attente'}
                           </Badge>
                         </div>
                       </div>
-                    ))}
-                  </div>
-                </Card>
+                    </motion.div>
+                  ))}
+                </AnimatePresence>
+              </div>
+
+              {filteredHistory.length === 0 && (
+                <div className="text-center py-12">
+                  <History className="h-16 w-16 mx-auto mb-4 text-gray-400" />
+                  <h3 className="text-xl font-semibold mb-2" style={{ color: colors.primary }}>
+                    Aucun service trouvé
+                  </h3>
+                  <p className="text-gray-600">
+                    {searchTerm || historyFilter !== 'all' 
+                      ? 'Aucun service ne correspond à vos critères de recherche.'
+                      : 'Vous n\'avez pas encore commandé de services.'
+                    }
+                  </p>
+                </div>
               )}
-            </TabsContent>
+            </Card>
+          </TabsContent>
 
-            {/* Facturation */}
-            <TabsContent value="billing" className="space-y-6">
-              <div className="flex justify-between items-center">
-                <h2 className="text-2xl font-bold" style={{ color: colors.darkTeal }}>
-                  Facturation
-                </h2>
-                <Button
-                  variant="outline"
-                  className="flex items-center space-x-2"
-                  style={{ borderColor: colors.teal, color: colors.teal }}
-                >
-                  <Download className="h-4 w-4" />
-                  <span>Télécharger PDF</span>
-                </Button>
-              </div>
-
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                {/* Résumé financier */}
-                <Card className="p-6 border-0 shadow-lg" style={{ backgroundColor: colors.white }}>
-                  <h3 className="text-lg font-semibold mb-4" style={{ color: colors.darkTeal }}>
-                    Résumé Financier
-                  </h3>
-                  <div className="space-y-4">
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Hébergement</span>
-                      <span className="font-medium">
-                        {reservations.reduce((sum, r) => sum + r.totalPrice, 0).toLocaleString()} FCFA
-                      </span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Services</span>
-                      <span className="font-medium">
-                        {services.reduce((sum, s) => sum + s.total, 0).toLocaleString()} FCFA
-                      </span>
-                    </div>
-                    <Separator />
-                    <div className="flex justify-between text-lg font-bold" style={{ color: colors.darkTeal }}>
-                      <span>Total</span>
-                      <span>{getTotalSpent().toLocaleString()} FCFA</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Payé</span>
-                      <span className="font-medium text-green-600">
-                        {reservations.reduce((sum, r) => sum + r.paidAmount, 0).toLocaleString()} FCFA
-                      </span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Solde</span>
-                      <span className="font-medium" style={{ color: colors.maroon }}>
-                        {getPendingAmount().toLocaleString()} FCFA
-                      </span>
-                    </div>
-                  </div>
-                </Card>
-
-                {/* Détail des factures */}
-                <div className="lg:col-span-2">
-                  <Card className="p-6 border-0 shadow-lg" style={{ backgroundColor: colors.white }}>
-                    <h3 className="text-lg font-semibold mb-4" style={{ color: colors.darkTeal }}>
-                      Détail des Factures
-                    </h3>
-                    <div className="space-y-4">
-                      {/* Réservations */}
-                      {reservations.map((reservation) => (
-                        <div key={reservation.id} className="border rounded-lg p-4">
-                          <div className="flex justify-between items-start mb-2">
-                            <div>
-                              <h4 className="font-medium" style={{ color: colors.darkTeal }}>
-                                {reservation.roomName}
-                              </h4>
-                              <p className="text-sm text-gray-600">
-                                {new Date(reservation.checkInDate).toLocaleDateString('fr-FR')} - {reservation.duration}
-                              </p>
-                            </div>
-                            <div className="text-right">
-                              <p className="font-bold" style={{ color: colors.teal }}>
-                                {reservation.totalPrice.toLocaleString()} FCFA
-                              </p>
-                              <p className="text-xs text-gray-500">
-                                Payé: {reservation.paidAmount.toLocaleString()} FCFA
-                              </p>
-                            </div>
-                          </div>
-                          {reservation.remainingAmount > 0 && (
-                            <div className="mt-2 p-2 bg-orange-50 rounded text-sm">
-                              <span className="text-orange-800">
-                                Solde à payer: {reservation.remainingAmount.toLocaleString()} FCFA
-                              </span>
-                            </div>
-                          )}
-                        </div>
-                      ))}
-
-                      {/* Services */}
-                      {services.map((service) => (
-                        <div key={service.id} className="border rounded-lg p-4">
-                          <div className="flex justify-between items-center">
-                            <div>
-                              <h4 className="font-medium" style={{ color: colors.darkTeal }}>
-                                {service.name}
-                              </h4>
-                              <p className="text-sm text-gray-600">
-                                {service.category} • Quantité: {service.quantity} • {new Date(service.date).toLocaleDateString('fr-FR')}
-                              </p>
-                            </div>
-                            <p className="font-bold" style={{ color: colors.teal }}>
-                              {service.total.toLocaleString()} FCFA
-                            </p>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </Card>
-                </div>
-              </div>
-            </TabsContent>
-
-            {/* Contact */}
-            <TabsContent value="contact" className="space-y-6">
-              <h2 className="text-2xl font-bold" style={{ color: colors.darkTeal }}>
-                Contactez-nous
-              </h2>
-
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                {/* Formulaire de contact */}
-                <Card className="p-6 border-0 shadow-lg" style={{ backgroundColor: colors.white }}>
-                  <h3 className="text-lg font-semibold mb-4" style={{ color: colors.darkTeal }}>
-                    Envoyer un message
-                  </h3>
-                  <div className="space-y-4">
-                    <div>
-                      <Label>Votre message</Label>
-                      <textarea
-                        value={contactMessage}
-                        onChange={(e) => setContactMessage(e.target.value)}
-                        placeholder="Décrivez votre demande..."
-                        className="w-full mt-1 px-3 py-2 border rounded-lg focus:outline-none focus:ring-2"
-                        style={{ borderColor: colors.teal }}
-                        rows={5}
-                      />
-                    </div>
-                    <Button
-                      onClick={sendContactMessage}
-                      className="w-full"
-                      style={{ backgroundColor: colors.teal }}
-                      disabled={!contactMessage.trim()}
-                    >
-                      <Send className="h-4 w-4 mr-2" />
-                      Envoyer le message
-                    </Button>
-                  </div>
-                </Card>
-
-                {/* Contacts directs */}
-                <Card className="p-6 border-0 shadow-lg" style={{ backgroundColor: colors.white }}>
-                  <h3 className="text-lg font-semibold mb-4" style={{ color: colors.darkTeal }}>
-                    Contacts directs
-                  </h3>
-                  <div className="space-y-4">
-                    <Button
-                      variant="outline"
-                      className="w-full justify-start"
-                      style={{ borderColor: colors.teal, color: colors.teal }}
-                    >
-                      <Phone className="h-4 w-4 mr-3" />
-                      Appeler la réception
-                    </Button>
-                    <Button
-                      variant="outline"
-                      className="w-full justify-start"
-                      style={{ borderColor: colors.teal, color: colors.teal }}
-                    >
-                      <MessageCircle className="h-4 w-4 mr-3" />
-                      WhatsApp
-                    </Button>
-                    <Button
-                      variant="outline"
-                      className="w-full justify-start"
-                      style={{ borderColor: colors.teal, color: colors.teal }}
-                    >
-                      <Send className="h-4 w-4 mr-3" />
-                      Email
-                    </Button>
-                  </div>
-
-                  <Separator className="my-6" />
-
-                  <div>
-                    <h4 className="font-medium mb-3" style={{ color: colors.darkTeal }}>
-                      Demandes de service rapides
-                    </h4>
-                    <div className="grid grid-cols-2 gap-2">
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        style={{ borderColor: colors.teal, color: colors.teal }}
-                      >
-                        � Nettoyage
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        style={{ borderColor: colors.teal, color: colors.teal }}
-                      >
-                        🛁 Serviettes
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        style={{ borderColor: colors.teal, color: colors.teal }}
-                      >
-                        🔧 Assistance
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        style={{ borderColor: colors.teal, color: colors.teal }}
-                      >
-                        🍽️ Room Service
-                      </Button>
-                    </div>
-                  </div>
-                </Card>
-              </div>
-
-              {/* Informations pratiques */}
-              <Card className="p-6 border-0 shadow-lg" style={{ backgroundColor: colors.white }}>
-                <h3 className="text-lg font-semibold mb-4" style={{ color: colors.darkTeal }}>
-                  Informations Pratiques
+          {/* Contact */}
+          <TabsContent value="contact" className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <Card className="p-6 border-0 shadow-md">
+                <h3 className="text-xl font-semibold mb-4 flex items-center" style={{ color: colors.primary }}>
+                  <Phone className="h-5 w-5 mr-2" />
+                  Contact Direct
                 </h3>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  <div>
-                    <h4 className="font-medium mb-2" style={{ color: colors.darkTeal }}>
-                      Réception
-                    </h4>
-                    <p className="text-sm text-gray-600">Ouverte 24h/24</p>
-                    <p className="text-sm text-gray-600">Téléphone: +229 XX XX XX XX</p>
-                  </div>
-                  <div>
-                    <h4 className="font-medium mb-2" style={{ color: colors.darkTeal }}>
-                      Check-out
-                    </h4>
-                    <p className="text-sm text-gray-600">Avant 12h00</p>
-                    <p className="text-sm text-gray-600">Check-out tardif disponible</p>
-                  </div>
-                  <div>
-                    <h4 className="font-medium mb-2" style={{ color: colors.darkTeal }}>
-                      WiFi
-                    </h4>
-                    <p className="text-sm text-gray-600">Gratuit dans tout l&rsquo;h&ocirc;tel</p>
-                    <p className="text-sm text-gray-600">Code chambre affiché ci-dessus</p>
-                  </div>
-                </div>
-              </Card>
-            </TabsContent>
-
-            {/* Avis */}
-            <TabsContent value="reviews" className="space-y-6">
-              <h2 className="text-2xl font-bold" style={{ color: colors.darkTeal }}>
-                Votre Avis
-              </h2>
-
-              <Card className="p-6 border-0 shadow-lg" style={{ backgroundColor: colors.white }}>
-                <h3 className="text-lg font-semibold mb-4" style={{ color: colors.darkTeal }}>
-                  Évaluez votre expérience
-                </h3>
-                <div className="space-y-6">
-                  <div>
-                    <Label className="mb-3 block">Note globale</Label>
-                    <div className="flex space-x-2">
-                      {[1, 2, 3, 4, 5].map((star) => (
-                        <button
-                          key={star}
-                          onClick={() => setRating(star)}
-                          className="transition-colors"
-                        >
-                          <Star
-                            className={`h-8 w-8 ${
-                              star <= rating
-                                ? 'fill-current text-yellow-400'
-                                : 'text-gray-300'
-                            }`}
-                          />
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div>
-                    <Label>Votre commentaire</Label>
-                    <textarea
-                      value={review}
-                      onChange={(e) => setReview(e.target.value)}
-                      placeholder="Partagez votre expérience..."
-                      className="w-full mt-1 px-3 py-2 border rounded-lg focus:outline-none focus:ring-2"
-                      style={{ borderColor: colors.teal }}
-                      rows={4}
-                    />
-                  </div>
-
+                <div className="space-y-4">
                   <Button
-                    onClick={submitReview}
-                    className="w-full"
-                    style={{ backgroundColor: colors.teal }}
-                    disabled={!review.trim() || rating === 0}
+                    className="w-full justify-start"
+                    style={{ backgroundColor: colors.primary }}
                   >
-                    <Heart className="h-4 w-4 mr-2" />
-                    Publier mon avis
+                    <Phone className="h-4 w-4 mr-2" />
+                    Appeler la réception
                   </Button>
-                </div>
-              </Card>
-            </TabsContent>
-          </Tabs>
-        </motion.div>
-      </div>
-
-      {/* Modal de paiement rapide */}
-      <AnimatePresence>
-        {showQuickPay && selectedMinibarItem && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
-            onClick={() => setShowQuickPay(false)}
-          >
-            <motion.div
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
-              className="w-full max-w-md"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <Card className="p-6" style={{ backgroundColor: colors.white }}>
-                <div className="text-center mb-6">
-                  <div className="relative w-24 h-24 mx-auto mb-4 rounded-lg overflow-hidden">
-                    <Image
-                      src={selectedMinibarItem.image || '/placeholder-item.jpg'}
-                      alt={selectedMinibarItem.name}
-                      fill
-                      className="object-cover"
-                    />
-                  </div>
-                  <h3 className="text-xl font-semibold mb-2" style={{ color: colors.darkTeal }}>
-                    {selectedMinibarItem.name}
-                  </h3>
-                  <p className="text-gray-600">{selectedMinibarItem.category}</p>
-                </div>
-
-                <div className="space-y-4 mb-6">
-                  <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
-                    <span>Prix unitaire:</span>
-                    <span className="font-semibold" style={{ color: colors.teal }}>
-                      {selectedMinibarItem.price.toLocaleString()} FCFA
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center p-3 rounded-lg" 
-                       style={{ backgroundColor: colors.lightTeal }}>
-                    <span className="font-semibold">Total à payer:</span>
-                    <span className="text-xl font-bold" style={{ color: colors.darkTeal }}>
-                      {quickPayAmount.toLocaleString()} FCFA
-                    </span>
-                  </div>
-                </div>
-
-                <div className="flex space-x-3">
+                  <Button
+                    className="w-full justify-start bg-green-500 hover:bg-green-600"
+                  >
+                    <MessageCircle className="h-4 w-4 mr-2" />
+                    WhatsApp
+                  </Button>
                   <Button
                     variant="outline"
-                    onClick={() => setShowQuickPay(false)}
-                    className="flex-1"
-                    style={{ borderColor: colors.teal, color: colors.teal }}
+                    className="w-full justify-start"
+                    style={{ borderColor: colors.secondary, color: colors.secondary }}
                   >
-                    Annuler
-                  </Button>
-                  <Button
-                    onClick={processQuickPayment}
-                    className="flex-1"
-                    style={{ backgroundColor: colors.teal }}
-                  >
-                    <Wallet className="h-4 w-4 mr-2" />
-                    Payer maintenant
+                    <Mail className="h-4 w-4 mr-2" />
+                    Email
                   </Button>
                 </div>
               </Card>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+
+              <Card className="p-6 border-0 shadow-md">
+                <h3 className="text-xl font-semibold mb-4 flex items-center" style={{ color: colors.primary }}>
+                  <MapPin className="h-5 w-5 mr-2" />
+                  Informations Pratiques
+                </h3>
+                <div className="space-y-3 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Réception:</span>
+                    <span className="font-medium">24h/24</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Check-out:</span>
+                    <span className="font-medium">12h00</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Room Service:</span>
+                    <span className="font-medium">6h00 - 23h00</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Spa:</span>
+                    <span className="font-medium">9h00 - 21h00</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Restaurant:</span>
+                    <span className="font-medium">7h00 - 22h00</span>
+                  </div>
+                </div>
+              </Card>
+            </div>
+
+            {/* Demandes rapides */}
+            <Card className="p-6 border-0 shadow-md">
+              <h3 className="text-xl font-semibold mb-4 flex items-center" style={{ color: colors.primary }}>
+                <Bell className="h-5 w-5 mr-2" />
+                Demandes Rapides
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {[
+                  { name: 'Nettoyage de chambre', icon: Droplets, category: 'roomservice' },
+                  { name: 'Serviettes supplémentaires', icon: Package, category: 'roomservice' },
+                  { name: 'Assistance technique', icon: Settings, category: 'roomservice' }
+                ].map((service) => (
+                  <Button
+                    key={service.name}
+                    variant="outline"
+                    className="h-auto p-4 flex flex-col items-center space-y-2"
+                    style={{ borderColor: colors.primary, color: colors.primary }}
+                    onClick={() => {
+                      const serviceData = SERVICES_CATEGORIES.roomservice.services.find(s => s.name.includes(service.name.split(' ')[0]));
+                      if (serviceData) {
+                        setSelectedService({ ...serviceData, category: service.category });
+                        setIsServiceModalOpen(true);
+                      }
+                    }}
+                  >
+                    <service.icon className="h-6 w-6" />
+                    <span className="text-sm text-center">{service.name}</span>
+                  </Button>
+                ))}
+              </div>
+            </Card>
+          </TabsContent>
+        </Tabs>
+      </div>
+
+      {/* Modals */}
+      <ProfileEditModal
+        isOpen={isProfileModalOpen}
+        onClose={() => setIsProfileModalOpen(false)}
+        userProfile={userProfile}
+        onSave={setUserProfile}
+      />
+
+      <SettingsModal
+        isOpen={isSettingsModalOpen}
+        onClose={() => setIsSettingsModalOpen(false)}
+        userProfile={userProfile}
+        onSave={setUserProfile}
+      />
+
+      <ServiceOrderModal
+        isOpen={isServiceModalOpen}
+        onClose={() => setIsServiceModalOpen(false)}
+        service={selectedService}
+        onOrder={handleServiceOrder}
+      />
     </div>
   );
 }

@@ -8,13 +8,13 @@ import Image from 'next/image';
 
 
 const colors = {
- teal: "#005D7C",
-  gold: "#CE9226",     
-  orange: '#FF8C42',     
-  maroon: '#800020',     
-  lightTeal: '#E6F2F2',  
-  darkTeal: '#006666',   
-  cream: '#F5F5DC',     
+  teal: "#014d71",
+  gold: "#f0b800",
+  orange: '#e67e22',
+  maroon: '#800020',
+  lightTeal: '#f0f7f7',
+  darkTeal: '#013a56',
+  cream: '#f8f4e9',
 };
 
 
@@ -204,12 +204,12 @@ const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
   ];
 
   return (
-    <div className="min-h-screen pt-16" style={{ 
-      fontFamily: 'Bahnschrift, sans-serif',
+     <div className="min-h-screen pt-16" style={{ 
+      fontFamily: "'Poppins', sans-serif",
       backgroundColor: colors.lightTeal 
     }}>
       {/* Hero Section */}
-      <section className="relative h-[80vh] overflow-hidden">
+       <section className="relative h-[60vh] md:h-[80vh] overflow-hidden">
         <motion.div 
           className="absolute inset-0"
           initial={{ scale: 1.1 }}
@@ -222,37 +222,31 @@ const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     layout="fill"
     objectFit="cover"
   />
-  <div className="absolute inset-0" style={{ 
-    background: `linear-gradient(to top, ${colors.maroon}70, ${colors.teal}40)`
-  }} />
+ <div className="absolute inset-0" style={{ 
+          background: `linear-gradient(to top, ${colors.teal}90, transparent)`
+        }} />
         </motion.div>
         
-        <div className="relative h-full flex items-center justify-center text-center text-white px-4">
+       <div className="relative h-full flex items-center justify-center text-center text-white px-4">
           <motion.div
             initial={{ opacity: 0, y: 40 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 1, delay: 0.3 }}
             className="max-w-4xl"
           >
-            <motion.h1 
-              className="text-5xl md:text-7xl font-bold mb-6 tracking-tight"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.5 }}
+          <motion.h1 
+              className="text-4xl md:text-6xl font-bold mb-4 md:mb-6 tracking-tight"
               style={{ color: colors.cream }}
             >
               <span className="block" style={{ color: colors.gold }}>La Table Royale</span>
-              <span className="text-3xl md:text-4xl font-light mt-4 block">Cotonou</span>
+             <span className="text-2xl md:text-3xl font-light mt-2 md:mt-4 block" style={{ fontFamily: "'Times New Roman', serif" }}>Cotonou</span>
             </motion.h1>
             
-            <motion.p 
-              className="text-xl md:text-2xl mb-8"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.8 }}
-              style={{ color: colors.cream }}
+             <motion.p 
+              className="text-lg md:text-xl mb-6 md:mb-8 max-w-2xl mx-auto"
+              style={{ color: colors.cream, fontFamily: "'Times New Roman', serif" }}
             >
-             Art culinaire et tradition béninoise sublimés
+              Cuisine raffinée mêlant traditions béninoises et créations contemporaines
             </motion.p>
             
             <motion.div
@@ -260,65 +254,62 @@ const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 1 }}
             >
-              <Button 
-                size="lg" 
-                className="text-lg px-8 py-6 rounded-full shadow-lg transform hover:scale-105 transition-transform"
-                style={{
-                  backgroundColor: colors.orange,
-                  color: 'white'
-                }}
-                onClick={() => setShowReservationForm(true)}
-              >
-                Réserver maintenant
-              </Button>
+             <Button 
+              size="lg" 
+              className="text-base md:text-lg px-6 py-4 md:px-8 md:py-6 rounded-full"
+              style={{
+                backgroundColor: colors.orange,
+                color: 'white'
+              }}
+              onClick={() => setShowReservationForm(true)}
+            >
+              Réserver une table
+            </Button>
             </motion.div>
           </motion.div>
         </div>
       </section>
 
       {/* Reservation Modal */}
-      {showReservationForm && (
+     {showReservationForm && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
           <motion.div 
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="rounded-xl shadow-2xl max-w-md w-full p-8 relative"
-            style={{ backgroundColor: colors.cream }}
+            className="rounded-xl shadow-2xl max-w-md w-full p-6 md:p-8 relative bg-white"
           >
             <button 
               onClick={() => setShowReservationForm(false)}
               className="absolute top-4 right-4"
-              style={{ color: colors.maroon }}
+              style={{ color: colors.teal }}
             >
               <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>
             
-            <h3 className="text-2xl font-bold mb-6 text-center tracking-tight" style={{ color: colors.maroon }}>
+            <h3 className="text-xl md:text-2xl font-bold mb-4 md:mb-6 text-center" style={{ color: colors.teal }}>
               Réserver une table
             </h3>
             
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={handleSubmit} className="space-y-3 md:space-y-4">
               <div>
-                <label htmlFor="name" className="block text-sm font-medium mb-1" style={{ color: colors.teal }}>Nom complet</label>
+                <label htmlFor="name" className="block text-sm md:text-base mb-1" style={{ color: colors.teal }}>Nom complet</label>
                 <input
-  type="text"
-  id="name"
-  name="name"
-  value={formData.name}
-  onChange={handleChange}
-  required
-  className={`w-full px-4 py-2 border rounded-lg ${formData.name ? 'focused' : ''}`}
-  style={{ 
-    borderColor: colors.teal,
-  }}
-/>
+                  type="text"
+                  id="name"
+                  name="name"
+                  value={formData.name}
+                  onChange={handleChange}
+                  required
+                  className="w-full px-4 py-2 border rounded-lg text-sm md:text-base"
+                  style={{ borderColor: colors.teal }}
+                />
               </div>
               
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
                 <div>
-                  <label htmlFor="email" className="block text-sm font-medium mb-1" style={{ color: colors.teal }}>Email</label>
+                  <label htmlFor="email" className="block text-sm md:text-base mb-1" style={{ color: colors.teal }}>Email</label>
                   <input
                     type="email"
                     id="email"
@@ -326,13 +317,13 @@ const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
                     value={formData.email}
                     onChange={handleChange}
                     required
-                    className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:border-transparent"
+                    className="w-full px-4 py-2 border rounded-lg text-sm md:text-base"
                     style={{ borderColor: colors.teal }}
                   />
                 </div>
                 
                 <div>
-                  <label htmlFor="phone" className="block text-sm font-medium mb-1" style={{ color: colors.teal }}>Téléphone</label>
+                  <label htmlFor="phone" className="block text-sm md:text-base mb-1" style={{ color: colors.teal }}>Téléphone</label>
                   <input
                     type="tel"
                     id="phone"
@@ -340,15 +331,15 @@ const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
                     value={formData.phone}
                     onChange={handleChange}
                     required
-                    className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:border-transparent"
+                    className="w-full px-4 py-2 border rounded-lg text-sm md:text-base"
                     style={{ borderColor: colors.teal }}
                   />
                 </div>
               </div>
               
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
                 <div>
-                  <label htmlFor="date" className="block text-sm font-medium mb-1" style={{ color: colors.teal }}>Date</label>
+                  <label htmlFor="date" className="block text-sm md:text-base mb-1" style={{ color: colors.teal }}>Date</label>
                   <input
                     type="date"
                     id="date"
@@ -356,13 +347,13 @@ const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
                     value={formData.date}
                     onChange={handleChange}
                     required
-                    className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:border-transparent"
+                    className="w-full px-4 py-2 border rounded-lg text-sm md:text-base"
                     style={{ borderColor: colors.teal }}
                   />
                 </div>
                 
                 <div>
-                  <label htmlFor="time" className="block text-sm font-medium mb-1" style={{ color: colors.teal }}>Heure (GMT+1)</label>
+                  <label htmlFor="time" className="block text-sm md:text-base mb-1" style={{ color: colors.teal }}>Heure</label>
                   <input
                     type="time"
                     id="time"
@@ -370,44 +361,44 @@ const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
                     value={formData.time}
                     onChange={handleChange}
                     required
-                    className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:border-transparent"
+                    className="w-full px-4 py-2 border rounded-lg text-sm md:text-base"
                     style={{ borderColor: colors.teal }}
                   />
                 </div>
               </div>
               
               <div>
-                <label htmlFor="guests" className="block text-sm font-medium mb-1" style={{ color: colors.teal }}>Nombre de personnes</label>
-                 <select
+                <label htmlFor="guests" className="block text-sm md:text-base mb-1" style={{ color: colors.teal }}>Nombre de personnes</label>
+                <select
                   id="guests"
                   name="guests"
                   value={formData.guests}
                   onChange={handleChange}
-                  className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:border-transparent transition-all"
+                  className="w-full px-4 py-2 border rounded-lg text-sm md:text-base"
                   style={{ borderColor: colors.teal }}
                 >
-                  {[1, 2, 3, 4, 5, 6, 7, 8].map(num => (
+                  {[1, 2, 3, 4, 5, 6].map(num => (
                     <option key={num} value={num}>{num} {num > 1 ? 'personnes' : 'personne'}</option>
                   ))}
                 </select>
               </div>
               
               <div>
-                <label htmlFor="message" className="block text-sm font-medium mb-1" style={{ color: colors.teal }}>Demandes spéciales</label>
-             <textarea
-  id="message"
-  name="message"
-  value={formData.message}
-  onChange={handleTextAreaChange}
-  rows={3}
-  className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:border-transparent"
-  style={{ borderColor: colors.teal }}
-/>
+                <label htmlFor="message" className="block text-sm md:text-base mb-1" style={{ color: colors.teal }}>Demandes spéciales</label>
+                <textarea
+                  id="message"
+                  name="message"
+                  value={formData.message}
+                  onChange={handleTextAreaChange}
+                  rows={3}
+                  className="w-full px-4 py-2 border rounded-lg text-sm md:text-base"
+                  style={{ borderColor: colors.teal }}
+                />
               </div>
               
               <Button 
                 type="submit"
-                className="w-full py-3 rounded-lg font-semibold"
+                className="w-full py-3 rounded-lg font-medium text-sm md:text-base"
                 style={{
                   backgroundColor: colors.orange,
                   color: 'white'
@@ -421,16 +412,17 @@ const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
       )}
 
       {/* About Section */}
-      <section className="py-24" style={{ backgroundColor: colors.cream }}>
+     <section className="py-16 md:py-24" style={{ backgroundColor: colors.cream }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-16 items-center">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-16 items-center">
             <motion.div
               variants={slideIn('left')}
               initial="hidden"
               whileInView="show"
               viewport={{ once: true }}
-              className="relative h-[500px] rounded-2xl overflow-hidden shadow-2xl"
+              className="relative h-64 sm:h-80 md:h-[500px] rounded-xl overflow-hidden shadow-lg"
             >
+
              <Image
   src="https://images.pexels.com/photos/3338497/pexels-photo-3338497.jpeg"
   alt="Chef"
@@ -449,43 +441,43 @@ const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
               whileInView="show"
               viewport={{ once: true }}
             >
-              <h2 className="text-4xl font-bold mb-6 tracking-tight" style={{ color: colors.gold }}>Notre Chef Étoilé</h2>
-              <p className="mb-6 text-lg leading-relaxed" style={{ color: colors.darkTeal }}>
+              <h2 className="text-3xl md:text-4xl font-bold mb-4 md:mb-6" style={{ color: colors.teal }}>Notre Chef Étoilé</h2>
+               <p className="mb-4 md:mb-6 text-base md:text-lg leading-relaxed" style={{ color: colors.teal, fontFamily: "'Times New Roman', serif" }}>
                 Le Chef Éric Dossou, formé aux meilleures écoles culinaires, vous propose une 
                 fusion unique entre cuisine internationale et saveurs béninoises. 
                 Ses créations vous transporteront dans un voyage gastronomique inoubliable.
               </p>
               
-              <div className="mb-8 p-6 rounded-xl border" style={{ 
-                backgroundColor: `${colors.gold}15`,
+             <div className="mb-6 md:mb-8 p-4 md:p-6 rounded-lg border" style={{ 
+                backgroundColor: 'rgba(240, 184, 0, 0.05)',
                 borderColor: colors.gold
               }}>
-                <h3 className="font-semibold text-lg mb-3" style={{ color: colors.maroon }}>Heures de service :</h3>
-                <ul className="space-y-2" style={{ color: colors.darkTeal }}>
-                  <li className="flex items-center">
-                    <span className="w-32 font-medium">Petit-déjeuner :</span>
-                    <span>7h00 - 10h30 (GMT+1)</span>
+                <h3 className="font-semibold text-lg mb-2 md:mb-3" style={{ color: colors.teal }}>Heures d'ouverture :</h3>
+                <ul className="space-y-1 md:space-y-2" style={{ color: colors.teal, fontFamily: "'Times New Roman', serif" }}>
+                  <li className="flex items-center text-sm md:text-base">
+                    <span className="w-24 md:w-32 font-medium">Petit-déjeuner :</span>
+                    <span>7h - 10h30</span>
                   </li>
-                  <li className="flex items-center">
-                    <span className="w-32 font-medium">Déjeuner :</span>
-                    <span>12h00 - 15h00 (GMT+1)</span>
+                  <li className="flex items-center text-sm md:text-base">
+                    <span className="w-24 md:w-32 font-medium">Déjeuner :</span>
+                    <span>12h - 15h</span>
                   </li>
-                  <li className="flex items-center">
-                    <span className="w-32 font-medium">Dîner :</span>
-                    <span>18h30 - 23h00 (GMT+1)</span>
+                  <li className="flex items-center text-sm md:text-base">
+                    <span className="w-24 md:w-32 font-medium">Dîner :</span>
+                    <span>18h30 - 23h</span>
                   </li>
                 </ul>
               </div>
               
-              <Button 
-                className="px-8 py-6 text-lg rounded-lg shadow-md transform hover:scale-105 transition-transform"
+             <Button 
+                className="px-6 py-4 md:px-8 md:py-6 text-base md:text-lg rounded-lg"
                 style={{
                   backgroundColor: colors.orange,
                   color: 'white'
                 }}
                 onClick={() => setShowReservationForm(true)}
               >
-                Réserver une table
+                Réserver maintenant
               </Button>
             </motion.div>
           </div>
@@ -493,19 +485,19 @@ const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
       </section>
 
       {/* Menu Section */}
-      <section className="py-24" style={{ backgroundColor: colors.lightTeal }}>
+       <section className="py-16 md:py-24" style={{ backgroundColor: colors.lightTeal }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
             initial={{ opacity: 0 }}
             whileInView={{ opacity: 1 }}
             viewport={{ once: true }}
-            className="text-center mb-16"
+            className="text-center mb-12 md:mb-16"
           >
-            <h2 className="text-4xl font-bold tracking-tight mb-4" style={{ color: colors.maroon }}>
+            <h2 className="text-3xl md:text-4xl font-bold mb-2 md:mb-4" style={{ color: colors.teal }}>
               <span style={{ color: colors.gold }}>Notre</span> Carte
             </h2>
-            <p className="text-xl max-w-2xl mx-auto" style={{ color: colors.teal }}>
-             Une sélection de plats raffinés cuisinés avec des produits locaux et importés.
+          <p className="text-base md:text-lg max-w-2xl mx-auto" style={{ color: colors.teal, fontFamily: "'Times New Roman', serif" }}>
+              Une sélection de plats mettant en valeur les saveurs locales
             </p>
           </motion.div>
           
@@ -644,34 +636,30 @@ const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
       </section>
 
       {/* CTA Section */}
-      <section className="py-24" style={{ 
-        background: `linear-gradient(135deg, ${colors.maroon}, ${colors.teal})`
+      <section className="py-16 md:py-24 text-center" style={{ 
+        backgroundColor: colors.teal
       }}>
-        <motion.div
-          initial={{ opacity: 0, y: 40 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          className="max-w-4xl mx-auto text-center px-4"
-        >
-          <h2 className="text-4xl md:text-5xl font-bold mb-6 tracking-tight" style={{ color: colors.cream }}>
-            Prêt pour une expérience culinaire exceptionnelle ?
+        <div className="max-w-4xl mx-auto px-4">
+          <h2 className="text-2xl md:text-4xl font-bold mb-4 md:mb-6" style={{ color: colors.cream }}>
+            Prêt pour une expérience culinaire mémorable ?
           </h2>
-          <p className="text-xl mb-10 max-w-2xl mx-auto" style={{ color: colors.gold }}>
-            Réservez votre table dès maintenant et laissez-vous emporter par nos créations gastronomiques.
+          <p className="text-base md:text-lg mb-6 md:mb-8 max-w-2xl mx-auto" style={{ color: colors.gold, fontFamily: "'Times New Roman', serif" }}>
+            Réservez votre table et laissez-vous surprendre par nos créations
           </p>
           <Button 
             size="lg" 
-            className="px-12 py-7 text-lg rounded-full shadow-xl font-semibold transform hover:scale-105 transition-transform"
+            className="px-8 py-4 md:px-12 md:py-6 text-base md:text-lg rounded-full"
             style={{
               backgroundColor: colors.orange,
               color: 'white'
             }}
             onClick={() => setShowReservationForm(true)}
           >
-            Réserver une table
+            Réserver maintenant
           </Button>
-        </motion.div>
+        </div>
       </section>
+
     </div>
   );
 }

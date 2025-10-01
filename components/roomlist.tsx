@@ -1,20 +1,13 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import CardRoom from '../components/cardroom';
-import sampleRooms from '../types';
-
-
-
-
-
-interface RoomListProps {
-  onBookNow: (room: Room) => void;
-  rooms?: Room[]; 
-}
 
 interface Room {
-  id: number;
+ id: number;
   name: string;
+  description: string;
+  wifiCode: string;
   status: string;
   room_type: string;
   num_person: number;
@@ -24,30 +17,28 @@ interface Room {
   hourly_rate: number;
   floor: string;
   surface_area: number;
-  view: string | boolean;
-  bed_type: string | boolean;
-  flooring_type: string | boolean;
+  view: string;   // ✅ fixé en string
+  bed_type: string;
+  flooring_type: string;
   image: string;
   is_smoking_allowed: boolean;
   is_pets_allowed: boolean;
   in_maintenance: boolean;
   checkin_date?: string;
   checkout_date?: string;
-  
-  room_images: {
-    image: string;
-  }[];
+
+  room_images: { image: string }[];
   amenities: Array<{
     id: number;
     name: string;
-    description: string | boolean;
+    description: string;
     icon: string;
   }>;
   reservation_types: Array<{
     id: number;
     name: string;
     code: string;
-    description: string | boolean;
+    description: string;
     is_flexible: boolean;
     slots: Array<{
       checkin_time: number;
@@ -57,7 +48,6 @@ interface Room {
   pricing: Array<{
     reservation_type_id: number;
     reservation_type_name: string;
-    
     price: number;
     hourly_price: number;
     is_hourly_based: boolean;
@@ -67,18 +57,44 @@ interface Room {
 
 interface RoomListProps {
   onBookNow: (room: Room) => void;
-  rooms?: Room[]; 
 }
 
 const RoomList = ({ onBookNow }: RoomListProps) => {
-  const roomGroups = [];
-  for (let i = 0; i < sampleRooms.length; i += 3) {
-    roomGroups.push(sampleRooms.slice(i, i + 3));
-  }
+  const [rooms, setRooms] = useState<Room[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchRooms = async () => {
+      try {
+        const res = await fetch('/api/room'); 
+        if (!res.ok) {
+          throw new Error('Erreur API');
+        }
+        const data: Room[] = await res.json();
+        console.log('📌 Room types:', data);
+        setRooms(data);
+      } catch (error) {
+        console.error('❌ Erreur lors du fetch des rooms:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchRooms();
+  }, []);
 
   const handleBookNow = (room: Room) => {
     onBookNow(room);
   };
+
+  if (loading) {
+    return <p className="text-center py-10">Chargement des chambres...</p>;
+  }
+
+  const roomGroups: Room[][] = [];
+  for (let i = 0; i < rooms.length; i += 3) {
+    roomGroups.push(rooms.slice(i, i + 3));
+  }
 
   return (
     <div
@@ -86,21 +102,25 @@ const RoomList = ({ onBookNow }: RoomListProps) => {
       style={{ fontFamily: 'Bahnschrift, sans-serif' }}
     >
       <div className="max-w-7xl mx-auto px-6 py-12 space-y-16">
-        {roomGroups.map((group, index) => (
-          <div
-            key={index}
-            className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8 items-stretch"
-          >
-            {group.map((room) => (
-              <CardRoom
-                key={room.id}
-                room={room}
-                onBookNow={() => handleBookNow(room)}
-                onViewDetails={() => {}} 
-              />
-            ))}
-          </div>
-        ))}
+        {roomGroups.length === 0 ? (
+          <p className="text-center">Aucune chambre disponible.</p>
+        ) : (
+          roomGroups.map((group, index) => (
+            <div
+              key={index}
+              className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8 items-stretch"
+            >
+              {group.map((room) => (
+                <CardRoom
+                  key={room.id}
+                  room={room}
+                  onBookNow={() => handleBookNow(room)}
+                  onViewDetails={() => {}}
+                />
+              ))}
+            </div>
+          ))
+        )}
       </div>
     </div>
   );

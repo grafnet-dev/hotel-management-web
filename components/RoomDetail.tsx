@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useState } from 'react';
 import { MoonIcon, ClockIcon, SunIcon } from '@heroicons/react/24/solid';
 import { Room } from '../types';
+import  RoomDetailRoom  from '../types';
 
 const colors = {
   darkTeal: "#1e4e5f",

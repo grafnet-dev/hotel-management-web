@@ -5,14 +5,14 @@ import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '../../components/ui/button';
 import  sampleRooms  from '../../types';
-
+import  Service  from '../../types';
 import RoomList from '../../components/roomlist';
 import { WhatsAppButton } from '../../components/WhatsAppButton';
 import {
   Space as  Utensils, Dumbbell, Hotel, ArrowRight, ChevronLeft , Wifi,ParkingCircle,Tv2,Baby, Briefcase, Umbrella,
   PhoneCall,Bell,Bath,Waves,Bus,Glasses,ChevronRight,MapPin,Play, Pause,Eye,X, Camera, Star, Heart, Share2
 } from 'lucide-react';
-
+import ServiceModal from '../../components/ServiceModal';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Autoplay } from 'swiper/modules';
 import 'swiper/css';
@@ -27,9 +27,9 @@ import BookingSection from '../../components/bookingsection';
 
 const colors = {
   darkTeal: "#1e4e5f",
-  teal: "#005D7C",
+  teal: "#014d71",
   lightTeal: "#e0f2f1",
-  gold: "#CE9226",
+  gold: "#f0b800",
   orange: "#f4a261",
   maroon: "#e76f51",
   white: "#ffffff",
@@ -62,11 +62,31 @@ type RoomSelection = {
   children: number; 
 };
 
-
+interface Service {
+  title: string;
+  description: string;
+  icon: React.ReactElement;
+}
 
 
 export default function Home() {
+
    const router = useRouter();
+   const [selectedService, setSelectedService] = useState<Service | null>(null);
+  const [isServiceModalOpen, setIsServiceModalOpen] = useState(false);
+  
+
+  // Fonction pour ouvrir le modal
+ const handleLearnMore = (service: Service) => {
+  setSelectedService(service);
+  setIsServiceModalOpen(true);
+};
+  
+
+  const handleCloseServiceModal = () => {
+    setIsServiceModalOpen(false);
+    setSelectedService(null);
+  };
      const galleryImages = [
     {
       category: "Chambres",
@@ -289,6 +309,8 @@ useEffect(() => {
   const randomLeft = randomValues.current.left;
 console.log(randomLeft); 
 
+
+
 const services = [
   {
     title: 'Hébergement de luxe',
@@ -410,6 +432,8 @@ const carouselImages = [
     const interval = setInterval(nextImage, 5000);
     return () => clearInterval(interval);
   });
+
+  
 
   return (
      <div className="min-h-screen" style={{ fontFamily: 'Bahnschrift, sans-serif' }}>
@@ -792,8 +816,8 @@ Explorez nos espaces d&rsquo;exception &agrave; travers cette galerie immersive.
               <Image
   src={image.url}
   alt={image.title}
-  layout="fill" 
-  objectFit="cover" 
+  width={800}
+  height={600}
   className={`w-full h-full object-cover transition-all duration-700 group-hover:scale-105 ${
     isLoaded ? 'opacity-100' : 'opacity-0'
   }`}
@@ -974,22 +998,22 @@ Explorez nos espaces d&rsquo;exception &agrave; travers cette galerie immersive.
   className="relative max-w-6xl max-h-[90vh] w-full flex items-center justify-center"
   onClick={(e) => e.stopPropagation()}
 >
-  <Image
-    src={selectedImage.image.url}
-    alt={selectedImage.image.title}
-    className="max-w-full max-h-full object-contain rounded-lg shadow-2xl"
-    style={{ 
-      maxHeight: '80vh',
-      display: 'block' // Force l'affichage
-    }}
-    onLoad={() => {
-      console.log('Image du lightbox chargée');
-    }}
-    onError={(e) => {
-  console.error('Erreur lors du chargement dans le lightbox:', e);
-  setLightboxImageError(true);
-}}
-  />
+  <div className="relative w-full h-full max-w-6xl max-h-[80vh]">
+<Image
+  src={selectedImage.image.url}
+  alt={selectedImage.image.title}
+  width={1200}
+  height={800}
+  className="max-w-full max-h-[80vh] object-contain rounded-lg shadow-2xl"
+  onLoad={() => {
+    console.log('Image du lightbox chargée');
+  }}
+  onError={(e) => {
+    console.error('Erreur lors du chargement dans le lightbox:', e);
+    setLightboxImageError(true);
+  }}
+/>
+</div>
             
             {/* Image Info */}
             <motion.div
@@ -1034,14 +1058,14 @@ Explorez nos espaces d&rsquo;exception &agrave; travers cette galerie immersive.
   initial="hidden"
   whileInView="visible"
   viewport={{ once: true, margin: "-100px" }}
-  className="py-24 overflow-hidden relative"
-  style={{ backgroundColor: colors.lightTeal, fontFamily: 'Bahnschrift, sans-serif' }}
+  className="py-12 md:py-24 overflow-hidden relative"
+  style={{ backgroundColor: '#f8f9fa', fontFamily: "'Poppins', sans-serif" }}
 >
   {/* Background Decorative Elements */}
   <div className="absolute inset-0 overflow-hidden pointer-events-none">
     <motion.div
-      className="absolute top-10 left-10 w-72 h-72 rounded-full opacity-5"
-      style={{ backgroundColor: colors.gold }}
+      className="absolute top-10 left-10 w-48 h-48 md:w-72 md:h-72 rounded-full opacity-5"
+      style={{ backgroundColor: '#f0b800' }}
       animate={{ 
         scale: [1, 1.1, 1],
         rotate: [0, 180, 360] 
@@ -1053,8 +1077,8 @@ Explorez nos espaces d&rsquo;exception &agrave; travers cette galerie immersive.
       }}
     />
     <motion.div
-      className="absolute bottom-20 right-20 w-96 h-96 rounded-full opacity-3"
-      style={{ backgroundColor: colors.maroon }}
+      className="absolute bottom-20 right-20 w-64 h-64 md:w-96 md:h-96 rounded-full opacity-3"
+      style={{ backgroundColor: '#014d71' }}
       animate={{ 
         scale: [1.1, 1, 1.1],
         rotate: [360, 180, 0] 
@@ -1065,57 +1089,38 @@ Explorez nos espaces d&rsquo;exception &agrave; travers cette galerie immersive.
         ease: "linear"
       }}
     />
-    <motion.div
-      className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-64 h-64 rounded-full opacity-4"
-      style={{ backgroundColor: colors.teal }}
-      animate={{ 
-        scale: [1, 1.2, 1],
-        opacity: [0.04, 0.08, 0.04]
-      }}
-      transition={{ 
-        duration: 15,
-        repeat: Infinity,
-        ease: "easeInOut"
-      }}
-    />
   </div>
 
   <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-    {/* Animated Header with Enhanced Design */}
+    {/* Animated Header */}
     <motion.div
-      className="text-center mb-20"
+      className="text-center mb-12 md:mb-20"
       initial={{ opacity: 0, y: 30 }}
       whileInView={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.8 }}
       viewport={{ once: true }}
     >
-      <motion.div className="relative inline-block mb-6">
+      <motion.div className="relative inline-block mb-4 md:mb-6">
         <motion.span
-          className="inline-block px-6 py-2 text-sm font-bold rounded-full tracking-wide relative overflow-hidden"
+          className="inline-block px-4 py-1 md:px-6 md:py-2 text-xs md:text-sm font-bold rounded-full tracking-wide relative overflow-hidden"
           style={{
-            color: colors.teal,
+            color: '#014d71',
             backgroundColor: 'white',
-            border: `2px solid ${colors.teal}30`,
-            boxShadow: `0 4px 20px ${colors.teal}20`
+            border: `2px solid rgba(1, 77, 113, 0.2)`,
+            boxShadow: `0 4px 15px rgba(1, 77, 113, 0.1)`
           }}
           initial={{ scale: 0.8, opacity: 0 }}
           whileInView={{ scale: 1, opacity: 1 }}
           transition={{ duration: 0.6, delay: 0.2 }}
           whileHover={{ 
             scale: 1.05,
-            boxShadow: `0 6px 25px ${colors.teal}30`
+            boxShadow: `0 6px 20px rgba(1, 77, 113, 0.2)`
           }}
         >
-          <motion.div
-            className="absolute inset-0 rounded-full opacity-0"
-            style={{ backgroundColor: `${colors.teal}10` }}
-            whileHover={{ opacity: 1 }}
-            transition={{ duration: 0.3 }}
-          />
           <span className="relative z-10 flex items-center">
             <motion.div
               className="w-2 h-2 rounded-full mr-2"
-              style={{ backgroundColor: colors.gold }}
+              style={{ backgroundColor: '#f0b800' }}
               animate={{ 
                 scale: [1, 1.2, 1],
                 opacity: [1, 0.7, 1]
@@ -1131,37 +1136,39 @@ Explorez nos espaces d&rsquo;exception &agrave; travers cette galerie immersive.
         </motion.span>
       </motion.div>
 
-      <motion.h2
-        className="text-5xl md:text-6xl font-extrabold mb-6 tracking-tight leading-tight"
-        style={{ color: colors.maroon }}
-        initial={{ opacity: 0, y: 30 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.8, delay: 0.3 }}
-      >
-        Des services{" "}
-        <motion.span 
-          style={{ 
-            background: `linear-gradient(135deg, ${colors.gold} 0%, ${colors.orange} 100%)`,
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-            backgroundClip: 'text'
-          }}
-          animate={{
-            backgroundPosition: ['0% 50%', '100% 50%', '0% 50%'],
-          }}
-          transition={{
-            duration: 3,
-            repeat: Infinity,
-            ease: "easeInOut"
-          }}
-        >
-          exceptionnels
-        </motion.span>
-      </motion.h2>
+    <motion.h2
+  className="text-3xl md:text-5xl lg:text-6xl font-extrabold mb-4 md:mb-6 tracking-tight leading-tight"
+  style={{ color: '#014d71' }}
+  initial={{ opacity: 0, y: 30 }}
+  whileInView={{ opacity: 1, y: 0 }}
+  transition={{ duration: 0.8, delay: 0.3 }}
+>
+  Des services
+  {' '} 
+  <motion.span 
+    className=''
+    style={{ 
+      background: `linear-gradient(135deg, #f0b800 0%, #e67e22 100%)`,
+      WebkitBackgroundClip: 'text',
+      WebkitTextFillColor: 'transparent',
+      backgroundClip: 'text'
+    }}
+    animate={{
+      backgroundPosition: ['0% 50%', '100% 50%', '0% 50%'],
+    }}
+    transition={{
+      duration: 3,
+      repeat: Infinity,
+      ease: "easeInOut"
+    }}
+  >
+    exceptionnels
+  </motion.span>
+</motion.h2>
 
       <motion.p
-        className="text-xl max-w-4xl mx-auto leading-relaxed"
-        style={{ color: colors.darkTeal }}
+        className="text-base md:text-xl max-w-3xl md:max-w-4xl mx-auto leading-relaxed"
+        style={{ color: '#014d71', fontFamily: "'Times New Roman', serif" }}
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8, delay: 0.5 }}
@@ -1169,11 +1176,11 @@ Explorez nos espaces d&rsquo;exception &agrave; travers cette galerie immersive.
         Découvrez comment nous rendons votre expérience{" "}
         <motion.span 
           style={{ 
-            color: colors.maroon,
+            color: '#014d71',
             fontWeight: '600'
           }}
           whileHover={{ 
-            textShadow: `2px 2px 4px ${colors.maroon}30`
+            textShadow: `2px 2px 4px rgba(1, 77, 113, 0.2)`
           }}
         >
           inoubliable
@@ -1182,9 +1189,9 @@ Explorez nos espaces d&rsquo;exception &agrave; travers cette galerie immersive.
 
       {/* Decorative Line */}
       <motion.div 
-        className="w-24 h-1 mx-auto mt-8 rounded-full"
+        className="w-16 md:w-24 h-0.5 md:h-1 mx-auto mt-6 md:mt-8 rounded-full"
         style={{ 
-          background: `linear-gradient(90deg, ${colors.teal}, ${colors.gold}, ${colors.maroon})`
+          background: `linear-gradient(90deg, #014d71, #f0b800, #014d71)`
         }}
         initial={{ scaleX: 0 }}
         whileInView={{ scaleX: 1 }}
@@ -1198,6 +1205,7 @@ Explorez nos espaces d&rsquo;exception &agrave; travers cette galerie immersive.
       whileInView={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.8, delay: 0.3 }}
       viewport={{ once: true }}
+      className="px-2"
     >
       <Swiper
         ref={swiperRef}
@@ -1207,16 +1215,14 @@ Explorez nos espaces d&rsquo;exception &agrave; travers cette galerie immersive.
           disableOnInteraction: false,
         }}
         loop={true}
-        spaceBetween={32}
-        direction="horizontal"
+        spaceBetween={20}
         slidesPerView={1}
         breakpoints={{
           640: { slidesPerView: 1, spaceBetween: 20 },
           768: { slidesPerView: 2, spaceBetween: 24 },
           1024: { slidesPerView: 3, spaceBetween: 28 },
-          1280: { slidesPerView: 4, spaceBetween: 32 },
         }}
-        className="py-12"
+        className="py-6 md:py-12"
       >
         {services.map((service, index) => (
           <SwiperSlide key={service.title}>
@@ -1228,158 +1234,101 @@ Explorez nos espaces d&rsquo;exception &agrave; travers cette galerie immersive.
                 duration: 0.6,
                 ease: "easeOut"
               }}
-              className="text-center h-full"
+              className="text-center h-full px-2"
             >
               <motion.div
-                className="h-full rounded-2xl overflow-hidden transition-all duration-500 relative group cursor-pointer"
+                className="h-full rounded-xl md:rounded-2xl overflow-hidden transition-all duration-500 relative group cursor-pointer"
                 style={{
                   backgroundColor: 'white',
-                  border: `1px solid ${colors.gold}20`,
-                  boxShadow: '0 8px 32px rgba(0, 0, 0, 0.08)'
+                  border: `1px solid rgba(240, 184, 0, 0.2)`,
+                  boxShadow: '0 4px 20px rgba(0, 0, 0, 0.05)'
                 }}
                 whileHover={{
                   y: -8,
-                  boxShadow: `0 20px 40px ${colors.teal}15, 0 0 0 1px ${colors.gold}30`,
+                  boxShadow: `0 15px 30px rgba(1, 77, 113, 0.1), 0 0 0 1px rgba(240, 184, 0, 0.3)`,
                   transition: { duration: 0.3 }
                 }}
               >
-                {/* Gradient Overlay Effect */}
-                <motion.div
-                  className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500"
-                  style={{
-                    background: `linear-gradient(135deg, ${colors.teal}03 0%, ${colors.gold}05 50%, ${colors.maroon}03 100%)`
-                  }}
-                />
-
-                {/* Decorative Corner Elements */}
-                <motion.div
-                  className="absolute top-0 right-0 w-20 h-20 opacity-0 group-hover:opacity-20 transition-opacity duration-500"
-                  style={{
-                    background: `radial-gradient(circle at center, ${colors.gold}40 0%, transparent 70%)`
-                  }}
-                  animate={{
-                    rotate: [0, 360],
-                  }}
-                  transition={{
-                    duration: 8,
-                    repeat: Infinity,
-                    ease: "linear"
-                  }}
-                />
-
-                <div className="p-8 text-center relative z-10">
+                <div className="p-6 md:p-8 text-center relative z-10">
                   <motion.div
-                    className="mx-auto flex items-center justify-center h-20 w-20 rounded-2xl mb-6 relative group/icon"
+                    className="mx-auto flex items-center justify-center h-16 w-16 md:h-20 md:w-20 rounded-xl md:rounded-2xl mb-4 md:mb-6 relative group/icon"
                     style={{
                       backgroundColor: 'white',
-                      border: `2px solid ${colors.gold}30`,
-                      color: colors.teal,
-                      boxShadow: `0 4px 20px ${colors.teal}15`
+                      border: `2px solid rgba(240, 184, 0, 0.3)`,
+                      color: '#014d71',
+                      boxShadow: `0 4px 15px rgba(1, 77, 113, 0.1)`
                     }}
                     whileHover={{
                       rotate: [0, -10, 10, 0],
                       scale: 1.1,
-                      boxShadow: `0 8px 30px ${colors.teal}25`,
+                      boxShadow: `0 8px 25px rgba(1, 77, 113, 0.2)`,
                       transition: { duration: 0.6 }
                     }}
                   >
-                    {/* Icon Background Glow */}
-                    <motion.div
-                      className="absolute inset-0 rounded-2xl opacity-0 group-hover/icon:opacity-100"
-                      style={{ backgroundColor: `${colors.teal}08` }}
-                      transition={{ duration: 0.3 }}
-                    />
-                    
                     <motion.div 
-                      className="h-10 w-10 relative z-10" 
+                      className="h-8 w-8 md:h-10 md:w-10 relative z-10" 
                       whileHover={{ 
                         scale: 1.15,
-                        filter: `drop-shadow(0 4px 8px ${colors.teal}30)`
                       }}
                     >
                       {service.icon && React.cloneElement(service.icon, {
-                        className: "h-10 w-10 transition-all duration-300",
-                        style: { color: colors.teal }
+                        className: "h-8 w-8 md:h-10 md:w-10 transition-all duration-300",
+                        style: { color: '#014d71' }
                       })}
                     </motion.div>
-
-                    {/* Animated Ring */}
-                    <motion.div
-                      className="absolute inset-0 rounded-2xl border-2 opacity-0 group-hover/icon:opacity-60"
-                      style={{ borderColor: colors.gold }}
-                      animate={{
-                        scale: [1, 1.2, 1],
-                        opacity: [0, 0.6, 0]
-                      }}
-                      transition={{
-                        duration: 2,
-                        repeat: Infinity,
-                        ease: "easeInOut"
-                      }}
-                    />
                   </motion.div>
 
                   <motion.h3
-                    className="text-2xl font-bold mb-4 transition-all duration-300"
-                    style={{ color: colors.maroon }}
+                    className="text-xl md:text-2xl font-bold mb-3 md:mb-4 transition-all duration-300"
+                    style={{ color: '#014d71' }}
                     whileHover={{ 
                       scale: 1.02,
-                      textShadow: `2px 2px 4px ${colors.maroon}20`
                     }}
                   >
                     {service.title}
                   </motion.h3>
 
                   <motion.p
-                    className="mb-8 leading-relaxed text-base transition-colors duration-300"
-                    style={{ color: colors.darkTeal }}
+                    className="mb-6 md:mb-8 leading-relaxed text-sm md:text-base transition-colors duration-300"
+                    style={{ color: '#014d71', fontFamily: "'Times New Roman', serif" }}
                     initial={{ opacity: 0.8 }}
                     whileHover={{ opacity: 1 }}
                   >
                     {service.description}
                   </motion.p>
 
-                  <motion.button
-                    className="inline-flex items-center font-semibold transition-all duration-300 relative group/btn px-4 py-2 rounded-full"
-                    style={{ 
-                      color: colors.orange,
-                      border: `1px solid ${colors.orange}30`
-                    }}
-                    whileHover={{ 
-                      x: 5,
-                      backgroundColor: `${colors.orange}08`,
-                      borderColor: `${colors.orange}50`,
-                      boxShadow: `0 4px 15px ${colors.orange}20`
-                    }}
-                    whileTap={{ scale: 0.98 }}
-                  >
-                    <span className="relative z-10">En savoir plus</span>
-                    <motion.div
-                      className="ml-2"
-                      animate={{
-                        x: [0, 3, 0]
-                      }}
-                      transition={{
-                        duration: 1.5,
-                        repeat: Infinity,
-                        ease: "easeInOut"
-                      }}
-                    >
-                      <ArrowRight
-                        className="h-4 w-4 transition-all duration-300"
-                        style={{ color: colors.orange }}
-                      />
-                    </motion.div>
-                  </motion.button>
+                 <motion.button
+  onClick={() => handleLearnMore(service)}
+  className="inline-flex items-center font-semibold transition-all duration-300 relative group/btn px-3 py-1 md:px-4 md:py-2 rounded-full text-sm md:text-base"
+  style={{ 
+    color: '#e67e22',
+    border: `1px solid rgba(230, 126, 34, 0.3)`
+  }}
+  whileHover={{ 
+    x: 5,
+    backgroundColor: 'rgba(230, 126, 34, 0.08)',
+    borderColor: 'rgba(230, 126, 34, 0.5)',
+  }}
+>
+  <span className="relative z-10">En savoir plus</span>
+  <motion.div
+    className="ml-2"
+    animate={{
+      x: [0, 3, 0]
+    }}
+    transition={{
+      duration: 1.5,
+      repeat: Infinity,
+      ease: "easeInOut"
+    }}
+  >
+    <ArrowRight
+      className="h-3 w-3 md:h-4 md:w-4 transition-all duration-300"
+      style={{ color: '#e67e22' }}
+    />
+  </motion.div>
+</motion.button>
                 </div>
-
-                {/* Bottom Accent Line */}
-                <motion.div
-                  className="absolute bottom-0 left-0 right-0 h-1 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-center"
-                  style={{ 
-                    background: `linear-gradient(90deg, ${colors.teal}, ${colors.gold}, ${colors.maroon})`
-                  }}
-                />
               </motion.div>
             </motion.div>
           </SwiperSlide>
@@ -1389,55 +1338,27 @@ Explorez nos espaces d&rsquo;exception &agrave; travers cette galerie immersive.
 
     {/* Enhanced CTA Button */}
     <motion.div
-      className="mt-20 text-center"
+      className="mt-12 md:mt-20 text-center"
       initial={{ opacity: 0, y: 30 }}
       whileInView={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.8, duration: 0.8 }}
       viewport={{ once: true }}
     >
       <motion.button
-        className="relative px-10 py-4 font-bold text-lg rounded-full shadow-lg hover:shadow-xl transition-all duration-500 overflow-hidden group/cta"
+        className="relative px-6 py-3 md:px-10 md:py-4 font-bold text-base md:text-lg rounded-full shadow-lg hover:shadow-xl transition-all duration-500 overflow-hidden group/cta"
         style={{
-          background: `linear-gradient(135deg, ${colors.orange}, ${colors.maroon})`,
+          background: `linear-gradient(135deg, #e67e22, #014d71)`,
           color: 'white',
-          border: `2px solid transparent`
         }}
         whileHover={{
           scale: 1.05,
-          boxShadow: `0 15px 35px -5px ${colors.orange}50, 0 0 0 2px ${colors.gold}30`,
-          transition: { duration: 0.3 }
+          boxShadow: `0 10px 25px -5px rgba(230, 126, 34, 0.5)`,
         }}
-        whileTap={{ scale: 0.98 }}
       >
-        {/* Animated Background */}
-        <motion.div
-          className="absolute inset-0 opacity-0 group-hover/cta:opacity-100"
-          style={{
-            background: `linear-gradient(135deg, ${colors.maroon}, ${colors.orange})`
-          }}
-          transition={{ duration: 0.5 }}
-        />
-
-        {/* Shimmer Effect */}
-        <motion.div
-          className="absolute inset-0 opacity-0 group-hover/cta:opacity-30"
-          style={{
-            background: `linear-gradient(90deg, transparent, ${colors.gold}60, transparent)`
-          }}
-          animate={{
-            x: ['-100%', '100%']
-          }}
-          transition={{
-            duration: 2,
-            repeat: Infinity,
-            ease: "linear"
-          }}
-        />
-
         <span className="relative z-10 flex items-center justify-center">
           Voir tous nos services
           <motion.div
-            className="ml-3"
+            className="ml-2 md:ml-3"
             animate={{
               x: [0, 5, 0]
             }}
@@ -1447,68 +1368,68 @@ Explorez nos espaces d&rsquo;exception &agrave; travers cette galerie immersive.
               ease: "easeInOut"
             }}
           >
-            <ArrowRight className="h-5 w-5" />
+            <ArrowRight className="h-4 w-4 md:h-5 md:w-5" />
           </motion.div>
         </span>
       </motion.button>
     </motion.div>
   </div>
 </motion.section>
-
       {/* Restaurant Section */}
-      <section className="py-24" style={{ backgroundColor: colors.lightTeal }}>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-16 items-center">
+      <section className="py-12 md:py-24" style={{ backgroundColor: '#f5f5f5' }}>
+         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-16 items-center">
             {/* Texte et informations */}
             <motion.div
-              initial={{ opacity: 0, x: -20 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.8 }}
-              viewport={{ once: true }}
-            >
-              <h2 className="text-4xl font-bold mb-6 tracking-tight" style={{ color: colors.maroon }}>
-                <span style={{ color: colors.gold }}>Savoureux</span> Restaurant
-              </h2>
-              <p className="mb-6 text-lg leading-relaxed" style={{ color: colors.darkTeal }}>
-                Découvrez une expérience gastronomique unique avec notre chef étoilé.
-                Une cuisine qui marie tradition béninoise et techniques modernes,
-                préparée avec des produits locaux et de saison.
-              </p>
+        initial={{ opacity: 0, x: -20 }}
+        whileInView={{ opacity: 1, x: 0 }}
+        transition={{ duration: 0.8 }}
+        viewport={{ once: true }}
+        className="font-['Poppins']"
+      >
+        <h2 className="text-3xl md:text-4xl font-bold mb-4 md:mb-6 tracking-tight" style={{ color: '#014d71' }}>
+               <span style={{ color: '#f0b800' }}>Savoureux</span> Restaurant
+        </h2>
+               <p className="mb-4 md:mb-6 text-base md:text-lg leading-relaxed" style={{ color: '#014d71', fontFamily: "'Times New Roman', serif" }}>
+          Découvrez une expérience gastronomique unique avec notre chef étoilé.
+          Une cuisine qui marie tradition béninoise et techniques modernes,
+          préparée avec des produits locaux et de saison.
+        </p>
 
-              <div className="mb-8 p-6 rounded-xl border"
-                style={{
-                  backgroundColor: `${colors.gold}11`,
-                  borderColor: colors.gold
-                }}>
-                <h3 className="font-semibold text-lg mb-3" style={{ color: colors.maroon }}>
-                  Heures ouvertes :
-                </h3>
-                <ul className="space-y-2" style={{ color: colors.darkTeal }}>
-                  <li className="flex items-center">
-                    <span className="w-24 font-medium">Petit-déjeuner :</span>
-                    <span>7h00 - 10h30 (GMT+1)</span>
-                  </li>
-                  <li className="flex items-center">
-                    <span className="w-24 font-medium">Déjeuner :</span>
-                    <span>12h00 - 15h00 (GMT+1)</span>
-                  </li>
-                  <li className="flex items-center">
-                    <span className="w-24 font-medium">Dîner :</span>
-                    <span>18h30 - 23h00 (GMT+1)</span>
-                  </li>
-                </ul>
-              </div>
-
-              <Button
-                className="px-8 py-6 text-lg rounded-lg shadow-md transition-all duration-300 hover:shadow-xl"
-                style={{
-                  backgroundColor: colors.orange,
-                  color: 'white'
-                }}
-                onClick={() => setIsMenuOpen(true)}
-              >
-                Découvrir notre menu
-              </Button>
+        <div className="mb-6 md:mb-8 p-4 md:p-6 rounded-lg md:rounded-xl border"
+          style={{
+            backgroundColor: 'rgba(240, 184, 0, 0.07)',
+            borderColor: '#f0b800'
+          }}>
+          <h3 className="font-semibold text-md md:text-lg mb-2 md:mb-3" style={{ color: '#014d71' }}>
+            Heures ouvertes :
+          </h3>
+                <ul className="space-y-1 md:space-y-2" style={{ color: '#014d71', fontFamily: "'Times New Roman', serif" }}>
+            <li className="flex items-center text-sm md:text-base">
+              <span className="w-20 md:w-30 font-medium">Petit-déjeuner :</span>
+              <span>7h00 - 10h30 </span>
+            </li>
+            <li className="flex items-center text-sm md:text-base">
+              <span className="w-20 md:w-24 font-medium">Déjeuner :</span>
+              <span>12h00 - 15h00 </span>
+            </li>
+            <li className="flex items-center text-sm md:text-base">
+              <span className="w-20 md:w-24 font-medium">Dîner :</span>
+              <span>18h30 - 23h00 </span>
+            </li>
+          </ul>
+        </div>
+             <Button
+          className="px-6 py-4 md:px-8 md:py-6 text-base md:text-lg rounded-md md:rounded-lg shadow-md transition-all duration-300 hover:shadow-xl"
+          style={{
+            backgroundColor: '#f0b800',
+            color: '#014d71',
+            fontWeight: '600'
+          }}
+          onClick={() => setIsMenuOpen(true)}
+        >
+          Découvrir notre menu
+        </Button>
               {isMenuOpen && (
                 <Link href="/src/app/restaurant/page.tsx" style={{ color: colors.darkTeal }}>
                 </Link>
@@ -1517,36 +1438,38 @@ Explorez nos espaces d&rsquo;exception &agrave; travers cette galerie immersive.
 
             {/* Image */}
             <motion.div
-              initial={{ opacity: 0, x: 20 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.8 }}
-              viewport={{ once: true }}
-              className="relative h-[500px] rounded-2xl overflow-hidden shadow-2xl"
-            >
-               <Image
-    src="https://images.pexels.com/photos/67468/pexels-photo-67468.jpeg"
-    alt="Restaurant béninois"
-    className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
-    width={500} 
-    height={500}
-  />
+        initial={{ opacity: 0, x: 20 }}
+        whileInView={{ opacity: 1, x: 0 }}
+        transition={{ duration: 0.8 }}
+        viewport={{ once: true }}
+        className="relative h-64 sm:h-80 md:h-[500px] rounded-xl md:rounded-2xl overflow-hidden shadow-xl md:shadow-2xl"
+      >
+        <Image
+          src="https://images.pexels.com/photos/67468/pexels-photo-67468.jpeg"
+          alt="Restaurant béninois"
+          className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
+          width={500} 
+          height={500}
+          priority
+        />
 
-              <div className="absolute inset-0"
-                style={{
-                  background: `linear-gradient(to top, ${colors.maroon}30, transparent)`
-                }} />
+             <div className="absolute inset-0"
+          style={{
+            background: `linear-gradient(to top, rgba(1, 77, 113, 0.2), transparent)`
+          }} />
+
 
               {/* Badge de spécialités */}
-              <div className="absolute bottom-6 left-6 backdrop-blur-sm px-4 py-2 rounded-full shadow-md"
-                style={{
-                  backgroundColor: 'rgba(255, 255, 255, 0.9)',
-                  border: `1px solid ${colors.gold}`
-                }}>
-                <div className="flex items-center gap-2">
-                  <span className="font-semibold" style={{ color: colors.orange }}>
-                    Spécialités locales :
-                  </span>
-                  <span style={{ color: colors.darkTeal }}>
+              <div className="absolute bottom-4 left-4 md:bottom-6 md:left-6 backdrop-blur-sm px-3 py-1 md:px-4 md:py-2 rounded-full shadow-md"
+          style={{
+            backgroundColor: 'rgba(255, 255, 255, 0.9)',
+            border: `1px solid #f0b800`
+          }}>
+          <div className="flex items-center gap-1 md:gap-2">
+            <span className="font-semibold text-sm md:text-base" style={{ color: '#014d71' }}>
+              Spécialités :
+            </span>
+                   <span className="text-xs md:text-sm" style={{ color: '#014d71', fontFamily: "'Times New Roman', serif" }}>
                     Akassa, Poulet DG, Poisson braisé
                   </span>
                 </div>
@@ -1558,6 +1481,12 @@ Explorez nos espaces d&rsquo;exception &agrave; travers cette galerie immersive.
 
         {/* Bouton WhatsApp flottant */}
       <WhatsAppButton />
+
+       <ServiceModal 
+      service={selectedService } 
+      isOpen={isServiceModalOpen} 
+      onClose={handleCloseServiceModal} 
+    />
     </div>
   );
 }

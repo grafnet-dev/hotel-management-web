@@ -17,7 +17,7 @@ type Child = {
 type RoomSelection = {
   id: number;       
   adults: number;   
-  children: number; // Changé de Child[] à number pour correspondre au fichier principal
+  children: number; 
 };
 
 interface BookingSectionProps {
@@ -244,7 +244,7 @@ const SimpleDatePicker = ({
           disabled={isDisabled}
           className={`p-1 w-8 h-8 text-sm rounded-full transition-colors flex items-center justify-center
             ${isDisabled ? 'text-gray-300 cursor-not-allowed' : 'text-gray-700 hover:bg-blue-100'}
-            ${isSelected ? 'bg-orange-500 text-white hover:bg-orange-600' : ''}
+            ${isSelected ? 'bg-[#f0b800] text-white hover:bg-[#e0a800]' : ''}
           `}
         >
           {day}
@@ -277,7 +277,7 @@ const SimpleDatePicker = ({
         >
           ←
         </button>
-        <h3 className="font-semibold text-base">
+        <h3 className="font-semibold text-base font-poppins">
           {monthNames[displayMonth]} {displayYear}
         </h3>
         <button
@@ -296,7 +296,7 @@ const SimpleDatePicker = ({
         </button>
       </div>
 
-      <div className="grid grid-cols-7 gap-1 text-center text-xs font-medium text-gray-500">
+      <div className="grid grid-cols-7 gap-1 text-center text-xs font-medium text-gray-500 font-poppins">
         {['Di', 'Lu', 'Ma', 'Me', 'Je', 'Ve', 'Sa'].map(day => (
           <div key={day} className="p-1">{day}</div>
         ))}
@@ -309,8 +309,7 @@ const SimpleDatePicker = ({
   );
 };
 
-// Changement principal : destructurer les props correctement
-const BookingSection: React.FC<BookingSectionProps> = ({ rooms,  onSearch }) => {
+const BookingSection: React.FC<BookingSectionProps> = ({  onSearch }) => {
   const router = useRouter();
   const [reservationType, setReservationType] = useState<ReservationType>('classic');
   const [dateRange, setDateRange] = useState<DateRange>({});
@@ -390,14 +389,13 @@ const BookingSection: React.FC<BookingSectionProps> = ({ rooms,  onSearch }) => 
   const handleSearch = () => {
     setIsSearching(true);
     
-    // Appeler la fonction onSearch si elle est fournie
     if (onSearch) {
       const searchParams = {
         date: reservationType === 'classic' ? dateRange : selectedDate,
         rooms: roomSelections.map(room => ({
           id: room.id,
           adults: room.adults,
-          children: room.children.length // Convertir en nombre pour correspondre au type attendu
+          children: room.children.length
         })),
         isDayUse: reservationType === 'day_use',
         totalAdults,
@@ -418,7 +416,6 @@ const BookingSection: React.FC<BookingSectionProps> = ({ rooms,  onSearch }) => 
         })))
       };
 
-      // Add dates based on reservation type
       if (reservationType === 'classic') {
         searchData.checkIn = dateRange.from!.toISOString();
         searchData.checkOut = dateRange.to!.toISOString();
@@ -490,53 +487,53 @@ const BookingSection: React.FC<BookingSectionProps> = ({ rooms,  onSearch }) => 
   };
 
   return (
-    <section className="py-6 px-4 sm:px-6 lg:px-8 bg-gray-50">
+    <section className="py-6 px-4 sm:px-6 lg:px-8 bg-gray-50" style={{ fontFamily: 'Poppins, sans-serif' }}>
       <div className="max-w-7xl mx-auto">
         <div className="text-center mb-6">
           <div className="flex items-center justify-center gap-2 mb-2">
-            <Sparkles className="h-5 w-5 text-yellow-500" />
-            <h2 className="text-xl md:text-2xl font-bold text-gray-800">
+            <Sparkles className="h-5 w-5 text-[#f0b800]" />
+            <h2 className="text-xl md:text-2xl font-bold text-[#014d71] font-poppins">
               Réservez Votre Séjour
             </h2>
-            <Sparkles className="h-5 w-5 text-yellow-500" />
+            <Sparkles className="h-5 w-5 text-[#f0b800]" />
           </div>
-          <div className="w-16 h-1 mx-auto bg-yellow-500 rounded-full"></div>
+          <div className="w-16 h-1 mx-auto bg-[#f0b800] rounded-full"></div>
         </div>
 
-        <div className="bg-white rounded-xl shadow-lg p-4 md:p-6 border border-yellow-400">
+        <div className="bg-white rounded-xl shadow-lg p-4 md:p-6 border border-[#f0b800]">
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
             {/* Type de réservation */}
             <div className="space-y-3">
               <div className="flex items-center">
                 {getReservationTypeIcon()}
-                <h3 className="ml-2 text-sm font-bold text-teal-700 uppercase tracking-wider">Type</h3>
+                <h3 className="ml-2 text-sm font-bold text-[#014d71] uppercase tracking-wider font-poppins">Type</h3>
               </div>
               
-              <p className="text-xs text-gray-600">
+              <p className="text-xs text-gray-600 font-times">
                 Choisissez votre type de réservation
               </p>
 
               <CustomPopover
                 trigger={
-                  <button className="w-full p-2 sm:p-3 border border-teal-500 rounded-lg hover:bg-gray-50 transition-colors text-left flex items-center justify-between">
+                  <button className="w-full p-2 sm:p-3 border border-[#014d71] rounded-lg hover:bg-gray-50 transition-colors text-left flex items-center justify-between">
                     <div className="flex items-center">
                       {getReservationTypeIcon()}
-                      <span className="ml-2 text-sm text-teal-700 font-medium truncate">
+                      <span className="ml-2 text-sm text-[#014d71] font-medium truncate font-poppins">
                         {getReservationTypeLabel()}
                       </span>
                     </div>
-                    <ChevronDown className="h-4 w-4 text-teal-500" />
+                    <ChevronDown className="h-4 w-4 text-[#014d71]" />
                   </button>
                 }
                 content={
                   <div className="space-y-2 w-full">
-                    <h4 className="font-semibold text-gray-800 pb-2 border-b mb-2 text-sm">Type de réservation</h4>
+                    <h4 className="font-semibold text-gray-800 pb-2 border-b mb-2 text-sm font-poppins">Type de réservation</h4>
                     
                     <button
                       onClick={() => handleReservationTypeChange('classic')}
-                      className={`w-full p-2 rounded-lg border text-left transition-all text-sm ${
+                      className={`w-full p-2 rounded-lg border text-left transition-all text-sm font-poppins ${
                         reservationType === 'classic' 
-                          ? 'border-teal-500 bg-teal-50 text-teal-800' 
+                          ? 'border-[#014d71] bg-[#f0f8ff] text-[#014d71]' 
                           : 'border-gray-200 hover:border-gray-300'
                       }`}
                     >
@@ -544,16 +541,16 @@ const BookingSection: React.FC<BookingSectionProps> = ({ rooms,  onSearch }) => 
                         <Calendar className="h-4 w-4 mr-2" />
                         <span className="font-medium">Séjour Classique</span>
                       </div>
-                      <p className="text-xs text-gray-600">
+                      <p className="text-xs text-gray-600 font-times">
                         Réservation avec nuitée(s)
                       </p>
                     </button>
 
                     <button
                       onClick={() => handleReservationTypeChange('day_use')}
-                      className={`w-full p-2 rounded-lg border text-left transition-all text-sm ${
+                      className={`w-full p-2 rounded-lg border text-left transition-all text-sm font-poppins ${
                         reservationType === 'day_use' 
-                          ? 'border-teal-500 bg-teal-50 text-teal-800' 
+                          ? 'border-[#014d71] bg-[#f0f8ff] text-[#014d71]' 
                           : 'border-gray-200 hover:border-gray-300'
                       }`}
                     >
@@ -561,16 +558,16 @@ const BookingSection: React.FC<BookingSectionProps> = ({ rooms,  onSearch }) => 
                         <CalendarDays className="h-4 w-4 mr-2" />
                         <span className="font-medium">Day Use</span>
                       </div>
-                      <p className="text-xs text-gray-600">
+                      <p className="text-xs text-gray-600 font-times">
                         Utilisation de jour uniquement
                       </p>
                     </button>
 
                     <button
                       onClick={() => handleReservationTypeChange('flexible')}
-                      className={`w-full p-2 rounded-lg border text-left transition-all text-sm ${
+                      className={`w-full p-2 rounded-lg border text-left transition-all text-sm font-poppins ${
                         reservationType === 'flexible' 
-                          ? 'border-teal-500 bg-teal-50 text-teal-800' 
+                          ? 'border-[#014d71] bg-[#f0f8ff] text-[#014d71]' 
                           : 'border-gray-200 hover:border-gray-300'
                       }`}
                     >
@@ -578,7 +575,7 @@ const BookingSection: React.FC<BookingSectionProps> = ({ rooms,  onSearch }) => 
                         <Clock className="h-4 w-4 mr-2" />
                         <span className="font-medium">Horaires Flexibles</span>
                       </div>
-                      <p className="text-xs text-gray-600">
+                      <p className="text-xs text-gray-600 font-times">
                         Horaires personnalisés
                       </p>
                     </button>
@@ -590,13 +587,13 @@ const BookingSection: React.FC<BookingSectionProps> = ({ rooms,  onSearch }) => 
             {/* Dates Section */}
             <div className="space-y-3">
               <div className="flex items-center">
-                <CalendarDays className="h-5 w-5 mr-2 text-orange-500" />
-                <h3 className="text-sm font-bold text-teal-700 uppercase tracking-wider">
+                <CalendarDays className="h-5 w-5 mr-2 text-[#f0b800]" />
+                <h3 className="text-sm font-bold text-[#014d71] uppercase tracking-wider font-poppins">
                   {reservationType === 'classic' ? "Dates" : "Date"}
                 </h3>
               </div>
               
-              <p className="text-xs text-gray-600">
+              <p className="text-xs text-gray-600 font-times">
                 {reservationType === 'classic' 
                   ? "Choisissez vos dates" 
                   : "Choisissez votre date"}
@@ -604,9 +601,9 @@ const BookingSection: React.FC<BookingSectionProps> = ({ rooms,  onSearch }) => 
 
               <CustomPopover
                 trigger={
-                  <button className="w-full p-2 sm:p-3 border border-teal-500 rounded-lg hover:bg-gray-50 transition-colors text-left flex items-center">
-                    <Calendar className="mr-2 h-4 w-4 text-teal-500" />
-                    <span className="text-sm truncate">{getDateLabel()}</span>
+                  <button className="w-full p-2 sm:p-3 border border-[#014d71] rounded-lg hover:bg-gray-50 transition-colors text-left flex items-center">
+                    <Calendar className="mr-2 h-4 w-4 text-[#014d71]" />
+                    <span className="text-sm truncate font-poppins">{getDateLabel()}</span>
                   </button>
                 }
                 content={
@@ -625,7 +622,7 @@ const BookingSection: React.FC<BookingSectionProps> = ({ rooms,  onSearch }) => 
                     />
                     
                     {getFeedback() && (
-                      <div className="mt-3 p-2 bg-green-50 text-green-700 text-xs rounded-md text-center">
+                      <div className="mt-3 p-2 bg-green-50 text-green-700 text-xs rounded-md text-center font-poppins">
                         {getFeedback()}
                       </div>
                     )}
@@ -636,31 +633,31 @@ const BookingSection: React.FC<BookingSectionProps> = ({ rooms,  onSearch }) => 
               {/* Horaires flexibles */}
               {reservationType === 'flexible' && (
                 <div className="mt-2 p-3 bg-blue-50 rounded-lg">
-                  <h4 className="font-medium text-blue-800 text-sm flex items-center">
+                  <h4 className="font-medium text-blue-800 text-sm flex items-center font-poppins">
                     <Clock className="h-4 w-4 mr-1" />
                     Horaires
                   </h4>
                   <div className="grid grid-cols-2 gap-2 mt-2">
                     <div>
-                      <label className="block text-xs font-medium text-blue-700 mb-1">
+                      <label className="block text-xs font-medium text-blue-700 mb-1 font-poppins">
                         Arrivée
                       </label>
                       <input
                         type="time"
                         value={flexibleHours.start}
                         onChange={(e) => setFlexibleHours(prev => ({ ...prev, start: e.target.value }))}
-                        className="w-full px-2 py-1 text-sm border border-blue-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
+                        className="w-full px-2 py-1 text-sm border border-blue-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 font-poppins"
                       />
                     </div>
                     <div>
-                      <label className="block text-xs font-medium text-blue-700 mb-1">
+                      <label className="block text-xs font-medium text-blue-700 mb-1 font-poppins">
                         Départ
                       </label>
                       <input
                         type="time"
                         value={flexibleHours.end}
                         onChange={(e) => setFlexibleHours(prev => ({ ...prev, end: e.target.value }))}
-                        className="w-full px-2 py-1 text-sm border border-blue-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
+                        className="w-full px-2 py-1 text-sm border border-blue-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 font-poppins"
                       />
                     </div>
                   </div>
@@ -668,170 +665,170 @@ const BookingSection: React.FC<BookingSectionProps> = ({ rooms,  onSearch }) => 
               )}
             </div>
 
-            {/* Guests Section */}
-            <div className="space-y-3">
-              <div className="flex items-center">
-                <Users className="h-5 w-5 mr-2 text-orange-500" />
-                <h3 className="text-sm font-bold text-teal-700 uppercase tracking-wider">
-                  Invités & Chambres
-                </h3>
+        {/* Guests Section */}
+<div className="space-y-3">
+  <div className="flex items-center">
+    <Users className="h-5 w-5 mr-2 text-[#f0b800]" />
+    <h3 className="text-sm font-bold text-[#014d71] uppercase tracking-wider font-poppins">
+      Invités & Chambres
+    </h3>
+  </div>
+  
+  <p className="text-xs text-gray-600 font-times">
+    Sélectionnez le nombre d&apos;invités et chambres
+  </p>
+
+  <CustomPopover
+    trigger={
+      <button className="w-full p-2 sm:p-3 border border-[#014d71] rounded-lg hover:bg-gray-50 transition-colors text-left flex items-center">
+        <Users className="mr-2 h-4 w-4 text-[#014d71]" />
+        <span className="text-sm truncate font-poppins">
+          {roomSelections.length} chambre{roomSelections.length > 1 ? 's' : ''}, {totalAdults} adulte{totalAdults > 1 ? 's' : ''}, {totalChildren} enfant{totalChildren > 1 ? 's' : ''}
+        </span>
+      </button>
+    }
+    content={
+      <div className="space-y-3 w-full">
+        <h4 className="font-semibold text-gray-800 text-sm pb-2 border-b font-poppins">
+          Configuration des chambres
+        </h4>
+        
+        {roomSelections.map((room, index) => (
+          <div key={room.id} className="space-y-2 p-3 bg-gray-50 rounded-lg">
+            <div className="flex justify-between items-center">
+              <h5 className="font-medium text-gray-700 text-sm font-poppins">Chambre {index + 1}</h5>
+              {roomSelections.length > 1 && (
+                <button 
+                  onClick={() => removeRoom(index)}
+                  className="text-red-500 hover:text-red-700 text-xs px-1 py-0.5 hover:bg-red-50 rounded font-poppins"
+                >
+                  Supprimer
+                </button>
+              )}
+            </div>
+            
+            <div>
+              <label className="text-xs font-medium text-gray-700 mb-1 block font-poppins">
+                Adultes (18+ ans)
+              </label>
+              <div className="flex items-center justify-between bg-white rounded-lg border p-1">
+                <button
+                  onClick={() => updateRoomAdults(index, Math.max(1, room.adults - 1))}
+                  disabled={room.adults <= 1}
+                  className="w-6 h-6 rounded-md bg-gray-100 hover:bg-gray-200 disabled:opacity-50 flex items-center justify-center font-poppins"
+                >
+                  −
+                </button>
+                <span className="font-medium px-1 text-sm font-poppins">{room.adults}</span>
+                <button
+                  onClick={() => updateRoomAdults(index, Math.min(MAX_ADULTS_PER_ROOM, room.adults + 1))}
+                  disabled={room.adults >= MAX_ADULTS_PER_ROOM}
+                  className="w-6 h-6 rounded-md bg-gray-100 hover:bg-gray-200 disabled:opacity-50 flex items-center justify-center font-poppins"
+                >
+                  +
+                </button>
+              </div>
+            </div>
+
+            <div>
+              <div className="flex items-center justify-between mb-1">
+                <label className="text-xs font-medium text-gray-700 font-poppins">
+                  Enfants (0-17 ans)
+                </label>
+                <button
+                  onClick={() => addChild(index)}
+                  disabled={room.children.length >= MAX_CHILDREN_PER_ROOM}
+                  className="text-[#014d71] hover:text-[#013a57] text-xs px-1 py-0.5 hover:bg-[#f0f8ff] rounded disabled:opacity-50 font-poppins"
+                >
+                  + Ajouter
+                </button>
               </div>
               
-              <p className="text-xs text-gray-600">
-                Sélectionnez le nombre d&apos;invités et chambres
-              </p>
-
-              <CustomPopover
-                trigger={
-                  <button className="w-full p-2 sm:p-3 border border-teal-500 rounded-lg hover:bg-gray-50 transition-colors text-left flex items-center">
-                    <Users className="mr-2 h-4 w-4 text-teal-500" />
-                    <span className="text-sm truncate">
-                      {roomSelections.length} chambre{roomSelections.length > 1 ? 's' : ''}, {totalAdults} adulte{totalAdults > 1 ? 's' : ''}, {totalChildren} enfant{totalChildren > 1 ? 's' : ''}
-                    </span>
-                  </button>
-                }
-                content={
-                  <div className="space-y-3 w-full">
-                    <h4 className="font-semibold text-gray-800 text-sm pb-2 border-b">
-                      Configuration des chambres
-                    </h4>
-                    
-                    {roomSelections.map((room, index) => (
-                      <div key={room.id} className="space-y-2 p-3 bg-gray-50 rounded-lg">
-                        <div className="flex justify-between items-center">
-                          <h5 className="font-medium text-gray-700 text-sm">Chambre {index + 1}</h5>
-                          {roomSelections.length > 1 && (
-                            <button 
-                              onClick={() => removeRoom(index)}
-                              className="text-red-500 hover:text-red-700 text-xs px-1 py-0.5 hover:bg-red-50 rounded"
-                            >
-                              Supprimer
-                            </button>
-                          )}
-                        </div>
-                        
-                        <div>
-                          <label className="text-xs font-medium text-gray-700 mb-1 block">
-                            Adultes (18+ ans)
-                          </label>
-                          <div className="flex items-center justify-between bg-white rounded-lg border p-1">
-                            <button
-                              onClick={() => updateRoomAdults(index, Math.max(1, room.adults - 1))}
-                              disabled={room.adults <= 1}
-                              className="w-6 h-6 rounded-md bg-gray-100 hover:bg-gray-200 disabled:opacity-50 flex items-center justify-center"
-                            >
-                              −
-                            </button>
-                            <span className="font-medium px-1 text-sm">{room.adults}</span>
-                            <button
-                              onClick={() => updateRoomAdults(index, Math.min(MAX_ADULTS_PER_ROOM, room.adults + 1))}
-                              disabled={room.adults >= MAX_ADULTS_PER_ROOM}
-                              className="w-6 h-6 rounded-md bg-gray-100 hover:bg-gray-200 disabled:opacity-50 flex items-center justify-center"
-                            >
-                              +
-                            </button>
-                          </div>
-                        </div>
-
-                        <div>
-                          <div className="flex items-center justify-between mb-1">
-                            <label className="text-xs font-medium text-gray-700">
-                              Enfants (0-17 ans)
-                            </label>
-                            <button
-                              onClick={() => addChild(index)}
-                              disabled={room.children.length >= MAX_CHILDREN_PER_ROOM}
-                              className="text-teal-600 hover:text-teal-800 text-xs px-1 py-0.5 hover:bg-teal-50 rounded disabled:opacity-50"
-                            >
-                              + Ajouter
-                            </button>
-                          </div>
-                          
-                          {room.children.length === 0 ? (
-                            <div className="text-center py-2 text-gray-500 text-xs border border-dashed border-gray-200 rounded-lg">
-                              Aucun enfant
-                            </div>
-                          ) : (
-                            <div className="space-y-1">
-                              {room.children.map((child, childIndex) => (
-                                <div key={child.id} className="flex items-center gap-1 p-1 bg-white rounded border text-xs">
-                                  <span className="text-gray-600 truncate">
-                                    Enfant {childIndex + 1}:
-                                  </span>
-                                  <select
-                                    value={child.age}
-                                    onChange={(e) => updateChildAge(index, child.id, parseInt(e.target.value))}
-                                    className="flex-1 px-1 py-0.5 border rounded text-xs focus:outline-none focus:ring-1 focus:ring-teal-500"
-                                  >
-                                    {Array.from({ length: MAX_CHILD_AGE - MIN_CHILD_AGE + 1 }, (_, i) => (
-                                      <option key={i} value={i + MIN_CHILD_AGE}>
-                                        {i + MIN_CHILD_AGE} an{i + MIN_CHILD_AGE > 1 ? 's' : ''}
-                                      </option>
-                                    ))}
-                                  </select>
-                                  <button
-                                    onClick={() => removeChild(index, child.id)}
-                                    className="text-red-500 hover:text-red-700 px-1 py-0.5 hover:bg-red-50 rounded"
-                                  >
-                                    ×
-                                  </button>
-                                </div>
-                              ))}
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    ))}
-                    
-                    <button
-                      onClick={addRoom}
-                      disabled={rooms.length >= MAX_ROOMS}
-                      className="w-full p-2 border border-dashed border-teal-300 rounded-lg hover:border-teal-500 hover:bg-teal-50 transition-colors disabled:opacity-50 text-teal-600 font-medium text-xs"
-                    >
-                      + Ajouter une chambre (max {MAX_ROOMS})
-                    </button>
-                    
-                    <div className="pt-2 border-t">
-                      <button
-                        onClick={handleGuestsValidation}
-                        className="w-full p-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors font-medium text-sm"
+              {room.children.length === 0 ? (
+                <div className="text-center py-2 text-gray-500 text-xs border border-dashed border-gray-200 rounded-lg font-poppins">
+                  Aucun enfant
+                </div>
+              ) : (
+                <div className="space-y-1">
+                  {room.children.map((child, childIndex) => (
+                    <div key={child.id} className="flex items-center gap-1 p-1 bg-white rounded border text-xs font-poppins">
+                      <span className="text-gray-600 truncate">
+                        Enfant {childIndex + 1}:
+                      </span>
+                      <select
+                        value={child.age}
+                        onChange={(e) => updateChildAge(index, child.id, parseInt(e.target.value))}
+                        className="flex-1 px-1 py-0.5 border rounded text-xs focus:outline-none focus:ring-1 focus:ring-[#014d71] font-poppins"
                       >
-                        Valider
+                        {Array.from({ length: MAX_CHILD_AGE - MIN_CHILD_AGE + 1 }, (_, i) => (
+                          <option key={i} value={i + MIN_CHILD_AGE}>
+                            {i + MIN_CHILD_AGE} an{i + MIN_CHILD_AGE > 1 ? 's' : ''}
+                          </option>
+                        ))}
+                      </select>
+                      <button
+                        onClick={() => removeChild(index, child.id)}
+                        className="text-red-500 hover:text-red-700 px-1 py-0.5 hover:bg-red-50 rounded font-poppins"
+                      >
+                        ×
                       </button>
                     </div>
-                  </div>
-                }
-                
-              />
+                  ))}
+                </div>
+              )}
             </div>
+          </div>
+        ))}
+        
+        <button
+          onClick={addRoom}
+          disabled={roomSelections.length >= MAX_ROOMS}
+          className="w-full p-2 border border-dashed border-[#014d71] rounded-lg hover:border-[#013a57] hover:bg-[#f0f8ff] transition-colors disabled:opacity-50 text-[#014d71] font-medium text-xs font-poppins"
+        >
+          + Ajouter une chambre (max {MAX_ROOMS})
+        </button>
+        
+        <div className="pt-2 border-t">
+          <button
+            onClick={handleGuestsValidation}
+            className="w-full p-2 bg-[#014d71] text-white rounded-lg hover:bg-[#013a57] transition-colors font-medium text-sm font-poppins"
+          >
+            Valider
+          </button>
+        </div>
+      </div>
+    }
+  />
+</div>
+
 
             {/* Search Section */}
             <div className="space-y-3">
               <div className="flex items-center">
-                <Search className="h-5 w-5 mr-2 text-orange-500" />
-                <h3 className="text-sm font-bold text-teal-700 uppercase tracking-wider">
+                <Search className="h-5 w-5 mr-2 text-[#f0b800]" />
+                <h3 className="text-sm font-bold text-[#014d71] uppercase tracking-wider font-poppins">
                   Recherche
                 </h3>
               </div>
               
-              <p className="text-xs text-gray-600">
+              <p className="text-xs text-gray-600 font-times">
                 Lancez votre recherche
               </p>
 
               <button
                 onClick={handleSearch}
                 disabled={isSearchDisabled}
-                className={`w-full p-2 sm:p-3 rounded-lg flex items-center justify-center font-medium text-sm ${
+                className={`w-full p-2 sm:p-3 rounded-lg flex items-center justify-center font-medium text-sm font-poppins ${
                   isSearchDisabled 
                     ? 'bg-gray-300 text-gray-500 cursor-not-allowed' 
-                    : 'bg-orange-500 text-white hover:bg-orange-600'
+                    : 'bg-[#f0b800] text-white hover:bg-[#e0a800]'
                 }`}
               >
                 <Search className="mr-2 h-4 w-4" />
                 Rechercher
               </button>
 
-              <div className="text-center text-xs text-gray-500">
+              <div className="text-center text-xs text-gray-500 font-poppins">
                 {isSearching 
                   ? 'Recherche en cours...'
                   : isSearchDisabled 
@@ -840,7 +837,7 @@ const BookingSection: React.FC<BookingSectionProps> = ({ rooms,  onSearch }) => 
               </div>
 
               {!isSearching && (
-                <div className="space-y-1 text-xs">
+                <div className="space-y-1 text-xs font-poppins">
                   {reservationType === 'classic' ? (
                     <>
                       {!dateRange.from && <p className="text-red-500">• Sélectionnez une date d&eacute;arrivée</p>}

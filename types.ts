@@ -9,6 +9,12 @@ export type RoomImage = {
   image: string;
 };
 
+export interface Service {
+  title: string;
+  description: string;
+  icon: React.ReactElement;
+}
+
 export type ReservationType = {
   id: number;
   name: string;
@@ -23,7 +29,16 @@ export type ReservationSlot = {
 };
 
 
-
+export interface RoomDetailRoom extends Room {
+  is_day_use: boolean;
+  day_use_check_in: string;
+  day_use_check_out: string;
+  default_check_in_time: string;
+  default_check_out_time: string;
+  description: string;
+  wifiCode: string;
+  view: string; 
+}
 
 export interface Image {
   id: number;
@@ -49,9 +64,9 @@ const sampleRooms: Room[] = [
     bed_type: "king size",
     num_person: 2,
     surface_area: 35,
-    price_per_night: 35000,
-    hourly_rate: 8000,
-    day_use_price: 15000,
+    price_per_night: 25000,
+    hourly_rate: 2000,
+    day_use_price: 10000,
     flooring_type: "parquet",
     view: "mer",
     floor: "2",
@@ -62,7 +77,7 @@ const sampleRooms: Room[] = [
     status: "available",
     image: "https://images.pexels.com/photos/164595/pexels-photo-164595.jpeg",
     description: "Une chambre élégante avec vue panoramique sur la mer. Parfaite pour les couples en quête de romantisme avec son lit king size et sa décoration raffinée.",
-    wifiCode: "HOTEL_DULAC_2024", // WiFi unifié pour tout l'hôtel
+    wifiCode: "HOTEL_DULAC_2024", 
     room_images: [
       { image: "https://images.pexels.com/photos/271643/pexels-photo-271643.jpeg" },
       { image: "https://images.pexels.com/photos/261395/pexels-photo-261395.jpeg" }
@@ -86,7 +101,7 @@ const sampleRooms: Room[] = [
         id: 2,
         name: "DAY-USE",
         code: "day_use",
-        description: "De 10h à 17h",
+        description: "De 10h à 14h",
         is_flexible: false,
         slots: [{ checkin_time: 10, checkout_time: 17 }]
       },
@@ -103,7 +118,7 @@ const sampleRooms: Room[] = [
       {
         reservation_type_id: 1,
         reservation_type_name: "Nuitée",
-        price: 35000,
+        price: 25000,
         hourly_price: 0,
         is_hourly_based: false,
         currency: "FCFA"
@@ -111,7 +126,7 @@ const sampleRooms: Room[] = [
       {
         reservation_type_id: 2,
         reservation_type_name: "DAY-USE",
-        price: 15000,
+        price: 10000,
         hourly_price: 0,
         is_hourly_based: false,
         currency: "FCFA"
@@ -119,8 +134,8 @@ const sampleRooms: Room[] = [
       {
         reservation_type_id: 3,
         reservation_type_name: "Flexible horaire",
-        price: 8000,
-        hourly_price: 8000,
+        price: 2000,
+        hourly_price: 2000,
         is_hourly_based: true,
         currency: "FCFA"
       }
@@ -133,9 +148,9 @@ const sampleRooms: Room[] = [
     bed_type: "king size",
     num_person: 4,
     surface_area: 80,
-    price_per_night: 85000,
-    hourly_rate: 15000,
-    day_use_price: 30000,
+    price_per_night: 25000,
+    hourly_rate: 2000,
+    day_use_price: 10000,
     flooring_type: "marbre",
     view: "piscine",
     floor: "3",
@@ -171,16 +186,16 @@ const sampleRooms: Room[] = [
         id: 5,
         name: "DAY-USE",
         code: "day_use",
-        description: "De 9h à 19h",
+        description: "De 9h à 13h",
         is_flexible: false,
-        slots: [{ checkin_time: 9, checkout_time: 19 }]
+        slots: [{ checkin_time: 9, checkout_time: 13 }]
       }
     ],
     pricing: [
       {
         reservation_type_id: 4,
         reservation_type_name: "Nuitée",
-        price: 85000,
+        price: 25000,
         hourly_price: 15000,
         is_hourly_based: false,
         currency: "FCFA"
@@ -188,8 +203,8 @@ const sampleRooms: Room[] = [
       {
         reservation_type_id: 5,
         reservation_type_name: "DAY-USE",
-        price: 30000,
-        hourly_price: 15000,
+        price: 10000,
+        hourly_price: 5000,
         is_hourly_based: false,
         currency: "FCFA"
       }
@@ -202,8 +217,8 @@ const sampleRooms: Room[] = [
     bed_type: "queen size",
     num_person: 1,
     surface_area: 25,
-    price_per_night: 18000,
-    hourly_rate: 4000,
+    price_per_night: 25000,
+    hourly_rate: 2000,
     day_use_price: 0,
     flooring_type: "carrelage",
     view: "jardin",
@@ -238,8 +253,8 @@ const sampleRooms: Room[] = [
       {
         reservation_type_id: 6,
         reservation_type_name: "Nuitée",
-        price: 18000,
-        hourly_price: 4000,
+        price: 25000,
+        hourly_price: 2000,
         is_hourly_based: false,
         currency: "FCFA"
       }
@@ -252,9 +267,9 @@ const sampleRooms: Room[] = [
     bed_type: "double + 2 simples",
     num_person: 4,
     surface_area: 60,
-    price_per_night: 65000,
-    hourly_rate: 12000,
-    day_use_price: 25000,
+    price_per_night: 25000,
+    hourly_rate: 2000,
+    day_use_price: 10000,
     flooring_type: "parquet",
     view: "ville",
     floor: "2",
@@ -289,25 +304,25 @@ const sampleRooms: Room[] = [
         id: 8,
         name: "DAY-USE",
         code: "day_use",
-        description: "De 10h à 18h",
+        description: "De 10h à 15h",
         is_flexible: false,
-        slots: [{ checkin_time: 10, checkout_time: 18 }]
+        slots: [{ checkin_time: 10, checkout_time: 15 }]
       }
     ],
     pricing: [
       {
         reservation_type_id: 7,
         reservation_type_name: "Nuitée",
-        price: 65000,
-        hourly_price: 12000,
+        price: 25000,
+        hourly_price: 2000,
         is_hourly_based: false,
         currency: "FCFA"
       },
       {
         reservation_type_id: 8,
         reservation_type_name: "Journée Famille",
-        price: 25000,
-        hourly_price: 12000,
+        price: 10000,
+        hourly_price: 2000,
         is_hourly_based: false,
         currency: "FCFA"
       }
@@ -320,9 +335,9 @@ const sampleRooms: Room[] = [
     bed_type: "king size",
     num_person: 2,
     surface_area: 40,
-    price_per_night: 45000,
-    hourly_rate: 10000,
-    day_use_price: 20000,
+    price_per_night: 25000,
+    hourly_rate: 2000,
+    day_use_price: 10000,
     flooring_type: "parquet",
     view: "ville",
     floor: "4",
@@ -357,16 +372,16 @@ const sampleRooms: Room[] = [
         id: 10,
         name: "DAY-USE",
         code: "day_use",
-        description: "De 8h à 20h",
+        description: "De 8h à 12h",
         is_flexible: false,
-        slots: [{ checkin_time: 8, checkout_time: 20 }]
+        slots: [{ checkin_time: 8, checkout_time: 12 }]
       }
     ],
     pricing: [
       {
         reservation_type_id: 9,
         reservation_type_name: "Nuitée",
-        price: 45000,
+        price: 25000,
         hourly_price: 10000,
         is_hourly_based: false,
         currency: "FCFA"
@@ -374,8 +389,8 @@ const sampleRooms: Room[] = [
       {
         reservation_type_id: 10,
         reservation_type_name: "Journée",
-        price: 20000,
-        hourly_price: 10000,
+        price: 10000,
+        hourly_price: 5000,
         is_hourly_based: false,
         currency: "FCFA"
       }
@@ -425,16 +440,16 @@ const sampleRooms: Room[] = [
         id: 12,
         name: "DAY-USE",
         code: "day_use",
-        description: "De 12h à 22h",
+        description: "De 12h à 16h",
         is_flexible: false,
-        slots: [{ checkin_time: 12, checkout_time: 22 }]
+        slots: [{ checkin_time: 12, checkout_time: 16 }]
       }
     ],
     pricing: [
       {
         reservation_type_id: 11,
         reservation_type_name: "Nuitée Romantique",
-        price: 40000,
+        price: 25000,
         hourly_price: 9000,
         is_hourly_based: false,
         currency: "FCFA"
@@ -442,8 +457,8 @@ const sampleRooms: Room[] = [
       {
         reservation_type_id: 12,
         reservation_type_name: "Journée Romantique",
-        price: 18000,
-        hourly_price: 9000,
+        price: 10000,
+        hourly_price: 2000,
         is_hourly_based: false,
         currency: "FCFA"
       }

@@ -189,7 +189,6 @@ export function ChatbotWhatsApp({ isOpen, onClose, userInfo }: ChatbotWhatsAppPr
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // Helper functions
   const scrollToBottom = useCallback(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, []);
@@ -220,7 +219,7 @@ export function ChatbotWhatsApp({ isOpen, onClose, userInfo }: ChatbotWhatsAppPr
     scrollToBottom();
   }, [scrollToBottom]);
 
-  // Initialize chat
+  
   useEffect(() => {
     if (isOpen && messages.length === 0) {
       addBotMessage(
@@ -230,7 +229,7 @@ export function ChatbotWhatsApp({ isOpen, onClose, userInfo }: ChatbotWhatsAppPr
     }
   }, [isOpen, messages.length, addBotMessage]);
 
-  // Handle user input
+ 
   const handleUserInput = (input: string) => {
     const trimmedInput = input.trim();
     if (!trimmedInput) return;
@@ -304,7 +303,7 @@ export function ChatbotWhatsApp({ isOpen, onClose, userInfo }: ChatbotWhatsAppPr
     );
   };
 
-  // Handle option selection
+  
   const handleOptionClick = (option: string) => {
     addUserMessage(option);
 
@@ -393,7 +392,7 @@ export function ChatbotWhatsApp({ isOpen, onClose, userInfo }: ChatbotWhatsAppPr
     );
   };
 
-  // Step handlers
+ 
   const handleDatesComplete = (dates: DateData) => {
     setReservationData(prev => ({ ...prev, ...dates }));
     setCurrentStep('guests');
@@ -415,32 +414,41 @@ export function ChatbotWhatsApp({ isOpen, onClose, userInfo }: ChatbotWhatsAppPr
   };
 
   const handleRoomComplete = (room: Room) => {
-  if (!room) {
-    console.warn("Aucune chambre reçue");
-    return;
-  }
+    if (!room) {
+      console.warn("❌ Aucune chambre reçue");
+      addBotMessage("⚠️ Erreur lors de la sélection de la chambre. Veuillez réessayer.");
+      return;
+    }
 
-  setReservationData(prev => ({ ...prev, selectedRoom: room }));
-  proceedToPersonalInfo();
-};
+    console.log("✅ Chambre sélectionnée:", room);
+    
+    // Mise à jour de l'état avec callback pour s'assurer que c'est bien enregistré
+    setReservationData(prev => {
+      const updated = { ...prev, selectedRoom: room };
+      console.log("✅ État mis à jour:", updated);
+      return updated;
+    });
+    
+    // Pas besoin de passer la chambre, elle est déjà dans l'état
+    proceedToPersonalInfo();
+  };
 
-
-  const proceedToPersonalInfo = () => {
+const proceedToPersonalInfo = () => {
     setCurrentStep('personal_info');
     if (userInfo) {
-      addBotMessage(
-        `Parfait ! Je vais préparer votre réservation. Souhaitez-vous ajouter des demandes spéciales ?`,
-        [],
-        <PersonalInfoForm userInfo={userInfo} onComplete={handlePersonalInfoComplete} />
-      );
+        addBotMessage(
+            `Parfait ! Je vais préparer votre réservation. Souhaitez-vous ajouter des demandes spéciales ?`,
+            [],
+            <PersonalInfoForm userInfo={userInfo} onComplete={handlePersonalInfoComplete} />
+        );
     } else {
-      addBotMessage(
-        "Excellent choix ! J'ai besoin de vos informations personnelles pour finaliser la réservation.",
-        [],
-        <PersonalInfoForm onComplete={handlePersonalInfoComplete} />
-      );
+        addBotMessage(
+            "Excellent choix ! J'ai besoin de vos informations personnelles pour finaliser la réservation.",
+            [],
+            <PersonalInfoForm onComplete={handlePersonalInfoComplete} />
+        );
     }
-  };
+};
 
 const handlePersonalInfoComplete = (info: PersonalInfo) => {
   const finalData = {
@@ -1074,7 +1082,7 @@ function ReservationSummary({ data, onConfirm }: { data: ReservationData; onConf
     }
 
     return {
-      finalPrice: Math.round(price), // Arrondir le prix
+      finalPrice: Math.round(price), 
       duration
     };
   };

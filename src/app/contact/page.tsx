@@ -10,9 +10,9 @@ import Image from 'next/image';
 
 const colors = {
   darkTeal: "#1e4e5f",
-  teal: "#005D7C",
+  teal: "#014d71",
   lightTeal: "#e0f2f1",
-   gold: "#CE9226",
+   gold: "#f0b800",
   orange: "#f4a261",
   maroon: "#e76f51",
   white: "#ffffff",
@@ -38,7 +38,7 @@ const itemVariants = {
 
 export default function Contact() {
   return (
-    <div className="min-h-screen pt-16 bg-gradient-to-b from-sky-50 to-amber-50">
+   <div className="min-h-screen pt-16 bg-gradient-to-b from-blue-50 to-yellow-50" style={{ fontFamily: 'Poppins, Times, "Times New Roman", serif' }}>
       {/* Hero Section */}
      <section className="relative h-[60vh] overflow-hidden">
         <div className="absolute inset-0">
